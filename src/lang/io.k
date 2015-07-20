@@ -37,9 +37,10 @@ rule [exit]:
 /*@ \subsection{Auxiliary stuff} */
 // ---------------------------------------------------------------------------------------------
 
-/* 
+
 syntax  K ::= "print" "(" K ")"     [strict]
 
+/* SM: see end of typeconversion.k before uncommenting
 
 rule [internal-print]:    
 	<k> print (V:Float => Float2Int(V))  ... </k>
@@ -52,19 +53,27 @@ rule [internal-print]:
 	<trace> Trace:List => Trace ListItem("internal-print") </trace>
 	when notBool (hasNoDecimalPart(V))
 	[internal, output]
-	
+*/
+
+
 rule [internal-print]:    
-	<k> print (V:LanguageValue => *toString(V))  ... </k>
+	<k> print (B:ABool  => *toString(B)) ... </k>
 	<trace> Trace:List => Trace ListItem("internal-print") </trace>
-	when notBool(isFloatType(V) orBool isStringType(V))
 	[internal, output]
+
 
 rule [internal-print]:    
 	<k> print (V:String)  => . ... </k>
 	<out> ... . => ListItem(V) </out>  
 	<trace> Trace:List => Trace ListItem("internal-print") </trace>
 	[internal, output]
-*/
+
+rule [internal-print]:    
+	<k> print (V:Int)  => . ... </k>
+	<out> ... . => ListItem(Int2String(V)) </out>  
+	<trace> Trace:List => Trace ListItem("internal-print") </trace>
+	[internal, output]
+
 
 // ---------------------------------------------------------------------------------------------
 /*@ \subsection{Echo} */
