@@ -36,10 +36,22 @@ rule [notice]:
 
 // An error is displayed, and the program is aborted
 syntax K ::= "ERROR" "(" String ")"
+/*
 rule [error]:	
 	<k> ERROR(ErrorMsg:String) ~> K:K => print("\nFatal error: ") ~> print(ErrorMsg) </k>
 	<errorManagement> _ => 2 </errorManagement>
 	<trace> Trace:List => Trace ListItem("error") </trace>
+	[internal]
+*/
+
+rule [error]:	
+	<k> (ERROR(ErrorMsg:String) ~> K1:K ~> 'ListWrap(K2:KList) ~> K3:K) => 
+            (print("\nFatal error: ") ~> print(ErrorMsg) ~> 'ListWrap(K2) ~> K3) </k>
+	<errorManagement> _ => 2 </errorManagement>
+	<trace> Trace:List => Trace ListItem("error") </trace>
+ //     <errorDump> D:List => D ListItem("Error memory dump placeholder") </errorDump> 
+        //SM we should dmp the whole confing here ideally
+	<status> _ => ERR </status>
 	[internal]
 
 // This also aborts the program, but it's meant to be an internal thing (not in PHP).
@@ -51,3 +63,4 @@ rule [not-supported]:
 	<trace> Trace:List => Trace ListItem("not-supported") </trace>
 	[internal]
 endmodule
+

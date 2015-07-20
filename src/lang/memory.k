@@ -54,6 +54,7 @@ syntax ArrayItemVisibility ::= "public" | "protected" | "private" "(" Id ")"
 // Keys can be Int or String. We use NULL to designate cases when no key is provided when 
 // accessing an array (e.g. $x[] = 0). In such cases a default integer key will be provided.
 syntax Key ::= AInt | AString | SpecialValue
+syntax Key ::= "NoKey"
 rule isKResult(K:Key) => true
 
 // For specification purpose language values are not enough, so we need to add other
@@ -66,7 +67,7 @@ syntax Loc ::= "locNull"
 // References, which will be used extensively in the semantics, can be considered as pairs
 // consisting of a location which contains an array (note that the variable environments are
 // treated as arrays here) and a key. Keys can be integer or string. 
-// Also, for semantic purposes, we allow the NULL key. 
+// Also, for semantic purposes, we allow the NoKey key. 
 
 syntax RefType  ::= "arr" | "obj" | "nul" 
 		  | "bot" // only used in 'ReferenceAssign
@@ -821,8 +822,7 @@ syntax AInt ::= "maxAInt" "(" AInt "," AInt ")" [function]
 rule maxAInt(I1, I2) => I1	       	when valid(greater(I1,I2))
 rule maxAInt(I1, I2) => I2	   	when valid(lessEqual(I1,I2))
 rule maxAInt(I1, I2) => lub(I1,I2)	when notBool (valid(lessEqual(I1,I2)) orBool valid(greater(I1,I2)))
-
-//SM: if we fix a pattern for these cases, it should be used here
+//SM: if we fix a pattern for concrete-predicate cases, it should be used here
 
 
 // ---------------------------------------------------------------------------------------------
@@ -1504,11 +1504,11 @@ rule [rget-obj-scalar]:
 rule [rget-null]: 	
 	<k> RgetRef(ref(locNull, K:Key), _) => locNull ... </k>
 	<trace> Trace:List => Trace ListItem("rget-null") </trace>
-        when K =/=K NULL
+        when K =/=K NoKey
 	[internal]
 
 rule [rget-null]: 	
-	<k> RgetRef(ref(L:Loc, NULL), _) => ERROR("Cannot use [] for reading in %s line %n") ... </k>
+	<k> RgetRef(ref(L:Loc, NoKey), _) => ERROR("Cannot use [] for readng in %s line %n") ... </k>
 	<trace> Trace:List => Trace ListItem("rget-null-fatal") </trace>
 	[internal]
 
@@ -1559,7 +1559,7 @@ rule [lget-array-prop]:
 	</k>
 	<thematrix> ... L' |-> L ... </thematrix>
 	<heap>... L |-> zval(Array(_,ArrayValues),_,_,_)  ...</heap>
-        when X =/=K NULL
+        when X =/=K NoKey
 	[internal]
 
 
@@ -1704,7 +1704,7 @@ rule [lget-not-found-in-obj]:
 
 // Default array key
 rule [lget-not-found-default-array-key]:    
-	<k> LgetRef(ref(L':Loc,NULL), T) => 
+	<k> LgetRef(ref(L':Loc,NoKey), T) => 
 		LgetRef(ref(L',biggestIntKey(Elems) +AInt alpha(1)),T) ... </k>
 	<thematrix> ... L' |-> L ... </thematrix> 
 	<heap> ... L |-> zval(Array(_,Elems:List),_,_,_) ... </heap>

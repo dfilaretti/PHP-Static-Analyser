@@ -373,7 +373,7 @@ rule [array-access-key-cast-string]:
 // Finally if no key is provided, we use NULL as s special key
 
 rule [array-access-no-key]:	
-	<k> 'ArrayAccess(_,,('None(.KList) => NULL)) ... </k>
+	<k> 'ArrayAccess(_,,('None(.KList) => NoKey)) ... </k>
 	<trace> Trace:List => Trace ListItem("array-access-no-key") </trace>
 	[step]
 

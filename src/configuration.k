@@ -72,6 +72,7 @@ configuration
 			<locationsToCollect> .List </locationsToCollect>
 			<gcEnabled> false </gcEnabled>
 		</gc>
+//              <errorDump> .List </errorDump>
 		<trace> .List </trace>
 		<domain> .K </domain>
     	</kphp>

@@ -428,7 +428,6 @@ rule [strlen]:
    For example: var_dump($x, $y) ==> var_dump($x); var_dump($y). */
 
 
-//SM: arg is a list of values now, cheating a bit
 syntax K ::= "var_dump_map" "(" K ")" [strict]
 
 rule [vardump-map-arg2langval]:

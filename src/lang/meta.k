@@ -525,6 +525,17 @@ rule	<k> runInMem(none, _) => .  ... </k>
     /*@ Adaptive-merge case. This happens when one branch returned 
     but the other didn't. See notes. */
 
+    rule    <k> (mergeConfigs(config(A), config(B)) ~> K) => . </k>
+            when (configGetStatus(A) ==K ERR) andBool (configGetStatus(B) ==K ERR)
+            [transition]
+
+    rule    <k> mergeConfigs(config(A), config(B)) => updateConfig(config(B)) ... </k>
+            when (configGetStatus(A) ==K ERR) andBool (configGetStatus(B) =/=K ERR)
+            [transition]
+
+    rule    <k> mergeConfigs(config(A), config(B)) => updateConfig(config(A)) ... </k>
+            when (configGetStatus(A) =/=K ERR) andBool (configGetStatus(B) ==K ERR)
+            [transition]
 
     rule    (mergeConfigs(config(A), config(B)) ~> K => 
                 #if (K =/=K .K) #then 
@@ -586,7 +597,7 @@ rule	<k> runInMem(none, _) => .  ... </k>
 	
 	syntax Bool ::= "isNonTrivialBreakCase" "(" ReturnCode "," ReturnCode ")" [predicate]
 	
-    rule    isSpecialMergeCase(St1,St2) => ((((St1 ==K DONE) orBool (St2 ==K DONE)) orBool ((St1 ==K RET) =/=Bool (St2 ==K RET))) orBool isNonTrivialBreakCase(St1, St2))
+    rule    isSpecialMergeCase(St1,St2) => ((((St1 ==K DONE) orBool (St2 ==K DONE)) orBool ((St1 ==K ERR) orBool (St2 ==K ERR)) orBool ((St1 ==K RET) =/=Bool (St2 ==K RET))) orBool isNonTrivialBreakCase(St1, St2))
 	
 	rule 	isNonTrivialBreakCase(St1:BreakingCode, St2:BreakingCode) => St1 =/=K St2
 	
