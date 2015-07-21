@@ -55,12 +55,10 @@ rule [internal-print]:
 	[internal, output]
 */
 
-
 rule [internal-print]:    
-	<k> print (B:ABool  => *toString(B)) ... </k>
+	<k> print (B:Bool  => *toString(B)) ... </k>
 	<trace> Trace:List => Trace ListItem("internal-print") </trace>
 	[internal, output]
-
 
 rule [internal-print]:    
 	<k> print (V:String)  => . ... </k>

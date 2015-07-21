@@ -1,5 +1,10 @@
-module META
+require "control-structures.k"
 
+
+module META
+	imports CONTROL-STRUCTURES
+	
+	
 // ***************************************************************************************
 //@ \section{Semantic infrastructure}
 // **************************************************************************************
@@ -580,12 +585,12 @@ rule	<k> runInMem(none, _) => .  ... </k>
 	
 	
 	
-	rule    <k> mergeConfigs(config(A), config(B)) ~> K => 
+	rule    <k> (mergeConfigs(config(A), config(B)) ~> K => 
                 #if (K =/=K .K) #then 
                     mergeConfigs(runAndGetConfig(runInConf(config(A),K)), runAndGetConfig(runInConf(config(B),K)))
                 #else
                     mergeConfigsBase(config(A), config(B))       
-                #fi </k>
+                #fi) ~> popLoopContext </k>
             when isNonTrivialBreakCase(configGetStatus(A), configGetStatus(B)) andBool (configGetStatus(A) =/=K DONE) andBool (configGetStatus(B) =/=K DONE)
             [transition]
 			
