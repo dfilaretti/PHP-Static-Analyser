@@ -1,0 +1,21 @@
+#!/bin/bash
+
+FILENAME=$1
+
+if [ $# -eq 0 ]
+then
+	echo "Provide name of domain directory"
+	exit
+fi
+
+if [ $# -eq 1 ]
+then
+    rm -rf domains/domain
+    cp -r domains/$1 domains/domain
+    kompile php.k
+else
+    echo "Provide only name of domain directory"
+fi	
+
+
+
