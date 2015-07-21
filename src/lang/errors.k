@@ -36,28 +36,21 @@ rule [notice]:
 
 // An error is displayed, and the program is aborted
 syntax K ::= "ERROR" "(" String ")"
-/*
-rule [error]:	
-	<k> ERROR(ErrorMsg:String) ~> K:K => print("\nFatal error: ") ~> print(ErrorMsg) </k>
-	<errorManagement> _ => 2 </errorManagement>
-	<trace> Trace:List => Trace ListItem("error") </trace>
-	[internal]
-*/
 
 rule [error]:	
 	<k> (ERROR(ErrorMsg:String) => 
             print("\nFatal error: ") ~> print(ErrorMsg) ~> Bot) ~> K:K </k>
 	<errorManagement> _ => 2 </errorManagement>
 	<trace> Trace:List => Trace ListItem("error") </trace>
-        <errorDump> ... (. => printTrace(Trace))</errorDump> 
-        //SM we should dmp the whole confing here ideally
+        <errorDump> ... (. => printTrace(ListItem("<error-trace>") Trace))</errorDump> 
+        //SM we should dump the whole confing here ideally
 	<status> X => ERR </status>
         when X =/=K ERR
 	[internal]
 
 syntax List ::= "printTrace(" List ")" [function]
 
-rule printTrace(.) => ListItem("-------------- end trace --------------\n\n")
+rule printTrace(.) => ListItem("</error-trace>\n")
 rule printTrace(H T) => (H ListItem("\n") printTrace(T))
 
 
