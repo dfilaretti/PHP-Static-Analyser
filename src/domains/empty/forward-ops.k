@@ -199,6 +199,14 @@ rule    notABool B:Bool => notBool B
 syntax  ABool ::= AInt "==AInt" AInt
 rule    I1:Int ==AInt I2:Int => I1 ==Int I2
 
+syntax  ABool ::= "greater" "(" K "," K ")" [function]
+rule    greater(I1:Int, I2:Int) => I1 >Int I2
+
+syntax  ABool ::= "lessEqual" "(" K "," K ")" [function]
+rule    lessEqual(I1:Int, I2:Int) => I1 <=Int I2
+
+
+
 
 syntax  ABool ::= AFloat "==AFloat" AFloat
 // TODO
