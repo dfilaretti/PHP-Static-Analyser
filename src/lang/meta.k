@@ -211,6 +211,7 @@ rule <k> AbexpConf1(V:KResult) => none    ... </k>
                     <k> updateConfig(config(C)) => . ... </k>
                     _
                 </script>
+		<errorDump> ... . => . </errorDump>
                 (_ => C)
             </kphp>
             [transition]
@@ -259,7 +260,8 @@ rule	<k> runInMem(none, _) => .  ... </k>
                     <k> getCurrentConfig => config(Cfg) ... </k>
                     _
                 </script>
-			    Cfg:Bag
+		<errorDump> ... . => . </errorDump>
+	        Cfg:Bag
             </kphp> 
 
     ///////////////////////////////////////////////////////////////////////////

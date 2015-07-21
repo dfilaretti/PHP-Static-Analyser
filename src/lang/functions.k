@@ -140,6 +140,7 @@ rule [run-functions]:
 				mergeConfigsSet(makeFunCalls(FunctionSet,Args,Label,Conf)) ... </k>
 			_
 		</script>
+		<errorDump> ... . => . </errorDump>
 		Conf:Bag
 	</kphp>
 	when FunctionSet =/=Set .Set

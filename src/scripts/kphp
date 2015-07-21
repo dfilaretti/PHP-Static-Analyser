@@ -13,13 +13,17 @@ then
 	krun --output none --parser="java -jar parser/parser.jar" $1
 fi
 
+if [ $# -eq 3 ]
+then
+	krun  --parser="java -jar parser/parser.jar" $1 $2 $3
+fi
+
 if [ $# -eq 2 ]
 then
 	if [ $2 = "--config" ] 
 	then
 		krun --parser="java -jar parser/parser.jar" $1
 	else
-		echo "Invalid option"
-		exit
+		krun --parser="java -jar parser/parser.jar" $1 $2
 	fi	
 fi

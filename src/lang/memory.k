@@ -34,6 +34,9 @@ syntax CompoundValue ::= Object | Array
 syntax Null ::= "NULL"
 syntax SpecialValue ::= Null
 
+syntax LocB ::= Bot | Loc
+syntax ScalarValue ::= Bot
+
 // We represent objects as triples consisting of the name of the class, the instance no.
 // (which is completely implementation-dependent) and a Table.
 syntax Object ::= "OID" "(" Loc "," Id "," Int ")"
@@ -303,10 +306,14 @@ syntax Zval ::= "zval" "(" Value "," Type "," ARefCount "," Bool ")"
 
 syntax ZvalField ::= "@Value" | "@Type" | "@RefCount" | "@IsRef"
 
-syntax K ::= "zvalRead" "(" Loc "," ZvalField ")" [strict(1)]
+syntax K ::= "zvalRead" "(" LocB "," ZvalField ")" [strict(1)]
 
 rule [zval-read-getloc]:
 	<k> zvalRead(sref(L,X)=>L,_) ... </k>
+	[internal]
+
+rule [zval-read-bot]:
+	<k> zvalRead(Bot,_) => Bot ... </k>
 	[internal]
 
 rule [zval-read-value]:
@@ -346,8 +353,12 @@ rule [zval-read-isRef]:
 syntax LanguageValueOrType ::= LanguageValue | Type
                              | Int | Bool | ARefCount // NOTE: I added this stuff!!
 
-syntax K ::= "zvalWrite" "(" Loc "," ZvalField "," LanguageValueOrType ")" [strict(1,3)]
-    
+syntax K ::= "zvalWrite" "(" LocB "," ZvalField "," LanguageValueOrType ")" [strict(1,3)]
+   
+rule [zval-write-bot]:
+	<k> zvalWrite(Bot,_,_) => . ... </k>
+	[internal]
+ 
 rule [zval-write-value]:
 	<k> zvalWrite(L',@Value,V:LanguageValue) => . ... </k>	
 	<thematrix> ... L' |-> L ... </thematrix> 
@@ -843,6 +854,10 @@ rule [read-loc]:
 	when (L =/=K locNull)
 	[internal]
 
+rule [read-bot]:    
+	<k> read(Bot) => Bot ... </k>
+	[internal]
+
 rule [read-locNull]:    
 	<k> read(locNull) => NULL ... </k>
 	<trace> Trace:List => Trace ListItem("read-locNull") </trace>
@@ -853,7 +868,7 @@ rule [read-string]:
 	<trace> Trace:List => Trace ListItem("read-string") </trace>
 	[internal]
 
-syntax K ::= "write" "(" Value "," Loc "," Bool ")" [strict] 
+syntax K ::= "write" "(" Value "," LocB "," Bool ")" [strict] 
 
 
 // strong update
@@ -908,6 +923,12 @@ rule [write-locNull]:
 	<k> write(_,locNull,_) => . ...  </k>
 	<trace> Trace:List => Trace ListItem("write-locNull") </trace>
 	[internal]
+
+rule [write-bot]:    
+	<k> write(_,Bot,_) => . ...  </k>
+	<trace> Trace:List => Trace ListItem("write-bot") </trace>
+	[internal]
+
 
 // NOTE: the input type used to be Value
 syntax K ::= "allocValue" "(" K ")" [strict]
@@ -1389,10 +1410,11 @@ syntax Loc ::= "sref" "(" Loc "," Key ")"
 // in genereal there will be places that need a L:Loc and get instead a sref(L,X):Loc
 // and we need to force the conversion with sref2loc below 
 
-syntax K ::= "sref2loc" "(" Loc ")" [strict]
+syntax K ::= "sref2loc" "(" LocB ")" [strict]
 rule sref2loc(sref(L,X)) => L 
 //rule sref2loc(L) => L //SM how to have this and make it mutually exclusive wrt rule above?
 rule sref2loc(locNull) => locNull 
+rule sref2loc(Bot) => Bot 
 rule <k> ref(sref(L,X) => L,Y) ... </k> //SM still needed in some cases
 
 
@@ -1508,7 +1530,7 @@ rule [rget-null]:
 	[internal]
 
 rule [rget-null]: 	
-	<k> RgetRef(ref(L:Loc, NoKey), _) => ERROR("Cannot use [] for readng in %s line %n") ... </k>
+	<k> RgetRef(ref(L:Loc, NoKey), _) => ERROR("Cannot use [] for reading in %s line %n") ... </k>
 	<trace> Trace:List => Trace ListItem("rget-null-fatal") </trace>
 	[internal]
 

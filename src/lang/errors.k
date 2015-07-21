@@ -45,13 +45,26 @@ rule [error]:
 */
 
 rule [error]:	
-	<k> (ERROR(ErrorMsg:String) ~> K1:K ~> 'ListWrap(K2:KList) ~> K3:K) => 
-            (print("\nFatal error: ") ~> print(ErrorMsg) ~> 'ListWrap(K2) ~> K3) </k>
+	<k> (ERROR(ErrorMsg:String) => 
+            print("\nFatal error: ") ~> print(ErrorMsg) ~> Bot) ~> K:K </k>
 	<errorManagement> _ => 2 </errorManagement>
 	<trace> Trace:List => Trace ListItem("error") </trace>
- //     <errorDump> D:List => D ListItem("Error memory dump placeholder") </errorDump> 
+        <errorDump> ... (. => printTrace(Trace))</errorDump> 
         //SM we should dmp the whole confing here ideally
-	<status> _ => ERR </status>
+	<status> X => ERR </status>
+        when X =/=K ERR
+	[internal]
+
+syntax List ::= "printTrace(" List ")" [function]
+
+rule printTrace(.) => ListItem("-------------- end trace --------------\n\n")
+rule printTrace(H T) => (H ListItem("\n") printTrace(T))
+
+
+
+rule [error]:	
+	<k> ERROR(ErrorMsg:String) => Bot ... </k> 
+	<status> ERR </status>
 	[internal]
 
 // This also aborts the program, but it's meant to be an internal thing (not in PHP).
@@ -63,4 +76,5 @@ rule [not-supported]:
 	<trace> Trace:List => Trace ListItem("not-supported") </trace>
 	[internal]
 endmodule
+
 

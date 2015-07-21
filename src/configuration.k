@@ -15,7 +15,8 @@ configuration
 			<declarations> .K </declarations>
 			<commands> .K </commands>
 			<k> buildInitState ~> $PGM:K </k>
-		</script>	
+		</script>
+                <errorDump stream="stdout"> .List </errorDump>	
 		<tables color="yellow">
 			<functions> .Map </functions>
     		<classes> .Map </classes>
@@ -58,7 +59,7 @@ configuration
      		<in stream="stdin"> .List </in>
      		//<out stream="stdout"> .List </out>	
      		<out> .List </out>	   // use this one for model checking (and comment previous)
-            <exitStatus> 0 </exitStatus>
+                <exitStatus> 0 </exitStatus>
      		<errorManagement> 0 </errorManagement>
      		<varDumpLevel> 0 </varDumpLevel>
      	</IO>
@@ -72,7 +73,6 @@ configuration
 			<locationsToCollect> .List </locationsToCollect>
 			<gcEnabled> false </gcEnabled>
 		</gc>
-//              <errorDump> .List </errorDump>
 		<trace> .List </trace>
 		<domain> .K </domain>
     	</kphp>
