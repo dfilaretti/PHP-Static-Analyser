@@ -34,6 +34,9 @@ syntax CompoundValue ::= Object | Array
 syntax Null ::= "NULL"
 syntax SpecialValue ::= Null
 
+syntax LocB ::= Bot | Loc
+syntax ScalarValue ::= Bot
+
 // We represent objects as triples consisting of the name of the class, the instance no.
 // (which is completely implementation-dependent) and a Table.
 syntax Object ::= "OID" "(" Loc "," Id "," Int ")"
@@ -54,6 +57,7 @@ syntax ArrayItemVisibility ::= "public" | "protected" | "private" "(" Id ")"
 // Keys can be Int or String. We use NULL to designate cases when no key is provided when 
 // accessing an array (e.g. $x[] = 0). In such cases a default integer key will be provided.
 syntax Key ::= AInt | AString | SpecialValue
+syntax Key ::= "NoKey"
 rule isKResult(K:Key) => true
 
 // For specification purpose language values are not enough, so we need to add other
@@ -66,7 +70,7 @@ syntax Loc ::= "locNull"
 // References, which will be used extensively in the semantics, can be considered as pairs
 // consisting of a location which contains an array (note that the variable environments are
 // treated as arrays here) and a key. Keys can be integer or string. 
-// Also, for semantic purposes, we allow the NULL key. 
+// Also, for semantic purposes, we allow the NoKey key. 
 
 syntax RefType  ::= "arr" | "obj" | "nul" 
 		  | "bot" // only used in 'ReferenceAssign
@@ -302,10 +306,14 @@ syntax Zval ::= "zval" "(" Value "," Type "," ARefCount "," Bool ")"
 
 syntax ZvalField ::= "@Value" | "@Type" | "@RefCount" | "@IsRef"
 
-syntax K ::= "zvalRead" "(" Loc "," ZvalField ")" [strict(1)]
+syntax K ::= "zvalRead" "(" LocB "," ZvalField ")" [strict(1)]
 
 rule [zval-read-getloc]:
 	<k> zvalRead(sref(L,X)=>L,_) ... </k>
+	[internal]
+
+rule [zval-read-bot]:
+	<k> zvalRead(Bot,_) => Bot ... </k>
 	[internal]
 
 rule [zval-read-value]:
@@ -345,8 +353,12 @@ rule [zval-read-isRef]:
 syntax LanguageValueOrType ::= LanguageValue | Type
                              | Int | Bool | ARefCount // NOTE: I added this stuff!!
 
-syntax K ::= "zvalWrite" "(" Loc "," ZvalField "," LanguageValueOrType ")" [strict(1,3)]
-    
+syntax K ::= "zvalWrite" "(" LocB "," ZvalField "," LanguageValueOrType ")" [strict(1,3)]
+   
+rule [zval-write-bot]:
+	<k> zvalWrite(Bot,_,_) => . ... </k>
+	[internal]
+ 
 rule [zval-write-value]:
 	<k> zvalWrite(L',@Value,V:LanguageValue) => . ... </k>	
 	<thematrix> ... L' |-> L ... </thematrix> 
@@ -821,8 +833,7 @@ syntax AInt ::= "maxAInt" "(" AInt "," AInt ")" [function]
 rule maxAInt(I1, I2) => I1	       	when valid(greater(I1,I2))
 rule maxAInt(I1, I2) => I2	   	when valid(lessEqual(I1,I2))
 rule maxAInt(I1, I2) => lub(I1,I2)	when notBool (valid(lessEqual(I1,I2)) orBool valid(greater(I1,I2)))
-
-//SM: if we fix a pattern for these cases, it should be used here
+//SM: if we fix a pattern for concrete-predicate cases, it should be used here
 
 
 // ---------------------------------------------------------------------------------------------
@@ -843,6 +854,10 @@ rule [read-loc]:
 	when (L =/=K locNull)
 	[internal]
 
+rule [read-bot]:    
+	<k> read(Bot) => Bot ... </k>
+	[internal]
+
 rule [read-locNull]:    
 	<k> read(locNull) => NULL ... </k>
 	<trace> Trace:List => Trace ListItem("read-locNull") </trace>
@@ -853,7 +868,7 @@ rule [read-string]:
 	<trace> Trace:List => Trace ListItem("read-string") </trace>
 	[internal]
 
-syntax K ::= "write" "(" Value "," Loc "," Bool ")" [strict] 
+syntax K ::= "write" "(" Value "," LocB "," Bool ")" [strict] 
 
 
 // strong update
@@ -908,6 +923,12 @@ rule [write-locNull]:
 	<k> write(_,locNull,_) => . ...  </k>
 	<trace> Trace:List => Trace ListItem("write-locNull") </trace>
 	[internal]
+
+rule [write-bot]:    
+	<k> write(_,Bot,_) => . ...  </k>
+	<trace> Trace:List => Trace ListItem("write-bot") </trace>
+	[internal]
+
 
 // NOTE: the input type used to be Value
 syntax K ::= "allocValue" "(" K ")" [strict]
@@ -1389,10 +1410,11 @@ syntax Loc ::= "sref" "(" Loc "," Key ")"
 // in genereal there will be places that need a L:Loc and get instead a sref(L,X):Loc
 // and we need to force the conversion with sref2loc below 
 
-syntax K ::= "sref2loc" "(" Loc ")" [strict]
+syntax K ::= "sref2loc" "(" LocB ")" [strict]
 rule sref2loc(sref(L,X)) => L 
 //rule sref2loc(L) => L //SM how to have this and make it mutually exclusive wrt rule above?
 rule sref2loc(locNull) => locNull 
+rule sref2loc(Bot) => Bot 
 rule <k> ref(sref(L,X) => L,Y) ... </k> //SM still needed in some cases
 
 
@@ -1504,11 +1526,11 @@ rule [rget-obj-scalar]:
 rule [rget-null]: 	
 	<k> RgetRef(ref(locNull, K:Key), _) => locNull ... </k>
 	<trace> Trace:List => Trace ListItem("rget-null") </trace>
-        when K =/=K NULL
+        when K =/=K NoKey
 	[internal]
 
 rule [rget-null]: 	
-	<k> RgetRef(ref(L:Loc, NULL), _) => ERROR("Cannot use [] for reading in %s line %n") ... </k>
+	<k> RgetRef(ref(L:Loc, NoKey), _) => ERROR("Cannot use [] for reading in %s line %n") ... </k>
 	<trace> Trace:List => Trace ListItem("rget-null-fatal") </trace>
 	[internal]
 
@@ -1559,7 +1581,7 @@ rule [lget-array-prop]:
 	</k>
 	<thematrix> ... L' |-> L ... </thematrix>
 	<heap>... L |-> zval(Array(_,ArrayValues),_,_,_)  ...</heap>
-        when X =/=K NULL
+        when X =/=K NoKey
 	[internal]
 
 
@@ -1704,7 +1726,7 @@ rule [lget-not-found-in-obj]:
 
 // Default array key
 rule [lget-not-found-default-array-key]:    
-	<k> LgetRef(ref(L':Loc,NULL), T) => 
+	<k> LgetRef(ref(L':Loc,NoKey), T) => 
 		LgetRef(ref(L',biggestIntKey(Elems) +AInt alpha(1)),T) ... </k>
 	<thematrix> ... L' |-> L ... </thematrix> 
 	<heap> ... L |-> zval(Array(_,Elems:List),_,_,_) ... </heap>

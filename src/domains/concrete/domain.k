@@ -4,7 +4,7 @@ require "lattice.k"
 require "forward-ops.k"
 require "alpha.k"
 
-module EMPTY-DOMAIN
+module DOMAIN
 
 	//imports IMP-SYNTAX
 	//imports IMP-CONCRETE-DOMAIN

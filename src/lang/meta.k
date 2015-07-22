@@ -1,5 +1,10 @@
-module META
+require "control-structures.k"
 
+
+module META
+	imports CONTROL-STRUCTURES
+	
+	
 // ***************************************************************************************
 //@ \section{Semantic infrastructure}
 // **************************************************************************************
@@ -211,6 +216,7 @@ rule <k> AbexpConf1(V:KResult) => none    ... </k>
                     <k> updateConfig(config(C)) => . ... </k>
                     _
                 </script>
+		<errorDump> ... . => . </errorDump>
                 (_ => C)
             </kphp>
             [transition]
@@ -259,7 +265,8 @@ rule	<k> runInMem(none, _) => .  ... </k>
                     <k> getCurrentConfig => config(Cfg) ... </k>
                     _
                 </script>
-			    Cfg:Bag
+		<errorDump> ... . => . </errorDump>
+	        Cfg:Bag
             </kphp> 
 
     ///////////////////////////////////////////////////////////////////////////
@@ -525,6 +532,17 @@ rule	<k> runInMem(none, _) => .  ... </k>
     /*@ Adaptive-merge case. This happens when one branch returned 
     but the other didn't. See notes. */
 
+    rule    <k> (mergeConfigs(config(A), config(B)) ~> K) => . </k>
+            when (configGetStatus(A) ==K ERR) andBool (configGetStatus(B) ==K ERR)
+            [transition]
+
+    rule    <k> mergeConfigs(config(A), config(B)) => updateConfig(config(B)) ... </k>
+            when (configGetStatus(A) ==K ERR) andBool (configGetStatus(B) =/=K ERR)
+            [transition]
+
+    rule    <k> mergeConfigs(config(A), config(B)) => updateConfig(config(A)) ... </k>
+            when (configGetStatus(A) =/=K ERR) andBool (configGetStatus(B) ==K ERR)
+            [transition]
 
     rule    (mergeConfigs(config(A), config(B)) ~> K => 
                 #if (K =/=K .K) #then 
@@ -567,12 +585,12 @@ rule	<k> runInMem(none, _) => .  ... </k>
 	
 	
 	
-	rule    <k> mergeConfigs(config(A), config(B)) ~> K => 
+	rule    <k> (mergeConfigs(config(A), config(B)) ~> K => 
                 #if (K =/=K .K) #then 
                     mergeConfigs(runAndGetConfig(runInConf(config(A),K)), runAndGetConfig(runInConf(config(B),K)))
                 #else
                     mergeConfigsBase(config(A), config(B))       
-                #fi </k>
+                #fi) ~> popLoopContext </k>
             when isNonTrivialBreakCase(configGetStatus(A), configGetStatus(B)) andBool (configGetStatus(A) =/=K DONE) andBool (configGetStatus(B) =/=K DONE)
             [transition]
 			
@@ -586,7 +604,7 @@ rule	<k> runInMem(none, _) => .  ... </k>
 	
 	syntax Bool ::= "isNonTrivialBreakCase" "(" ReturnCode "," ReturnCode ")" [predicate]
 	
-    rule    isSpecialMergeCase(St1,St2) => ((((St1 ==K DONE) orBool (St2 ==K DONE)) orBool ((St1 ==K RET) =/=Bool (St2 ==K RET))) orBool isNonTrivialBreakCase(St1, St2))
+    rule    isSpecialMergeCase(St1,St2) => ((((St1 ==K DONE) orBool (St2 ==K DONE)) orBool ((St1 ==K ERR) orBool (St2 ==K ERR)) orBool ((St1 ==K RET) =/=Bool (St2 ==K RET))) orBool isNonTrivialBreakCase(St1, St2))
 	
 	rule 	isNonTrivialBreakCase(St1:BreakingCode, St2:BreakingCode) => St1 =/=K St2
 	

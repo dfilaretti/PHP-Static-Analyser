@@ -15,7 +15,8 @@ configuration
 			<declarations> .K </declarations>
 			<commands> .K </commands>
 			<k> buildInitState ~> $PGM:K </k>
-		</script>	
+		</script>
+                <errorDump stream="stdout"> .List </errorDump>	
 		<tables color="yellow">
 			<functions> .Map </functions>
     		<classes> .Map </classes>
@@ -57,8 +58,8 @@ configuration
      	<IO color="magenta">
      		<in stream="stdin"> .List </in>
      		//<out stream="stdout"> .List </out>	
-     		<out> .List </out>	   // use this one for model checking (and comment previous)
-            <exitStatus> 0 </exitStatus>
+     		<out> .List </out>	   // use this one for model checking
+                <exitStatus> 0 </exitStatus>
      		<errorManagement> 0 </errorManagement>
      		<varDumpLevel> 0 </varDumpLevel>
      	</IO>

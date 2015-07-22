@@ -436,7 +436,19 @@ module OPS
             <out> ... . => ListItem(V) </out>
             [internal, output]   
 	rule print(S:String) => print(specify(VE(S, .List)))		
-			
+	
+	rule [internal-print]:    
+	<k> print (I:AInt  => *toString(I)) ... </k>
+	<trace> Trace:List => Trace ListItem("internal-print") </trace>
+	[internal, output]
+
+
+	rule [internal-print]:    
+	<k> print (B:ABool  => *toString(B)) ... </k>
+	<trace> Trace:List => Trace ListItem("internal-print") </trace>
+	[internal, output]
+
+	
     // input
     syntax K ::= "user_input"
 	

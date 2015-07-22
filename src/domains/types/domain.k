@@ -2,7 +2,7 @@ require "lattice.k"
 require "ops.k"
 require "alpha.k"
 
-module TYPES-DOMAIN
+module DOMAIN
 
 	imports LATTICE
 	imports OPS

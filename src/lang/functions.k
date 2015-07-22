@@ -140,11 +140,12 @@ rule [run-functions]:
 				mergeConfigsSet(makeFunCalls(FunctionSet,Args,Label,Conf)) ... </k>
 			_
 		</script>
+		<errorDump> ... . => . </errorDump>
 		Conf:Bag
 	</kphp>
 	when FunctionSet =/=Set .Set
 
-rule runFunctions(FName,.Set,_,_) => NOT-SUPPORTED("'" +String FName +String "' not defined!") 
+//rule runFunctions(FName,.Set,_,_) => NOT-SUPPORTED("'" +String FName +String "' not defined!") 
 
 rule [function-name]:
 	<k> 'FunctionName(FName:String) => FName ... </k>
@@ -644,16 +645,20 @@ rule [process-fun-args-param]:
 	<trace> Trace:List => Trace ListItem("process-fun-args-param") </trace>
 	[intermediate]
 
+/*SM: commenting rule below to find out "when is V not 'Param(V)?"
+      if needed, uncomment, if not needed, delete
+
 rule [process-fun-args-param2]: 
 	<k> processFunArgs(
 		'ListWrap('Param(Param:K),, Params:KList),
-		'ListWrap(V:Value,, Args:KList)) =>  //SM: when is V not 'Param(V)?
+		'ListWrap(V:Value,, Args:KList)) =>  
 		processFunArgs('ListWrap(Params), 'ListWrap(Args)) ... </k>
 	<functionArgumentsDeclaration> 
 		I:K => I ~>'Expr('Assign(Param,, V)) 
 	</functionArgumentsDeclaration>
 	<trace> Trace:List => Trace ListItem("process-fun-args-param2") </trace>
 	[intermediate]
+*/
 
 context	[process-fun-args-default-strict]:
 	processFunArgs(

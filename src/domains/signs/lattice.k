@@ -1,149 +1,228 @@
 module LATTICE
 
-/*@ \section{The SIGN abstract domain} */
+    syntax  AInt ::= "AIntTop" 
+                   | "AIntBot" 
+                   | "AIntZero" 
+                   | "AIntPos" 
+                   | "AIntNeg"
 
-	syntax  Sign ::= "Top" | "Bot" | "Zero" | "Pos" | "Neg"
-	syntax  AbstractBool ::= "BTrue" | "BFalse" | "BTop" | "BBot"
-    syntax  AbstractErr  ::= "AArithError" | "AGenericError" | "AErr" | "AErrBot"
-    syntax  AbstractString ::= String
+    syntax  AFloat ::= "AFloatTop" 
+                   | "AFloatBot" 
+                   | "AFloatZero" 
+                   | "AFloatPos" 
+                   | "AFloatNeg"
+
+    syntax  ABool ::= "ABoolTrue" 
+		    | "ABoolFalse" 
+		    | "ABoolTop" 
+		    | "ABoolBot"
+ 
+    syntax  AString ::= "AStringTop" | String | "AStringBot"
+
+    // backward compatibility
+    //syntax  ARefCount ::= Int
+
+    syntax  ARefCount ::= "ARC0" | "ARC1" | "ARC2" | "ARC>2"
 
 
-    syntax  SignLangValScalar ::= Sign | AbstractBool | AbstractString
-    syntax  SignLangValCompound ::= ArrayValue 
 
-    syntax  SignLangVal ::= SignLangValScalar | SignLangValCompound
+/*@ \subsection{Lattice ordering} */
 
-    syntax  SignSemVal  ::= Loc
-    syntax  SignRegVal  ::= SignLangVal | SignSemVal
-    syntax  SignErrVal  ::= AbstractErr
-    syntax  SignVal ::= SignRegVal | SignErrVal
+// NOTE: theoretically, this should be defined for everything. 
+//       In practice, I only need it for Keys (int and string)
 
-    syntax  AExp ::= SignVal
-    syntax  BExp ::= SignVal
 
-//	syntax SignVal ::= Sign | AbstractBool | AbstractString | AbstractErr
 
-    syntax  Bool ::= "isErrorValue" "(" SignVal ")" [predicate]
 
-    rule    isErrorValue(E:SignErrVal) => true
-    rule    isErrorValue(E:SignRegVal) => false
 
-    syntax  Bool ::= "isScalarValue" "(" SignVal ")" [predicate]
-    rule    isScalarValue(E:SignLangValCompound) => false
-    rule    isScalarValue(E:SignLangValScalar) => true
-  
+syntax 	Bool ::= K "<Lattice" K		[function]
+
+	rule 	AIntBot <Lattice AIntBot	=> false
+	rule 	AIntBot <Lattice AIntNeg 	=> true
+	rule 	AIntBot <Lattice AIntZero 	=> true
+	rule 	AIntBot <Lattice AIntPos 	=> true
+	rule 	AIntBot <Lattice AIntTop 	=> true
+	
+	rule 	AIntTop <Lattice AIntBot 	=> false
+	rule 	AIntTop <Lattice AIntNeg 	=> false
+	rule 	AIntTop <Lattice AIntZero 	=> false
+	rule 	AIntTop <Lattice AIntPos 	=> false
+	rule 	AIntTop <Lattice AIntTop 	=> false
+	
+	rule 	AIntNeg <Lattice AIntBot 	=> false
+	rule 	AIntNeg <Lattice AIntNeg 	=> false
+	rule 	AIntNeg <Lattice AIntZero 	=> false
+	rule 	AIntNeg <Lattice AIntPos 	=> false
+	rule 	AIntNeg <Lattice AIntTop 	=> true
+
+	rule 	AIntZero <Lattice AIntBot 	=> false
+	rule 	AIntZero <Lattice AIntNeg 	=> false
+	rule 	AIntZero <Lattice AIntZero 	=> false
+	rule 	AIntZero <Lattice AIntPos 	=> false
+	rule 	AIntZero <Lattice AIntTop 	=> true
+
+	rule 	AIntPos <Lattice AIntBot 	=> false
+	rule 	AIntPos <Lattice AIntNeg 	=> false
+	rule 	AIntPos <Lattice AIntZero 	=> false
+	rule 	AIntPos <Lattice AIntPos 	=> false
+	rule 	AIntPos <Lattice AIntTop 	=> true
+
+/*
+syntax 	Bool ::= K ">Lattice" K [predicate]
+
+	rule V1:AInt >Lattice V2:AInt => V2 <Lattice V1
+*/
+
+
+//syntax 	Bool ::= AString "<Lattice" AString	 [function]
+
+	rule AStringBot <Lattice AStringBot => false
+
+	rule AStringBot <Lattice S:AString => true
+	when (S =/=K AStringBot)
+
+
+	rule S1:String <Lattice S2:String => false
+
+	rule S1:String <Lattice AStringTop => true
+	
+	rule AStringTop <Lattice AStringTop => false
+	rule AStringTop <Lattice S:String => false
+
+	rule S:AString <Lattice AStringTop => true
+	when (S =/=K AStringTop)
+
+/*
+syntax 	Bool ::= AString ">Lattice" AString [function]
+
+	rule V1:AString >Lattice V2:AString => 
+	(notBool V1 <Lattice V2) andBool (notBool V1 ==K V2)
+*/
+
+	syntax Bool ::= K "==Lattice" K [function]
+	rule A ==Lattice B => A ==K B
+
+
+
+
+
 /*@ \subsection{Lattice Operations} */
 
+syntax  ARefCount ::= "lub_ARefCount" "(" ARefCount "," ARefCount ")" [function]
+// TODO
+
 // LUB
+   
+syntax  AInt ::= "lub_AInt" "(" AInt "," AInt ")" [function]
 
-	syntax  SignVal ::= SignVal "lub" "(" Int ")"  SignVal 	[function]
+rule 	lub_AInt(AIntBot,AIntBot) 			=> AIntBot
+rule 	lub_AInt(AIntBot,AIntNeg) 			=> AIntNeg
+rule 	lub_AInt(AIntBot,AIntZero) 			=> AIntZero
+rule 	lub_AInt(AIntBot,AIntPos) 			=> AIntPos
+rule 	lub_AInt(AIntBot,AIntTop) 			=> AIntTop
 
-    rule    X lub(_) Y => X plain_lub Y
+rule 	lub_AInt(AIntNeg,AIntBot) 			=> AIntNeg
+rule 	lub_AInt(AIntNeg,AIntNeg) 			=> AIntNeg
+rule 	lub_AInt(AIntNeg,AIntZero) 			=> AIntTop
+rule 	lub_AInt(AIntNeg,AIntPos) 			=> AIntTop
+rule 	lub_AInt(AIntNeg,AIntTop) 			=> AIntTop
 
-    syntax  SignVal ::= SignVal "ret_lub" SignVal 	[function]
-    rule    X ret_lub Y => X plain_lub Y
+rule 	lub_AInt(AIntZero,AIntBot) 			=> AIntZero
+rule 	lub_AInt(AIntZero,AIntNeg) 			=> AIntTop
+rule 	lub_AInt(AIntZero,AIntZero) 			=> AIntZero
+rule 	lub_AInt(AIntZero,AIntPos) 			=> AIntTop
+rule 	lub_AInt(AIntZero,AIntTop) 			=> AIntTop
 
-    syntax  SignVal ::= SignVal "err_lub" SignVal 	[function]
-    rule    X err_lub Y => X plain_lub Y
-	
+rule 	lub_AInt(AIntPos,AIntBot) 			=> AIntPos
+rule 	lub_AInt(AIntPos,AIntNeg) 			=> AIntTop
+rule 	lub_AInt(AIntPos,AIntZero) 			=> AIntTop
+rule 	lub_AInt(AIntPos,AIntPos) 			=> AIntPos
+rule 	lub_AInt(AIntPos,AIntTop) 			=> AIntTop
 
-	syntax  SignVal ::= SignVal "plain_lub" SignVal 	[function]
+rule 	lub_AInt(AIntTop,AIntBot) 			=> AIntTop
+rule 	lub_AInt(AIntTop,AIntNeg) 			=> AIntTop
+rule 	lub_AInt(AIntTop,AIntZero) 			=> AIntTop
+rule 	lub_AInt(AIntTop,AIntPos) 			=> AIntTop
+rule 	lub_AInt(AIntTop,AIntTop) 			=> AIntTop
 
-	rule 	Bot plain_lub X:SignVal     => X
-
-	rule 	Neg plain_lub Bot 			=> Neg
-	rule 	Neg plain_lub Neg 			=> Neg
-	rule 	Neg plain_lub Zero 			=> Top
-	rule 	Neg plain_lub Pos 			=> Top
-	rule 	Neg plain_lub Top 			=> Top
-
-	rule 	Zero plain_lub Bot 			=> Zero
-	rule 	Zero plain_lub Neg 			=> Top
-	rule 	Zero plain_lub Zero 		=> Zero
-	rule 	Zero plain_lub Pos 			=> Top
-	rule 	Zero plain_lub Top 			=> Top
-
-	rule 	Pos plain_lub Bot 			=> Pos
-	rule 	Pos plain_lub Neg 			=> Top
-	rule 	Pos plain_lub Zero 			=> Top
-	rule 	Pos plain_lub Pos 			=> Pos
-	rule 	Pos plain_lub Top 			=> Top
-
-	rule 	I:Sign plain_lub E:AbstractErr => Top
-	rule 	E:AbstractErr plain_lub I:Sign => Top
-
-
-	rule 	Top plain_lub Bot 			=> Top
-	rule 	Top plain_lub Neg 			=> Top
-	rule 	Top plain_lub Zero 			=> Top
-	rule 	Top plain_lub Pos 			=> Top
-	rule 	Top plain_lub Top 			=> Top
-
-    rule    Top plain_lub E:AbstractErr => Top
-    rule    E:AbstractErr plain_lub Top => Top
+syntax  AFloat ::= "lub_AFloat" "(" AFloat "," AFloat ")" [function]
  
-    rule    S:Sign plain_lub B:AbstractBool => Top
+rule 	lub_AFloat(AFloatBot,AFloatBot) 	=> AFloatBot
+rule 	lub_AFloat(AFloatBot,AFloatNeg) 	=> AFloatNeg
+rule 	lub_AFloat(AFloatBot,AFloatZero) 	=> AFloatZero
+rule 	lub_AFloat(AFloatBot,AFloatPos) 	=> AFloatPos
+rule 	lub_AFloat(AFloatBot,AFloatTop) 	=> AFloatTop
 
-//@ LUB on errors
-    rule    AErrBot plain_lub E:AbstractErr => E
-    rule    E:AbstractErr plain_lub AErrBot => E
-    rule    E:AbstractErr plain_lub E => E
-    rule    E1:AbstractErr plain_lub E2:AbstractErr => AErr
-            when (E1 =/=K E2)    
+rule 	lub_AFloat(AFloatNeg,AFloatBot) 	=> AFloatNeg
+rule 	lub_AFloat(AFloatNeg,AFloatNeg) 	=> AFloatNeg
+rule 	lub_AFloat(AFloatNeg,AFloatZero) 	=> AFloatTop
+rule 	lub_AFloat(AFloatNeg,AFloatPos) 	=> AFloatTop
+rule 	lub_AFloat(AFloatNeg,AFloatTop) 	=> AFloatTop
 
-// GLB => TODO
+rule 	lub_AFloat(AFloatZero,AFloatBot) 	=> AFloatZero
+rule 	lub_AFloat(AFloatZero,AFloatNeg) 	=> AFloatTop
+rule 	lub_AFloat(AFloatZero,AFloatZero) 	=> AFloatZero
+rule 	lub_AFloat(AFloatZero,AFloatPos) 	=> AFloatTop
+rule 	lub_AFloat(AFloatZero,AFloatTop) 	=> AFloatTop
 
-	syntax  SignVal ::= SignVal "glb"  SignVal 	[function]
+rule 	lub_AFloat(AFloatPos,AFloatBot) 	=> AFloatPos
+rule 	lub_AFloat(AFloatPos,AFloatNeg) 	=> AFloatTop
+rule 	lub_AFloat(AFloatPos,AFloatZero) 	=> AFloatTop
+rule 	lub_AFloat(AFloatPos,AFloatPos) 	=> AFloatPos
+rule 	lub_AFloat(AFloatPos,AFloatTop) 	=> AFloatTop
 
-	rule 	Bot glb Bot 			=> Bot
-	rule 	Bot glb Neg 			=> Bot
-	rule 	Bot glb Zero 			=> Bot
-	rule 	Bot glb Pos 			=> Bot
-	rule 	Bot glb Top 			=> Bot
+rule 	lub_AFloat(AFloatTop,AFloatBot) 	=> AFloatTop
+rule 	lub_AFloat(AFloatTop,AFloatNeg) 	=> AFloatTop
+rule 	lub_AFloat(AFloatTop,AFloatZero) 	=> AFloatTop
+rule 	lub_AFloat(AFloatTop,AFloatPos) 	=> AFloatTop
+rule 	lub_AFloat(AFloatTop,AFloatTop) 	=> AFloatTop
 
-	rule 	Neg glb Bot 			=> Bot
-	rule 	Neg glb Neg 			=> Neg
-	rule 	Neg glb Zero 			=> Bot
-	rule 	Neg glb Pos 			=> Bot
-	rule 	Neg glb Top 			=> Neg
 
-	rule 	Zero glb Bot 			=> Bot
-	rule 	Zero glb Neg 			=> Bot
-	rule 	Zero glb Zero 		    => Zero
-	rule 	Zero glb Pos 			=> Bot
-	rule 	Zero glb Top 			=> Zero
+syntax  ABool ::= "lub_ABool" "(" ABool "," ABool ")" [function]
 
-	rule 	Pos glb Bot 			=> Bot
-	rule 	Pos glb Neg 			=> Bot
-	rule 	Pos glb Zero 			=> Bot
-	rule 	Pos glb Pos 			=> Pos
-	rule 	Pos glb Top 			=> Pos
 
-	rule 	Top glb Bot 			=> Bot
-	rule 	Top glb Neg 			=> Neg
-	rule 	Top glb Zero 			=> Zero
-	rule 	Top glb Pos 			=> Pos
-	rule 	Top glb Top 			=> Top
+rule 	lub_ABool(ABoolBot,ABoolBot) 		=> ABoolBot
+rule 	lub_ABool(ABoolBot,ABoolTrue) 		=> ABoolBot
+rule 	lub_ABool(ABoolBot,ABoolFalse) 		=> ABoolBot
+rule 	lub_ABool(ABoolBot,ABoolTop) 		=> ABoolBot
 
-    // TODO: sure?
-    rule    Top glb E:AbstractErr => E
-    rule    E:AbstractErr glb Top => E
-	rule 	I:Sign glb E:AbstractErr => Top
-	rule 	E:AbstractErr glb I:Sign => Top
-	rule 	Bot glb E:AbstractErr 	=> E
-	rule 	E:AbstractErr glb Bot 	=> E
+rule 	lub_ABool(ABoolTrue,ABoolBot) 		=> ABoolBot
+rule 	lub_ABool(ABoolTrue,ABoolTrue) 		=> ABoolTrue
+rule 	lub_ABool(ABoolTrue,ABoolFalse) 	=> ABoolTop
+rule 	lub_ABool(ABoolTrue,ABoolTop) 		=> ABoolTop
+
+rule 	lub_ABool(ABoolFalse,ABoolBot) 		=> ABoolBot
+rule 	lub_ABool(ABoolFalse,ABoolTrue) 	=> ABoolTop
+rule 	lub_ABool(ABoolFalse,ABoolFalse) 	=> ABoolFalse
+rule 	lub_ABool(ABoolFalse,ABoolTop) 		=> ABoolTop
+
+rule 	lub_ABool(ABoolTop,ABoolBot) 		=> ABoolTop
+rule 	lub_ABool(ABoolTop,ABoolTrue) 		=> ABoolTop
+rule 	lub_ABool(ABoolTop,ABoolFalse) 		=> ABoolTop
+rule 	lub_ABool(ABoolTop,ABoolTop) 		=> ABoolTop
+
+
+
+// strings lub
+syntax  AString ::= "lub_AString" "(" AString "," AString ")" [function]
+rule	lub_AString(AStringTop,_) => AStringTop
+rule	lub_AString(_,AStringTop) => AStringTop
+rule	lub_AString(AStringBot,_) => AStringBot
+rule	lub_AString(_,AStringBot) => AStringBot
+rule	lub_AString(S1:String,S2:String) => S1 when (S1 ==String S2)
+rule	lub_AString(S1:String,S2:String) => AStringTop when (S1 =/=String S2)
+
+
+
+
+// GLB
     
 
-// valid 
+    // valid 
+	syntax  Bool ::= "valid" "(" ABool ")"	                [predicate]
+	rule 	valid(B) => B ==K ABoolTrue 
 
-	syntax Bool ::= "valid" "(" AbstractBool ")"					[predicate]
-
-	rule 	valid(B) => B ==K BTrue 
-	
-// unsatisfiable
-
-	syntax Bool ::= "unsatisfiable" "(" AbstractBool ")"			[predicate]
-
-	rule 	unsatisfiable(B) => B ==K BFalse 
-
+    // unsatisfiable
+	syntax  Bool ::= "unsatisfiable" "(" ABool ")"    [predicate]
+	rule 	unsatisfiable(B) => B ==K ABoolFalse 
 endmodule

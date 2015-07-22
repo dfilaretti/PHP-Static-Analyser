@@ -1,49 +1,91 @@
-require "../concrete/IMP-concrete-domain.k"
-require "../../imp-syntax.k"
-
 require "lattice.k"
 
 module ALPHA
-	imports IMP-CONCRETE-DOMAIN
-    imports IMP-SYNTAX  // TODO: try to avoid this include!
 	imports LATTICE
 
-/* \subsection{Abstraction Function} 
-        This is the classical abstraction function mapping concrete values
-        into signs. */
 
-	syntax SignVal ::= "alpha" "(" ConcreteVal ")" [function]
+	// alpha
 
-    //@ Errors (i.e. reading non-initialised variable) are mappet to Top
-	rule alpha(Wrong) => Top
+	syntax K ::= "alpha" "(" K ")" [function]
 
-    //@ Booleans are mapped to their abstract equivalents
-	rule alpha(true) => BTrue
-	rule alpha(false) => BFalse
+    	// abstraction of integers
+	rule    alpha(N:Int) => 
+		    #if (N ==Int 0) #then 
+			    AIntZero 
+		    #else
+			    #if (N >Int 0) #then
+				    AIntPos
+			    #else
+				    AIntNeg
+			    #fi
+		    #fi
 
-    //@ Finally, numbers are mapped into their sign
-	rule alpha(N:Int) => 
-		#if (N ==Int 0) #then 
-			Zero 
-		#else
-			#if (N >Int 0) #then
-				Pos
+    	// abstrction of floats
+	rule    alpha(F:Float) => 
+		    #if (F ==Float 0.0) #then 
+			    AFloatZero 
+		    #else
+			    #if (F >Float 0.0) #then
+				    AFloatPos
+			    #else
+				    AFloatNeg
+			    #fi
+		    #fi
+
+    	// anstraction of strings
+    	rule    alpha(S:String) => S
+    
+    	// abstraction of booleans
+    	rule    alpha(true) => ABoolTrue
+    	rule    alpha(false) => ABoolFalse
+
+	// abstraction of reference counters
+	syntax K ::= "alphaRC" "(" K ")" [function]
+	
+	rule	alphaRC(N:Int) => 
+			#if (N ==Int 0) #then
+				ARC0
 			#else
-				Neg
+				#if (N ==Int 1) #then
+					ARC1
+				#else
+					#if (N ==Int 2) #then
+						ARC2
+					#else
+						ARC>2
+					#fi
+				#fi
 			#fi
-		#fi
 
-    //@ string goes to Bot (i.e. strings doesn't have sign)
-    rule alpha(S:String) => Bot
 
-    //@ Exceptions (i.e. reading non-initialised variable) are mappet to Top
-	rule alpha(GenericError) => AGenericError
-    rule alpha(ArithError) => AArithError
+	// is_gamma_singleton
+	// returns TRUE if |gamma(arg)| = 1, or FALSE otherwise
+	// NOTE: what about Bot?
 
-    //@ Last thing, we instruct the K tool to consider Signs as values	
-	syntax KResult ::= SignVal
+	syntax Bool ::= "isGammaSingleton" "(" K ")" [function]
+	
+	rule	isGammaSingleton(AIntZero) => true
+	rule	isGammaSingleton(I:AInt) => false
+		when I =/=K AIntZero
 
-    //@ TODO: move?/
-    syntax SignVal ::= "noError"    [function]
-    rule    noError => AErrBot
+	rule	isGammaSingleton(AFloatZero) => true
+	rule	isGammaSingleton(F:AFloat) => false
+		when F =/=K AFloatZero
+	
+	rule	isGammaSingleton(S:String) => true
+	rule 	isGammaSingleton(AStringTop) => false
+
+	rule	isGammaSingleton(ABoolTop) => false
+	rule	isGammaSingleton(B:ABool) => true
+		when B =/=K ABoolTop
+	
+	// reference counters
+	rule 	isGammaSingleton(ARC0)  => true
+	rule 	isGammaSingleton(ARC1)  => true
+	rule 	isGammaSingleton(ARC2)  => true
+	rule 	isGammaSingleton(ARC>2) => false
+
+
+
+
 endmodule

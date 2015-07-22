@@ -71,6 +71,7 @@ rule [if]:
 		runAndGetConfig(runInConf(AbexpConf('Not(C), config(Conf)), B2))) ... </k>
         _
 	</script>
+	<errorDump> ... . => . </errorDump>
 	Conf:Bag
 	</kphp>
 
@@ -249,14 +250,26 @@ rule [alt-while]:
 	<trace> Trace:List => Trace ListItem("alt-while") </trace>
 	[structural]
 
+	
 /*@ In order to allow the use of break, we need to push an item in the loop stack 
 	at the beginning of the loop, and pop it when it's done. We do this with the 
 	following rule. Note that the actual semantics of while is give in the next rule, 
-	which is an internal operation. */
+	which is an internal operation. */	
+	
+syntax K ::= "while" "(" K "," K ")"
 
-// NOTE: in the following we are ignoring break/continue support
+rule [while]: 	
+	<k> ('While(B:K,, S:K) ~> K:K)  =>
+	pushLoopContext(loopFrame(K, none)) ~> 
+	while(B,S) ~> 
+	popLoopContext </k>
+	<trace> Trace:List => Trace ListItem("while") </trace>
+	[structural]
+
+
+	
 rule    
-	<k> 'While(B:K,,S:K) => 
+	<k> while(B:K,S:K) => 
                 LFP(none, #whileStep(B,S)) ~> moveOnFromLoop(B) ~> decreaseBreak ... </k>		
             //<niter> _ => 0 </niter> TODO 
 		[transition]
@@ -274,7 +287,8 @@ rule
 		</k>
 		_
 		</script>
-        Cfg:Bag
+		<errorDump> ... . => . </errorDump>
+	        Cfg:Bag
 		</kphp>
 		//<mem> E </mem>         
         //<niter> N => N +Int 1 </niter> 
@@ -322,7 +336,7 @@ rule [for-spec]:
 	for(Init:K, 'ListWrap(Guard:K), Increment:K, Body:K) => 
 	'ListWrap(
 		makeForInit(Init),,
-		'While(Guard,, 'ListWrap(Body) ~> makeForInit(Increment))) 	
+		while(Guard, 'ListWrap(Body) ~> makeForInit(Increment))) 	
 	[structural]
 
 
