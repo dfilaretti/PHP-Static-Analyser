@@ -207,6 +207,7 @@ rule [func-call]:
 
 syntax K ::= "functionCall1" "(" String "," K "," Int ")"
 
+/* TODO: remove when nev version (using sets of function defs) is done
 rule [func-call]:
 	<k> functionCall1(FName:String,'ListWrap(Args:KList),Lab) => 
 		runFunction(FName,FunDef,'ListWrap(Args),none,none,true,Lab,sf(FName,L,CurrentClass,CurrentObj,retTypeOfFunDef(FunDef),D,Lab)) ... </k>
@@ -216,6 +217,134 @@ rule [func-call]:
 	<class> CurrentClass:K </class>
 	<object> CurrentObj:K </object>
 	[step]
+*/
+
+/*
+rule [func-call]:
+	<kphp> 
+		<script>
+		<k> functionCall1(FName:String,Args,Lab) => 
+			mergeConfigsSet(
+				makeCallsToRunFunction(
+					(
+						Conf
+						<functions> (FName |-> setWrap(FunDefs)) Funcs </functions>
+						<functionArgumentsDeclaration> D </functionArgumentsDeclaration>
+						<currentScope> CurrentScope </currentScope>
+						<class> CurrentClass </class>
+						<object> CurrentObj </object>
+					), 
+					FName,
+					FunDefs,
+					Args,
+					Lab,
+					CurrentScope,
+					CurrentClass,
+					CurrentObj,
+					D)) ... 
+		</k>
+		_
+		</script>
+		<functions> (FName |-> setWrap(FunDefs)) Funcs </functions>
+		<functionArgumentsDeclaration> D:K => . </functionArgumentsDeclaration>
+		<currentScope> CurrentScope:Loc </currentScope>
+		<class> CurrentClass:K </class>
+		<object> CurrentObj:K </object>
+		Conf:Bag
+	</kphp>
+	[step]
+*/
+
+
+rule [func-call]:
+	
+	<k> functionCall1(FName:String,Args,Lab) => 
+		functionCall2(
+			FName,Args,Lab,FunDefs,CurrentScope,CurrentClass,CurrentObj,D
+		) ... 
+	</k>
+	<functions> (FName |-> setWrap(FunDefs)) Funcs </functions>
+	<functionArgumentsDeclaration> D:K => . </functionArgumentsDeclaration>
+	<currentScope> CurrentScope:Loc </currentScope>
+	<class> CurrentClass:K </class>
+	<object> CurrentObj:K </object>
+	[step]
+
+syntax K ::= "functionCall2" "(" String "," K "," Int "," 
+								 Set    "," Loc "," K "," K "," K ")"
+
+rule [func-call]:
+	<kphp> 
+		<script>
+		<k> functionCall2(
+				FName:String,
+				Args,
+				Lab,
+				FunDefs,
+				CurrentScope,
+				CurrentClass,
+				CurrentObj,
+				D) => 
+			mergeConfigsSet(
+				makeCallsToRunFunction(
+					Conf, 
+					FName,
+					FunDefs,
+					Args,
+					Lab,
+					CurrentScope,
+					CurrentClass,
+					CurrentObj,
+					D)) ... 
+		</k>
+		_
+		</script>
+		Conf:Bag
+	</kphp>
+	[step]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+syntax Set ::= "makeCallsToRunFunction" "(" Bag "," String "," Set  ","
+										  K 	 "," Int	 "," 
+										  Loc	 "," K		 "," K "," K ")" [function]
+
+
+rule makeCallsToRunFunction(_,_,.Set,_,_,_,_,_,_) => .Set 
+
+rule makeCallsToRunFunction(Conf,FName,SetItem(FunDef) Fs,Args,Lab,Scope,Class,Obj,D) => 
+		SetItem(
+			runAndGetConfig(
+				runInConf(
+					config(Conf),
+					runFunction(
+						FName,
+						FunDef,
+						Args,
+						none,
+						none,
+						true,
+						Lab,
+						sf(FName,Scope,Class,Obj,retTypeOfFunDef(FunDef),D,Lab))))) 
+		makeCallsToRunFunction(Conf,FName,Fs,Args,Lab,Scope,Class,Obj,D)
+
 
 /*
 rule [func-call-func-not-defined]: 
