@@ -35,10 +35,10 @@ rule [notice]:
 	[internal]
 
 // An error is displayed, and the program is aborted
-syntax K ::= "ERROR" "(" String ")"
+syntax K ::= "eRROR" "(" String ")"
 
 rule [error]:	
-	<k> (ERROR(ErrorMsg:String) => 
+	<k> (eRROR(ErrorMsg:String) => 
             print("\nFatal error: ") ~> print(ErrorMsg) ~> Bot) ~> K:K </k>
 	<errorManagement> _ => 2 </errorManagement>
 	<trace> Trace:List => Trace ListItem("error") </trace>
@@ -56,7 +56,7 @@ rule printTrace(H T) => (H ListItem("\n") printTrace(T))
 
 
 rule [error]:	
-	<k> ERROR(ErrorMsg:String) => Bot ... </k> 
+	<k> eRROR(ErrorMsg:String) => Bot ... </k> 
 	<status> ERR </status>
 	[internal]
 

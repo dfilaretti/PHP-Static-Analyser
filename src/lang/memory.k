@@ -1,12 +1,9 @@
 require "objects.k"
 require "arrays.k"
-require "shared.k"
-
 
 module MEMORY
 	imports OBJECTS
 	imports ARRAYS
-	imports SHARED
 	
 // =/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
 // =/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
@@ -56,8 +53,8 @@ syntax ArrayItemVisibility ::= "public" | "protected" | "private" "(" Id ")"
 
 // Keys can be Int or String. We use NULL to designate cases when no key is provided when 
 // accessing an array (e.g. $x[] = 0). In such cases a default integer key will be provided.
-syntax Key ::= AInt | AString | SpecialValue
-syntax Key ::= "NoKey"
+syntax Key ::= AInt | AString
+syntax Key ::= "NoKey" | SpecialValue | Top
 rule isKResult(K:Key) => true
 
 // For specification purpose language values are not enough, so we need to add other
@@ -76,7 +73,7 @@ syntax RefType  ::= "arr" | "obj" | "nul"
 		  | "bot" // only used in 'ReferenceAssign
 
 syntax Ref ::= BasicRef | LRef | "refNull"
-syntax BasicRef ::= "ref" "(" Loc "," Key ")" [strict(1), klabel('ref)] 
+syntax BasicRef ::= "ref" "(" LocB "," Key ")" [strict(1), klabel('ref)] 
 syntax LRef 	::= "lref" "(" Ref "," Key "," RefType ")" [strict(1), klabel('lref)]  
 
 // Literal values are used in order to delay the evaluation of literal arrays and 
@@ -1364,7 +1361,7 @@ rule [rget-obj-prop-public]:
 // protected        
 rule [rget-obj-prop-protected]:    
 	<k> RgetRef1(L':Loc,X:AString,_,_,_) => 
-		*Cond(isVisible(ObjClass, Context, protected), sref(L2,X), ERROR("ERROR-PROTECTED")) ... </k>
+		*Cond(isVisible(ObjClass, Context, protected), sref(L2,X), eRROR("ERROR-PROTECTED")) ... </k>
 	<class> Context:K </class>
 	<thematrix> 
 	... 
@@ -1530,7 +1527,7 @@ rule [rget-null]:
 	[internal]
 
 rule [rget-null]: 	
-	<k> RgetRef(ref(L:Loc, NoKey), _) => ERROR("Cannot use [] for reading in %s line %n") ... </k>
+	<k> RgetRef(ref(L:Loc, NoKey), _) => eRROR("Cannot use [] for reading in %s line %n") ... </k>
 	<trace> Trace:List => Trace ListItem("rget-null-fatal") </trace>
 	[internal]
 

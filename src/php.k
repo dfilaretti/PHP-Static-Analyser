@@ -25,18 +25,12 @@ require "lang/exceptions.k"
 require "lang/post-execution.k"
 //require "lang/model-checking.k"
 
-// (abstract) domains 
-
-//require "domains/empty/empty-domain.k"
-//require "domains/mySigns/mySigns-domain.k"
-
-
-module PHP-SYNTAX
+module PHP-SYNTAX //needed for some arcane reasons
 endmodule
 
 module PHP	
 	// Language features
-	imports PHP-SYNTAX
+        imports PHP-SYNTAX //needed for some arcane reasons
 	imports CONFIGURATION
 	imports SYNTAX
 	imports SHARED
@@ -48,7 +42,8 @@ module PHP
 	imports ARITH-OPS				
 	imports ARRAYS					
 	imports TYPE-CONVERSIONS		
-	imports CONTROL-STRUCTURES		
+	imports CONTROL-STRUCTURES
+        imports META		
 	imports IO						
 	imports SCOPE-RESOLUTION		
 	imports STRINGS					
@@ -58,11 +53,6 @@ module PHP
 	imports EXCEPTIONS
 	imports POST-EXECUTION
 //	imports MODEL-CHECKING
-
-    // Which domain would you like? ;)
-
-    //imports EMPTY-DOMAIN
-    //imports MYSIGNS-DOMAIN
 
 	// Builtin stuff	
 	imports URIS

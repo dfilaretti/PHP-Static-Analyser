@@ -84,18 +84,22 @@ rule [instanceof-LHS-object-stdclass]:
 // ---------------------------------------------------------------------------------------------
 
 rule [this-obj-cntx]: 	
-	<k> var(X:Id) => thisTag(L) ... </k>
-	<object> L:Loc </object>
-	<trace> Trace:List => Trace ListItem("this-obj-cntx") </trace>
-	when Id2String(X) ==String "this"
+	<k> var(X:AString) => thisTag(L) ... </k>
+	<object> L:K </object> // this could be Loc or NULL
+	<trace> Trace:List => Trace ListItem("this-obj") </trace>
+	when isSpecialVar(X)
 	[step]
 
-rule [this-no-obj-cntx]: 	
-	<k> var(X:Id) => thisTag(NULL) ... </k>
-	<object> .K </object>
-	<trace> Trace:List => Trace ListItem("this-no-obj-cntx") </trace>
-	when Id2String(X) ==String "this"
+/* SM: need an extra case with condition maybeSpecialVar doing the merge of case above and below
+
+rule [var] :   
+	<k> var(X:AString)  => lref(ref(Lr,pickScope(X)), X) ... </k>
+	<currentScope> Lg:Loc </currentScope>
+	<superGlobalScope> Lsg:Loc </superGlobalScope>
+	when isNotSpecialVar(X)
 	[step]
+/*
+
 
 // ---------------------------------------------------------------------------------------------
 /*@ \subsection{Object creation (new construct)} */
@@ -248,7 +252,7 @@ rule [ref-assign-fresh-array-elem]:
             	ArrayUpdateElem(L', X, L1') ~>
 		rebuildArray(
 			L',X,
-			getMaxKey(X,getLTKeys(Elems,X) getGEQKeys(Elems,X)),
+			getMaxKey(X getLTKeys(Elems,X) getGEQKeys(Elems,X)),
 			L1',L1,Elems) ~>
 		ref(L', X) 
 	... </k>
@@ -351,7 +355,7 @@ rule [meth-lookup-parent]:
     [internal]
     
 rule [meth-lookup-not-found]: 	
-	<k> methodLookup (ClassName:Id , MethName:String) => ERROR(makeAccess2NonDefinedClassMethodErrorMsg(ClassName, MethName))  ... </k>
+	<k> methodLookup (ClassName:Id , MethName:String) => eRROR(makeAccess2NonDefinedClassMethodErrorMsg(ClassName, MethName))  ... </k>
 	<trace> Trace:List => Trace ListItem("meth-lookup-not-found") </trace>
 	when Id2String(ClassName) ==String "ROOT"
 	[internal] 

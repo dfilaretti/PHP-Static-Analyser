@@ -758,24 +758,26 @@ rule	<k> runInMem(none, _) => .  ... </k>
                     <currentScope> L1 </currentScope>
                     <globalScope> L2 </globalScope>
                     <globalStaticScope> L3 </globalStaticScope>
-                    <superGlobalScope> L4 </superGlobalScope> 
+ //                   <superGlobalScope> L4 </superGlobalScope> 
+                    <rootScope> L5 </rootScope> 
                 </scopes> 
                 <heap> H1 </heap>
-		<thematrix> H1' </thematrix>
-		,St1,F1,
+		<thematrix> H1' </thematrix>,St1,F1,
                 <scopes> 
                     <currentScope> L1' </currentScope>
-                    <globalScope> L2' </globalScope>
+//                    <globalScope> L2' </globalScope>
                     <globalStaticScope> L3' </globalStaticScope>
-                    <superGlobalScope> L4' </superGlobalScope>   
+//                    <superGlobalScope> L4' </superGlobalScope>   
+                    <rootScope> L5' </rootScope> 
                 </scopes> 
                 <heap> H2 </heap>
 		<thematrix> H2' </thematrix>,St2,F2) => 
                 <scopes>
                     <currentScope> L1 </currentScope>
-                    <globalScope> L2 </globalScope>
+ //                   <globalScope> L2 </globalScope>
                     <globalStaticScope> L3 </globalStaticScope>
-                    <superGlobalScope> L4 </superGlobalScope>  
+ //                   <superGlobalScope> L4 </superGlobalScope>  
+                    <rootScope> L5 </rootScope> 
                 </scopes>
 		bagUnwrap(
 		    leftElem(
@@ -785,9 +787,9 @@ rule	<k> runInMem(none, _) => .  ... </k>
 				mapWrap(.Map)),
 			    ListItem(
 				mergeArgs(
-				    L4,optionLoc2Loc(vheap_read(H1',L4)),
-				    heap_read(H1',H1,L4 ),H1',H1,
-				    heap_read(H2',H2,L4'),H2',H2))
+				    L5,optionLoc2Loc(vheap_read(H1',L5)),
+				    heap_read(H1',H1,L5 ),H1',H1,
+				    heap_read(H2',H2,L5'),H2',H2))
 			    mergeFunStaticScopes(F1,H1',H1,F2,H2',H2))))	
 		when L1 ==K L2
 
@@ -800,6 +802,7 @@ rule	<k> runInMem(none, _) => .  ... </k>
                     <globalScope> L2 </globalScope>
                     <globalStaticScope> L3 </globalStaticScope>
                     <superGlobalScope> L4 </superGlobalScope> 
+                   <rootScope> L5 </rootScope> 
                 </scopes> 
                 <heap> H1 </heap>
 		<thematrix> H1' </thematrix>
@@ -809,6 +812,7 @@ rule	<k> runInMem(none, _) => .  ... </k>
                     <globalScope> L2' </globalScope>
                     <globalStaticScope> L3' </globalStaticScope>
                     <superGlobalScope> L4' </superGlobalScope>   
+                   <rootScope> L5' </rootScope> 
                 </scopes> 
                 <heap> H2 </heap>
 		<thematrix> H2' </thematrix>,St2,F2) => 
@@ -816,7 +820,8 @@ rule	<k> runInMem(none, _) => .  ... </k>
                     <currentScope> L1 </currentScope>
                     <globalScope> L2 </globalScope>
                     <globalStaticScope> L3 </globalStaticScope>
-                    <superGlobalScope> L4 </superGlobalScope>  
+                    <superGlobalScope> L4 </superGlobalScope> 
+                   <rootScope> L5 </rootScope>  
                 </scopes>
 		bagUnwrap(
 		    leftElem(
@@ -826,9 +831,9 @@ rule	<k> runInMem(none, _) => .  ... </k>
 				mapWrap(.Map)),
 			    ListItem(
 				mergeArgs(
-				    L4,optionLoc2Loc(vheap_read(H1',L4)),
-				    heap_read(H1',H1,L4 ),H1',H1,
-				    heap_read(H2',H2,L4'),H2',H2))
+				    L5,optionLoc2Loc(vheap_read(H1',L5)),
+				    heap_read(H1',H1,L5 ),H1',H1,
+				    heap_read(H2',H2,L5'),H2',H2))
 			    ListItem(
 				mergeArgs(
 				    L1,optionLoc2Loc(vheap_read(H1',L1)),

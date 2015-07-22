@@ -1,9 +1,7 @@
 require "memory.k"
-require "meta.k"
 
 module SHARED
 	imports MEMORY
-        imports META
 
 // =/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
 // =/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
@@ -79,15 +77,15 @@ rule convertToLanguageValue(V:ConvertibleToLoc) => read(convertToLoc(V,r))
 
 syntax K ::= "isEqualScalar" "(" K "," K ")" [seqstrict]
 
+/* TODO: remove
 rule [isEqual-scalar-RHS2LangValue]:
 	<k> isEqualScalar(_, (R2:ConvertibleToLanguageValue => convertToLanguageValue(R2))) ... </k>
 	<trace> Trace:List => Trace ListItem("isEqual-scalar-RHS2LangValue") </trace>
 	[intermediate]
 
-/* TODO: remove
-rule //[isEqual-scalar-LS2LangValue]:
+rule [isEqual-scalar-LHS2LangValue]:
 	<k> isEqualScalar((R1:ConvertibleToLanguageValue => convertToLanguageValue(R1)), _) ... </k>
-	//<trace> Trace:List => Trace ListItem("isEqual-scalar-LS2LangValue") </trace>
+	<trace> Trace:List => Trace ListItem("isEqual-scalar-LHS2LangValue") </trace>
 	[intermediate]
 */
 
@@ -126,6 +124,18 @@ rule visibility2String(private(_)) => "private"
 syntax Int ::= "listLen" "(" List ")" [function]
 rule	listLen(.List) => 0
 rule	listLen(ListItem(_) L:List) => 1 +Int listLen(L)
+
+
+
+
+
+syntax Set ::= "removeFromSet" "(" Set "," K ")" [function]
+
+rule 	removeFromSet(.Set,_) => .Set
+rule 	removeFromSet(SetItem(Y) S,X) => removeFromSet(S,X)
+	when X ==K Y
+rule 	removeFromSet(SetItem(Y) S, X) => SetItem(Y) removeFromSet(S,X) 
+	when X =/=K Y
 
 
 

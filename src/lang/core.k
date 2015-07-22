@@ -1,13 +1,13 @@
-require "shared.k"
 require "program-transformations.k"
 require "builtin-functions.k"
+require "meta.k"
 
 require "../domains/domain/domain.k"
 
 module CORE 
-	imports SHARED
 	imports PROGRAM-TRANSFORMATIONS
 	imports BUILTIN-FUNCTIONS
+	imports META //because of mergeZval
 	
 	imports DOMAIN
 	imports ID-HOOKS
@@ -254,16 +254,23 @@ rule [expr]:
 		used. */
 // ---------------------------------------------------------------------------------------------
 
-syntax Var ::= "var" "(" Id ")"
+syntax Var ::= "var" "(" AString ")"
 
 rule [var2Id]: 	
-	<k> 'Variable('Simple(Str:String)) => var(String2Id(Str)) ... </k>
-	<trace> Trace:List => Trace ListItem("var2Id") </trace>
+	<k> 'Variable('Simple(Str:String)) => var(alpha(Str)) ... </k>
+	<trace> Trace:List => Trace ListItem("var2Astring") </trace>
 	[structural]
 
 /*@ The following is the rule for variable lookup. Note that is makes use of the auxiliary
 	predicates defined below. */
 
+rule [var]:   
+	<k> var(X:AString)  => lref(ref(Lr,pickScope(X)),X,arr) ... </k>
+	<rootScope> Lr:Loc </rootScope>
+	when isNotSpecialVar(X)
+	[step]
+
+/*
 rule [var] :   
 	<k> var(X:Id)  => *Cond(isSuperGlobal(X), 
 			ref(Lsg, alpha(Id2String(X))), 
@@ -272,10 +279,32 @@ rule [var] :
 	<superGlobalScope> Lsg:Loc </superGlobalScope>
 	when notBool(isSpecialVar(X))
 	[step]
+*/
 
 /*@ The following auxiliary predicate returns true if the variable is a superglobal, 
 	false otherwise */
 
+syntax  Key ::= "pickScope" "(" AString ")"	[function]
+
+rule
+	pickScope(X) => alpha("SUPERGLOBALS")
+	when 	(X <Lattice lub(alpha("_GET"),lub(alpha("_POST"),alpha("GLOBALS"))))
+            	
+rule
+	pickScope(X) => alpha("GLOBALS")
+	when 	notBool((alpha("_GET")<Lattice X) orBool 
+		        (alpha("_GLOBALS")<Lattice X) orBool 
+		        (alpha("_POST")<Lattice X))
+
+rule
+	pickScope(X) => Top
+	when 	(notBool(X <Lattice lub(alpha("_GET"),lub(alpha("_POST"),alpha("GLOBALS")))))
+            	andBool
+                ((alpha("_GET")<Lattice X) orBool 
+		 (alpha("_GLOBALS")<Lattice X) orBool 
+		 (alpha("_POST")<Lattice X))
+
+/*
 syntax  Bool ::= "isSuperGlobal" "(" Id ")"	[function]
 
 rule
@@ -289,19 +318,19 @@ rule
 	when 	(Id2String(X) =/=String "_GET") andBool 
 			(Id2String(X) =/=String "_POST") andBool 
 			(Id2String(X) =/=String "GLOBALS")
+*/
+
 
 /*@ The following auxiliary predicate returns true if the variable is special (e.g. this), 
 	false otherwise  */
 
-syntax Bool ::= "isSpecialVar" "(" Id ")"		[function]
+syntax Bool ::= "isSpecialVar" "(" AString ")"			[function]
+syntax Bool ::= "isNotSpecialVar" "(" AString ")"		[function]
+syntax Bool ::= "maybeSpecialVar" "(" AString ")"		[function]
 
-rule 	
-	isSpecialVar(X:Id) => true 
-	when (Id2String(X) ==String "this") 
-
-rule
-	isSpecialVar(X:Id) => false 
-	when notBool (Id2String(X) ==String "this") 
+rule 	maybeSpecialVar(X) => (alpha("this") <Lattice X)
+rule	isNotSpecialVar(X) => notBool maybeSpecialVar(X)
+rule	isSpecialVar(X) =>  (alpha("this") ==Lattice X)
 
 // ---------------------------------------------------------------------------------------------
 /*@ \subsection{Variable variables} */
@@ -316,8 +345,9 @@ rule [variable-variable-arg2Value] :
 	[intermediate]
 
 rule [variable-variable]	:	
-	<k> 'IndirectReference(X:String) => 'Variable('Simple(X)) ... </k>
+	<k> 'IndirectReference(X:AString) => var(X) ... </k>
 	[step]
+
 	
 // ---------------------------------------------------------------------------------------------
 /*@ \subsection{Array access} */
@@ -341,7 +371,7 @@ rule [array-access-LHS2LangValue]:
 	<trace> Trace:List => Trace ListItem("array-access-LHS2LangValue") </trace>
 	[intermediate]
 
-// The RHS must be a key (int or string). If it's not, we try to convert it to Int as follows
+// The RHS must be a key. If it's not, we try to convert it to Int as follows
 
 rule [array-access-key-cast-float]:	
 	<k> 'ArrayAccess(_,,(F:AFloat => 'IntCast(F))) ... </k>
@@ -356,6 +386,11 @@ rule [array-access-key-cast-NULL]:
 rule [array-access-key-cast-bool]:	
 	<k> 'ArrayAccess(_,,(B:ABool => 'IntCast(B))) ... </k>
 	<trace> Trace:List => Trace ListItem("array-access-key-cast-bool") </trace>
+	[intermediate]
+
+rule [array-access-key-cast-bot]:	
+	<k> 'ArrayAccess(_,,Bot) => ref(Bot,Top) ... </k>
+	<trace> Trace:List => Trace ListItem("array-access-key-cast-bot") </trace>
 	[intermediate]
 
 /*
@@ -481,7 +516,7 @@ rule [assign]:
 	[step] 
 
 rule [assign-error]:
-	<k> assign1(thisTag(L:K),_,_) =>  ERROR("Cannot re-assign $this in %s on line %d") ... </k>
+	<k> assign1(thisTag(L:K),_,_) =>  eRROR("Cannot re-assign $this in %s on line %d") ... </k>
 	[step, error]
 
 
@@ -491,7 +526,7 @@ rule [assign-error]:
 /* 
 // OLD
 rule [assign-LHS2Loc]:
-	<k> 'Assign((R:Ref => convertToLoc(R,l)),,_:KResult) ... </k>
+	<k> 'Asign((R:Ref => convertToLoc(R,l)),,_:KResult) ... </k>
 	<trace> Trace:List => Trace ListItem("assign-LHS2Loc") </trace>
 	[intermediate]
 
@@ -631,7 +666,8 @@ rule [ref-assign-array-elem]:
             	ArrayUpdateElem(L', X, L1') ~>
 		rebuildArray(
 			L',X,
-			getMaxKey(X,getLTKeys(Elems,X) getGEQKeys(Elems,X)),
+			getMaxKey(SetItem(X) getLTKeys(Elems,X) getGEQKeys(Elems,X)),
+			//getMaxKey(X,getLTKeys(Elems,X) getGEQKeys(Elems,X)),
 			L1',L1,Elems) ~>
 		ref(L', X) 
 	... </k>
@@ -655,14 +691,6 @@ rule [ref-assign-array-elem]:
 
 // --------------- AUXILIARY OPS FOR REFERENCE ASSIGN --------------------
 // .................... TODO: MOVE? --------------------------------------
-
-syntax Set ::= "removeFromSet" "(" Set "," K ")" [function]
-
-rule 	removeFromSet(.Set,_) => .Set
-rule 	removeFromSet(SetItem(Y) S,X) => removeFromSet(S,X)
-	when X ==K Y
-rule 	removeFromSet(SetItem(Y) S, X) => SetItem(Y) removeFromSet(S,X) 
-	when X =/=K Y
 
 
 // Auxiliary operation used by the reference assignment. 
@@ -689,96 +717,25 @@ rule rebuildArray(L',X,MaxKey,L1',L1,Elems) =>
 
 // given a set of keys, returns the maximum
 // (according to lattice ordering)
+// currently this is called with at least one element
 
-syntax 	K ::= "getMaxKey" "(" Key "," Set ")" [function]
 
-rule 	getMaxKey(DefaultKey,.Set) => DefaultKey
-rule 	getMaxKey(DefaultKey,KeySet) => getMaxKey1(DefaultKey,KeySet)
-	when KeySet =/=Set .Set
+syntax 	K ::= "getMaxKey" "(" Set ")" [function]
 
-syntax 	K ::= "getMaxKey1" "(" Key "," Set ")" [function]
-
-rule	getMaxKey1(K,.Set) => K
-
-rule 	getMaxKey1(K1,SetItem(K2) KeySet) => 
-		#if (K1 <Lattice K2) #then
-			getMaxKey1(K2,KeySet)
+rule 	getMaxKey(.Set) => Bot
+rule 	getMaxKey(SetItem(X)) => X
+rule 	getMaxKey(SetItem(X) S) => 
+		#if (X <Lattice getMaxKey(S)) #then
+			getMaxKey(S)
 		#else
-			getMaxKey1(K1,KeySet) 
+			X 
 		#fi
+	when S =/=Set .Set
+
  
 
 // --------------- AUXILIARY OPS FOR REFERENCE ASSIGN --------------------
 // .................... END ------- --------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* OLD: remove when fixed
-rule [ref-assign-fresh-array-elem]:
-	<k> 
-		'ReferenceAssign(ref(L':Loc, X:Key),, L1':Loc) =>  
-            	ArrayUpdateElem(L', X, L1') ~>
-		// merge the target location with all possible affected values			
-		write(
-			mergeValuesAtLocs(
-				bot,
-				SetItem(L1') 
-				KeySet2LocSet(
-					removeFromSet(getLTKeys(Elems,X) getGEQKeys(Elems,X),X),
-					Elems)),
-			L1',
-			true) ~>
-	 	// alias the affected key to the target
-		aliasAllKeys2Loc(
-			L',
-			getLTKeys(Elems,X) getGEQKeys(Elems,X),
-			L1) ~>				
-		ref(L', X) 
-	... </k>
-	<thematrix> 
-	... 
-		L'  |-> L 
-		L1' |-> L1
-	... 
-	</thematrix>	
-        <heap> 
-	... 
-		L  |-> zval(Array(_,Elems),_,_,_) 
-		L1 |-> _ 
-	... 
-	</heap>
-	<trace> Trace:List => Trace ListItem("ref-assign-fresh-array-elem") </trace>
-	//when notBool (Elems hasProperty X)
-	[step]
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 rule [ref-assign-language-value]:
@@ -787,6 +744,12 @@ rule [ref-assign-language-value]:
 			'Assign(ref(L:Loc, X:Key),,V:PlainLanguageValue) ... </k>
 	<trace> Trace:List => Trace ListItem("ref-assign-language-value") </trace>
 	[step, error]
+
+
+
+
+
+
 
 // --------------------------------------------------------------------------------------------
 /*@ \subsection{List Assignment} */
@@ -850,6 +813,9 @@ rule [assign-seq-not-a-loc]:
 	<trace> Trace:List => Trace ListItem("assign-seq-not-a-loc") </trace>
 	[internal, error]
 
+
+
+
 // ---------------------------------------------------------------------------------------------
 /*@ \subsection{IsSet} */
 // ---------------------------------------------------------------------------------------------
@@ -900,6 +866,7 @@ rule [isset-scalar]:
 	<trace> Trace:List => Trace ListItem("isset-scalar") </trace>
 	when notBool (V isCompoundValue)
 	[internal]
+
 
 
 // ---------------------------------------------------------------------------------------------
@@ -1022,7 +989,6 @@ rule [unset-refNull]:
 
 syntax K ::= "nullify" "(" Loc ")"
 
-
 rule [nullify]: 
 	<k> nullify(L') => . ... </k>
 	<thematrix> ... L' |-> L ... </thematrix>
@@ -1036,9 +1002,6 @@ rule [nullify]:
 			#fi)
 		... 
 	</heap>
-
-
-
 
 
 endmodule 
