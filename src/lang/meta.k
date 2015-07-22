@@ -697,9 +697,36 @@ rule	<k> runInMem(none, _) => .  ... </k>
     /*@ \subsubsection{Merge functions} */
     ///////////////////////////////////////////////////////////////////////////
     
-    // TODO
     syntax Map ::= "mergeFunctions" "(" Map "," Map ")" [function]
-    rule mergeFunctions(F1,F2) => F1
+	
+	// Base
+    rule 	mergeFunctions(.Map,F) => F
+	rule 	mergeFunctions(F,.Map) => F
+
+	// Function F only in left config
+	rule 	mergeFunctions(F |-> setWrap(Defs) F1,F2) => 
+				(F |-> setWrap(Defs SetItem(none)))
+				mergeFunctions(F1,F2)
+			when notBool (F in keys(F2)) 
+
+	// Function F only in right config
+	rule 	mergeFunctions(F1, F |-> setWrap(Defs) F2) => 
+				(F |-> setWrap(SetItem(none) Defs))
+				mergeFunctions(F1,F2)
+			when notBool (F in keys(F1)) 
+
+	// Function F in both branches, different defs
+	rule 	mergeFunctions(F |-> setWrap(Defs1) F1,F |-> setWrap(Defs2) F2) => 
+				(F |-> setWrap(Defs1 Defs2))
+				mergeFunctions(F1,F2)
+			when Defs1 =/=Set Defs2
+
+	// Function F in both branches, same def
+	rule 	mergeFunctions(F |-> setWrap(Defs1) F1,F |-> setWrap(Defs2) F2) => 
+				(F |-> setWrap(Defs1))
+				mergeFunctions(F1,F2)
+			when Defs1 ==Set Defs2
+
 
     ///////////////////////////////////////////////////////////////////////////
     /*@ \subsubsection{Merging the status cell} */
@@ -789,7 +816,7 @@ rule	<k> runInMem(none, _) => .  ... </k>
 				    L4,optionLoc2Loc(vheap_read(H1',L4)),
 				    heap_read(H1',H1,L4 ),H1',H1,
 				    heap_read(H2',H2,L4'),H2',H2))
-			    mergeFunStaticScopes(F1,H1',H1,F2,H2',H2))))	
+			    /*mergeFunStaticScopes(F1,H1',H1,F2,H2',H2)*/))) // TODO: uncomment	
 		when L1 ==K L2
 
 
@@ -836,7 +863,7 @@ rule	<k> runInMem(none, _) => .  ... </k>
 				    heap_read(H1',H1,L1 ),H1',H1,
 				    heap_read(H2',H2,L1'),H2',H2))   
 			    mergeStackedScopes(St1,H1',H1,St2,H2',H2)   
-			    mergeFunStaticScopes(F1,H1',H1,F2,H2',H2))))	
+			    /*mergeFunStaticScopes(F1,H1',H1,F2,H2',H2)*/))) // TODO: uncomment	
 		when L1 =/=K L2
 	
 

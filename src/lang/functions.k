@@ -55,6 +55,13 @@ rule [function-decl-ret-value]:
 	when notBool (Name in keys(Rho)) andBool (fresh(L:Loc))
 	[step]
 
+rule [function-decl-error-already-defined]:	
+	<k> 'FunctionDecl(Name:String,,_,,_) => ERROR("cannot define function twice") ... </k>
+	<functions> Rho:Map </functions> 
+	<trace> Trace:List => Trace ListItem("function-decl-ret-ref-error-already-defined") </trace>
+	when Name in keys(Rho)
+	[step]
+
 rule [function-decl-ret-ref]:	
 	<k> 'FunctionDeclRef(Name:String,, 'ListWrap(Parameters:KList),, Body:K) =>  
 		ArrayCreateEmpty(L) ~> incRefCount(L) ~>
@@ -65,13 +72,28 @@ rule [function-decl-ret-ref]:
 	when notBool (Name in keys(Rho)) andBool (fresh(L:Loc))
 	[step]
 
+rule [function-decl-error-already-defined]:	
+	<k> 'FunctionDeclRef(Name:String,,_,,_) => ERROR("cannot define function twice") ... </k>
+	<functions> Rho:Map </functions> 
+	<trace> Trace:List => Trace ListItem("function-decl-ret-ref-error-already-defined") </trace>
+	when Name in keys(Rho)
+	[step]
+
 /* make function -- stores the function in memory.  */
 
 syntax K ::= "makeFunction" "(" String "," K "," K "," K "," Loc ")" [strict(3)]
 
+/* TODO: remove when added support for conditional declaration
 rule [make-function]:	
 	<k> makeFunction(Name, 'ListWrap(Parameters:KList), visitedK(Body:K), ValueOrRef:K, L:Loc) => . ... </k>	
 	<functions> Rho:Map => Rho[f('ListWrap(Parameters), Body, ValueOrRef, L) / Name] </functions> 
+	<trace> Trace:List => Trace ListItem("make-function") </trace>
+	[internal]
+*/
+
+rule [make-function]:	
+	<k> makeFunction(Name, 'ListWrap(Parameters:KList), visitedK(Body:K), ValueOrRef:K, L:Loc) => . ... </k>	
+	<functions> ... . => Name |-> setWrap(SetItem(f('ListWrap(Parameters), Body, ValueOrRef, L))) ... </functions> 
 	<trace> Trace:List => Trace ListItem("make-function") </trace>
 	[internal]
 		

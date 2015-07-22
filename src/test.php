@@ -1,5 +1,15 @@
 <?php
-	$a = 1;
-	$c = $a + ($a = 2);
-	echo $c;
+
+	if (2 == 2) {
+		function foo() {
+			return 1;
+		};
+	}
+	else {
+		function foo($x) {
+			return $x + 2;
+		}
+	}
+
+
 ?>
