@@ -7,7 +7,7 @@ $b=2;
 
 if($a==0) {
 	echo "bad";
-} elseif($a==3) {
+} elseif($a==3) {		//not supported
 	echo "bad";
 } else {
 	if($b==1) {

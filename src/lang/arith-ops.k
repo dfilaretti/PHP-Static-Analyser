@@ -332,6 +332,8 @@ rule 	comparison(Op:ComparisonOp,_,(V2:AString => string2Number(V2)))
 
 // -- converts any string args to number
 
+//TODO RR : here we should take the number prefix of the string. isNumericString only means that the whole string is a number.
+
 rule [comparison-ac]:
 	<k> comparison(Op:ComparisonOp,V1:Value,(S:AString => alpha(0))) ... </k>
 	<trace> Trace:List => Trace ListItem("comparison-ac") </trace>
@@ -392,7 +394,7 @@ rule [comparison-equal-array]:
 // isIdentical
 
 rule [comparison-identical-scalar]: 
-	<k> comparison(identical, V1:LanguageValue, V2:LanguageValue) => V1 ==K V2 ... </k>
+	<k> comparison(identical, V1:LanguageValue, V2:LanguageValue) => V1 ==K V2 ... </k> //RR : TODO debug this, unsound. Move to domains ?
 		<trace> Trace:List => Trace ListItem("comparison-identical-scalar") </trace>
 	when notBool ((V1 isCompoundValue andBool V2 isCompoundValue) andBool hasSameType(V1, V2))
 	[intermediate]
