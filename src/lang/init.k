@@ -300,9 +300,8 @@ rule [init-scopes]:
 	<superGlobalScope> . => L1 </superGlobalScope>
 	<globalStaticScope> . => L3 </globalStaticScope>
         <rootScope> . => L4 </rootScope>
-	when 	fresh(L:Loc) andBool fresh(L1:Loc) andBool fresh(L3:Loc) andBool
-		fresh(L':Loc) andBool fresh(L1':Loc) andBool fresh(L3':Loc) andBool fresh(L4':Loc) andBool fresh(L4':Loc)
-	
+	when 	fresh(L:Loc) andBool fresh(L1:Loc) andBool fresh(L3:Loc) andBool fresh(L4:Loc) andBool
+		fresh(L':Loc) andBool fresh(L1':Loc) andBool fresh(L3':Loc) andBool fresh(L4':Loc)
 	[internal]
 
 // ---------------------------------------------------------------------------------------------

@@ -83,7 +83,7 @@ rule [class-constant]:
 		=> *Cond(
 				isVisible(ClassName,Context,V),
 				L1,
-				eRROR(makeAccess2NonVisibleClassConstantErrorMsg(ClassName, X, V))
+				ERROR(makeAccess2NonVisibleClassConstantErrorMsg(ClassName, X, V))
 			) ... </k>
 	<classes> ... ClassName |-> class(_,_,_,L')  ...  </classes>
 	<thematrix> ... L' |-> L ... </thematrix>

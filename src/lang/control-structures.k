@@ -657,7 +657,7 @@ rule [init-foreach-iteration-vars-keyvalue-ref]:
 	[internal]
 	
 rule [init-foreach-iteration-vars-keyvalue-ref-error]:
-	<k> initIterationVars(L, 'Pattern('Some('Key('Ref(K:K))),,_)) => eRROR("Key element cannot be a reference in %s on line $d\n") ... </k>
+	<k> initIterationVars(L, 'Pattern('Some('Key('Ref(K:K))),,_)) => ERROR("Key element cannot be a reference in %s on line $d\n") ... </k>
 	<trace> Trace:List => Trace ListItem("init-foreach-iteration-vars-keyvalue-ref-error") </trace>
 	[internal]
 

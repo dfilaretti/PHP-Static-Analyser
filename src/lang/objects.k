@@ -252,7 +252,7 @@ rule [ref-assign-fresh-array-elem]:
             	ArrayUpdateElem(L', X, L1') ~>
 		rebuildArray(
 			L',X,
-			getMaxKey(X getLTKeys(Elems,X) getGEQKeys(Elems,X)),
+			getMaxKey(SetItem(X) getLTKeys(Elems,X) getGEQKeys(Elems,X)),
 			L1',L1,Elems) ~>
 		ref(L', X) 
 	... </k>
@@ -355,7 +355,7 @@ rule [meth-lookup-parent]:
     [internal]
     
 rule [meth-lookup-not-found]: 	
-	<k> methodLookup (ClassName:Id , MethName:String) => eRROR(makeAccess2NonDefinedClassMethodErrorMsg(ClassName, MethName))  ... </k>
+	<k> methodLookup (ClassName:Id , MethName:String) => ERROR(makeAccess2NonDefinedClassMethodErrorMsg(ClassName, MethName))  ... </k>
 	<trace> Trace:List => Trace ListItem("meth-lookup-not-found") </trace>
 	when Id2String(ClassName) ==String "ROOT"
 	[internal] 

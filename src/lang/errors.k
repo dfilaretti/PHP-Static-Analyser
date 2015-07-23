@@ -1,6 +1,8 @@
 require "io.k"
+require "shared.k"
 module ERRORS
 	imports IO
+	imports SHARED //SM because of mapConcat
 
 // =/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
 // =/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
@@ -35,28 +37,21 @@ rule [notice]:
 	[internal]
 
 // An error is displayed, and the program is aborted
-syntax K ::= "eRROR" "(" String ")"
+syntax K ::= "ERROR" "(" String ")"
 
 rule [error]:	
-	<k> (eRROR(ErrorMsg:String) => 
+	<k> (ERROR(ErrorMsg:String) => 
             print("\nFatal error: ") ~> print(ErrorMsg) ~> Bot) ~> K:K </k>
 	<errorManagement> _ => 2 </errorManagement>
 	<trace> Trace:List => Trace ListItem("error") </trace>
-        <errorDump> ... (. => printTrace(ListItem("<error-trace>") Trace))</errorDump> 
+        <errorDump> ... (. => mapConcat((ListItem("<error-trace>") Trace ListItem("</error-trace>")),"\n"))</errorDump> 
         //SM we should dump the whole confing here ideally
 	<status> X => ERR </status>
         when X =/=K ERR
 	[internal]
 
-syntax List ::= "printTrace(" List ")" [function]
-
-rule printTrace(.) => ListItem("</error-trace>\n")
-rule printTrace(H T) => (H ListItem("\n") printTrace(T))
-
-
-
 rule [error]:	
-	<k> eRROR(ErrorMsg:String) => Bot ... </k> 
+	<k> ERROR(ErrorMsg:String) => Bot ... </k> 
 	<status> ERR </status>
 	[internal]
 

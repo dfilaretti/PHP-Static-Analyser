@@ -516,7 +516,7 @@ rule [assign]:
 	[step] 
 
 rule [assign-error]:
-	<k> assign1(thisTag(L:K),_,_) =>  eRROR("Cannot re-assign $this in %s on line %d") ... </k>
+	<k> assign1(thisTag(L:K),_,_) =>  ERROR("Cannot re-assign $this in %s on line %d") ... </k>
 	[step, error]
 
 

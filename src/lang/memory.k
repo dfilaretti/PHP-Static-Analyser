@@ -1361,7 +1361,7 @@ rule [rget-obj-prop-public]:
 // protected        
 rule [rget-obj-prop-protected]:    
 	<k> RgetRef1(L':Loc,X:AString,_,_,_) => 
-		*Cond(isVisible(ObjClass, Context, protected), sref(L2,X), eRROR("ERROR-PROTECTED")) ... </k>
+		*Cond(isVisible(ObjClass, Context, protected), sref(L2,X), ERROR("ERROR-PROTECTED")) ... </k>
 	<class> Context:K </class>
 	<thematrix> 
 	... 
@@ -1527,7 +1527,7 @@ rule [rget-null]:
 	[internal]
 
 rule [rget-null]: 	
-	<k> RgetRef(ref(L:Loc, NoKey), _) => eRROR("Cannot use [] for reading in %s line %n") ... </k>
+	<k> RgetRef(ref(L:Loc, NoKey), _) => ERROR("Cannot use [] for reading in %s line %n") ... </k>
 	<trace> Trace:List => Trace ListItem("rget-null-fatal") </trace>
 	[internal]
 

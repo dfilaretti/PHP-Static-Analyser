@@ -137,7 +137,14 @@ rule 	removeFromSet(SetItem(Y) S,X) => removeFromSet(S,X)
 rule 	removeFromSet(SetItem(Y) S, X) => SetItem(Y) removeFromSet(S,X) 
 	when X =/=K Y
 
+// ---------------------------------------------------------------------------------------------
+/*@ \subsection{Auxiliary functions} */ 
+// ---------------------------------------------------------------------------------------------
 
+syntax List ::= "mapConcat(" List "," K ")" [function]
+
+rule mapConcat(.,_) => .
+rule mapConcat(H T,X) => (H ListItem(X) mapConcat(T))
 
 
 
