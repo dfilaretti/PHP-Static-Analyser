@@ -267,19 +267,11 @@ rule [var2Id]:
 rule [var]:   
 	<k> var(X:AString)  => lref(ref(Lr,pickScope(X)),X,arr) ... </k>
 	<rootScope> Lr:Loc </rootScope>
-	when isNotSpecialVar(X)
+	when isNotSpecialVar(X) orBool maybeSpecialVar(X)
 	[step]
 
-/*
-rule [var] :   
-	<k> var(X:Id)  => *Cond(isSuperGlobal(X), 
-			ref(Lsg, alpha(Id2String(X))), 
-			ref(Lg, alpha(Id2String(X)))) ... </k>
-	<currentScope> Lg:Loc </currentScope>
-	<superGlobalScope> Lsg:Loc </superGlobalScope>
-	when notBool(isSpecialVar(X))
-	[step]
-*/
+//SM-FIXME this rule is wrong: we need to separate 'maybe' case out, and in that case merge with this-obj-cntx
+// in particular, the case for "this" is currently wrong
 
 /*@ The following auxiliary predicate returns true if the variable is a superglobal, 
 	false otherwise */
@@ -304,23 +296,6 @@ rule
 		 (alpha("_GLOBALS")<Lattice X) orBool 
 		 (alpha("_POST")<Lattice X))
 
-/*
-syntax  Bool ::= "isSuperGlobal" "(" Id ")"	[function]
-
-rule
-	isSuperGlobal(X:Id) => true
-	when 	(Id2String(X) ==String "_GET") orBool 
-           	(Id2String(X) ==String "_POST") orBool 
-            (Id2String(X) ==String "GLOBALS")
-            	
-rule
-	isSuperGlobal(X:Id) => false
-	when 	(Id2String(X) =/=String "_GET") andBool 
-			(Id2String(X) =/=String "_POST") andBool 
-			(Id2String(X) =/=String "GLOBALS")
-*/
-
-
 /*@ The following auxiliary predicate returns true if the variable is special (e.g. this), 
 	false otherwise  */
 
@@ -330,13 +305,12 @@ syntax Bool ::= "maybeSpecialVar" "(" AString ")"		[function]
 
 rule 	maybeSpecialVar(X) => (alpha("this") <Lattice X)
 rule	isNotSpecialVar(X) => notBool maybeSpecialVar(X)
-rule	isSpecialVar(X) =>  (alpha("this") ==Lattice X)
+rule	isSpecialVar(X) => (alpha("this") ==Lattice X)
+
 
 // ---------------------------------------------------------------------------------------------
 /*@ \subsection{Variable variables} */
 // ---------------------------------------------------------------------------------------------
-
-// A small comment!
 
 context 'IndirectReference(HOLE)
 
@@ -344,11 +318,23 @@ rule [variable-variable-arg2Value] :
 	<k> 'IndirectReference(R:ConvertibleToLanguageValue => convertToLanguageValue(R)) ... </k>
 	[intermediate]
 
-rule [variable-variable]	:	
+rule [variable-variable-global]:	
 	<k> 'IndirectReference(X:AString) => var(X) ... </k>
+        <currentScope> Lg </currentScope>
+        <globalScope> Lg </globalScope>
 	[step]
 
+rule [variable-variable-function]:	
+	<k> 'IndirectReference(X:AString) => ref(Lg,X) ... </k>
+        <currentScope> Lc </currentScope>
+        <globalScope> Lg </globalScope>
+	when (isNotSpecialVar(X) orBool maybeSpecialVar(X)) andBool Lc =/=K Lg
+	[step]
+
+//SM-FIXME this rule is wrong: we need to separate 'maybe' case out, and in that case merge with this-obj-cntx
+// in particular, the case for "this" is currently wrong
 	
+
 // ---------------------------------------------------------------------------------------------
 /*@ \subsection{Array access} */
 // ---------------------------------------------------------------------------------------------
@@ -660,6 +646,7 @@ rule [ref-assign-obj-prop]:
 	//when notBool (Elems hasProperty X)
 	[intermediate]
 
+// we are relying on the invariant that 
 rule [ref-assign-array-elem]:
 	<k> 
 		'ReferenceAssign(ref(L':Loc, X:Key),, L1':Loc) =>  
@@ -667,7 +654,6 @@ rule [ref-assign-array-elem]:
 		rebuildArray(
 			L',X,
 			getMaxKey(SetItem(X) getLTKeys(Elems,X) getGEQKeys(Elems,X)),
-			//getMaxKey(X,getLTKeys(Elems,X) getGEQKeys(Elems,X)),
 			L1',L1,Elems) ~>
 		ref(L', X) 
 	... </k>

@@ -203,6 +203,9 @@ rule    isFloatType(X) => false
 
 syntax Bool ::=  "isIntType" "(" Value ")" 				[function]
 
+//SM-FIXME: we are relying on K conversion from string to int/float in our conversions, and that is not quite right
+// for example in php "1" == "\n1" but in kphp that hangs my shell (loop in maude)
+
 rule    isIntType(X) => true
         when (isAInt(X) ==K true) 
 
