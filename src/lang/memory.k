@@ -115,10 +115,12 @@ syntax OptionARefCount ::= ARefCount | None
 
 syntax PlainLanguageValue ::= "lub" "(" K "," K ")" [function]
 
-rule lub(V1:AInt,V2:AInt) => lub_AInt(V1,V2) // NOTE: why was commented? Why TODO? Where?
+/* NOTE: moved into sign domain (Daniele). Can we remove it?
+rule lub(V1:AInt,V2:AInt) => lub_AInt(V1,V2)
 rule lub(V1:AFloat,V2:AFloat) => lub_AFloat(V1,V2)
 rule lub(V1:ABool,V2:ABool) => lub_ABool(V1,V2)
 rule lub(V1:AString,V2:AString) => lub_AString(V1,V2)
+*/
 
 rule lub(Top,_) => Top
 rule lub(_,Top) => Top

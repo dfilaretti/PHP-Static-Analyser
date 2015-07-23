@@ -167,6 +167,10 @@ rule [run-functions]:
 	</kphp>
 	when FunctionSet =/=Set .Set
 
+rule [run-functions-undef]:
+	<k> runFunctions(_,.Set,_,_) => ERROR("undefined fun") ... </k>
+		
+
 //rule runFunctions(FName,.Set,_,_) => NOT-SUPPORTED("'" +String FName +String "' not defined!") 
 
 rule [function-name]:

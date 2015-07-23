@@ -7,13 +7,13 @@
 		};
 	}
 	else {
-		function foo() {
+		function boo() {
 			return -1;
 		}
 	}
 
 
-	$x = foo();
+	$x = kkoo();
 
 /*
 

@@ -33,6 +33,10 @@ module LATTICE
 
 
 
+rule lub(V1:AInt,V2:AInt) => lub_AInt(V1,V2)
+rule lub(V1:AFloat,V2:AFloat) => lub_AFloat(V1,V2)
+rule lub(V1:ABool,V2:ABool) => lub_ABool(V1,V2)
+rule lub(V1:AString,V2:AString) => lub_AString(V1,V2)
 
 
 syntax 	Bool ::= K "<Lattice" K		[function]
