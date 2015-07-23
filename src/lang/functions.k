@@ -53,6 +53,13 @@ rule [function-decl-ret-value]:
 	when notBool (Name in keys(Rho)) andBool (fresh(L:Loc))
 	[step]
 
+rule [function-decl-error-already-defined]:	
+	<k> 'FunctionDecl(Name:String,,_,,_) => ERROR("cannot define function twice") ... </k>
+	<functions> Rho:Map </functions> 
+	<trace> Trace:List => Trace ListItem("function-decl-ret-ref-error-already-defined") </trace>
+	when Name in keys(Rho)
+	[step]
+
 rule [function-decl-ret-ref]:	
 	<k> 'FunctionDeclRef(Name:String,, 'ListWrap(Parameters:KList),, Body:K) =>  
 		ArrayCreateEmpty(L) ~> incRefCount(L) ~>
@@ -63,13 +70,28 @@ rule [function-decl-ret-ref]:
 	when notBool (Name in keys(Rho)) andBool (fresh(L:Loc))
 	[step]
 
+rule [function-decl-error-already-defined]:	
+	<k> 'FunctionDeclRef(Name:String,,_,,_) => ERROR("cannot define function twice") ... </k>
+	<functions> Rho:Map </functions> 
+	<trace> Trace:List => Trace ListItem("function-decl-ret-ref-error-already-defined") </trace>
+	when Name in keys(Rho)
+	[step]
+
 /* make function -- stores the function in memory.  */
 
 syntax K ::= "makeFunction" "(" String "," K "," K "," K "," Loc ")" [strict(3)]
 
+/* TODO: remove when added support for conditional declaration
 rule [make-function]:	
 	<k> makeFunction(Name, 'ListWrap(Parameters:KList), visitedK(Body:K), ValueOrRef:K, L:Loc) => . ... </k>	
 	<functions> Rho:Map => Rho[f('ListWrap(Parameters), Body, ValueOrRef, L) / Name] </functions> 
+	<trace> Trace:List => Trace ListItem("make-function") </trace>
+	[internal]
+*/
+
+rule [make-function]:	
+	<k> makeFunction(Name, 'ListWrap(Parameters:KList), visitedK(Body:K), ValueOrRef:K, L:Loc) => . ... </k>	
+	<functions> ... . => Name |-> setWrap(SetItem(f('ListWrap(Parameters), Body, ValueOrRef, L))) ... </functions> 
 	<trace> Trace:List => Trace ListItem("make-function") </trace>
 	[internal]
 		
@@ -143,6 +165,10 @@ rule [run-functions]:
 	</kphp>
 	when FunctionSet =/=Set .Set
 
+rule [run-functions-undef]:
+	<k> runFunctions(_,.Set,_,_) => ERROR("undefined fun") ... </k>
+		
+
 //rule runFunctions(FName,.Set,_,_) => NOT-SUPPORTED("'" +String FName +String "' not defined!") 
 
 rule [function-name]:
@@ -183,6 +209,7 @@ rule [func-call]:
 
 syntax K ::= "functionCall1" "(" String "," K "," Int ")"
 
+/* TODO: remove when nev version (using sets of function defs) is done
 rule [func-call]:
 	<k> functionCall1(FName:String,'ListWrap(Args:KList),Lab) => 
 		runFunction(FName,FunDef,'ListWrap(Args),none,none,true,Lab,sf(FName,L,CurrentClass,CurrentObj,retTypeOfFunDef(FunDef),D,Lab)) ... </k>
@@ -192,6 +219,134 @@ rule [func-call]:
 	<class> CurrentClass:K </class>
 	<object> CurrentObj:K </object>
 	[step]
+*/
+
+/*
+rule [func-call]:
+	<kphp> 
+		<script>
+		<k> functionCall1(FName:String,Args,Lab) => 
+			mergeConfigsSet(
+				makeCallsToRunFunction(
+					(
+						Conf
+						<functions> (FName |-> setWrap(FunDefs)) Funcs </functions>
+						<functionArgumentsDeclaration> D </functionArgumentsDeclaration>
+						<currentScope> CurrentScope </currentScope>
+						<class> CurrentClass </class>
+						<object> CurrentObj </object>
+					), 
+					FName,
+					FunDefs,
+					Args,
+					Lab,
+					CurrentScope,
+					CurrentClass,
+					CurrentObj,
+					D)) ... 
+		</k>
+		_
+		</script>
+		<functions> (FName |-> setWrap(FunDefs)) Funcs </functions>
+		<functionArgumentsDeclaration> D:K => . </functionArgumentsDeclaration>
+		<currentScope> CurrentScope:Loc </currentScope>
+		<class> CurrentClass:K </class>
+		<object> CurrentObj:K </object>
+		Conf:Bag
+	</kphp>
+	[step]
+*/
+
+
+rule [func-call]:
+	
+	<k> functionCall1(FName:String,Args,Lab) => 
+		functionCall2(
+			FName,Args,Lab,FunDefs,CurrentScope,CurrentClass,CurrentObj,D
+		) ... 
+	</k>
+	<functions> (FName |-> setWrap(FunDefs)) Funcs </functions>
+	<functionArgumentsDeclaration> D:K => . </functionArgumentsDeclaration>
+	<currentScope> CurrentScope:Loc </currentScope>
+	<class> CurrentClass:K </class>
+	<object> CurrentObj:K </object>
+	[step]
+
+syntax K ::= "functionCall2" "(" String "," K "," Int "," 
+								 Set    "," Loc "," K "," K "," K ")"
+
+rule [func-call]:
+	<kphp> 
+		<script>
+		<k> functionCall2(
+				FName:String,
+				Args,
+				Lab,
+				FunDefs,
+				CurrentScope,
+				CurrentClass,
+				CurrentObj,
+				D) => 
+			mergeConfigsSet(
+				makeCallsToRunFunction(
+					Conf, 
+					FName,
+					FunDefs,
+					Args,
+					Lab,
+					CurrentScope,
+					CurrentClass,
+					CurrentObj,
+					D)) ... 
+		</k>
+		_
+		</script>
+		Conf:Bag
+	</kphp>
+	[step]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+syntax Set ::= "makeCallsToRunFunction" "(" Bag "," String "," Set  ","
+										  K 	 "," Int	 "," 
+										  Loc	 "," K		 "," K "," K ")" [function]
+
+
+rule makeCallsToRunFunction(_,_,.Set,_,_,_,_,_,_) => .Set 
+
+rule makeCallsToRunFunction(Conf,FName,SetItem(FunDef) Fs,Args,Lab,Scope,Class,Obj,D) => 
+		SetItem(
+			runAndGetConfig(
+				runInConf(
+					config(Conf),
+					runFunction(
+						FName,
+						FunDef,
+						Args,
+						none,
+						none,
+						true,
+						Lab,
+						sf(FName,Scope,Class,Obj,retTypeOfFunDef(FunDef),D,Lab))))) 
+		makeCallsToRunFunction(Conf,FName,Fs,Args,Lab,Scope,Class,Obj,D)
+
 
 /*
 rule [func-call-func-not-defined]: 
