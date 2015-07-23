@@ -5,6 +5,10 @@ module CONTROL-STRUCTURES
 
 //@ \Section{Control flow}
 
+syntax LoopFrame ::= "loopFrame" "(" K "," OptionForeachArrayPair ")"
+syntax ForeachArrayPair ::= "foreachArrayPair" "(" Loc "," OptionLoc ")"
+syntax OptionForeachArrayPair ::= ForeachArrayPair | None
+
 ///////////////////////////////////////////////////////////////////////////////
 /*@ \subsection{Conditional} */
 ///////////////////////////////////////////////////////////////////////////////

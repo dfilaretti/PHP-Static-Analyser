@@ -750,6 +750,15 @@ rule [ref-assign-language-value]:
 
 
 
+// --------------------------------------------------------------------------------------------
+/*@ \subsection{Some and None} */
+// ---------------------------------------------------------------------------------------------
+
+context 'Some(HOLE)
+rule 	'Some(V:Value) => V
+rule isKResult ('Some(X:K)) => true	    	            when isKResult(X)
+rule isKResult ('None(_)) => true
+
 
 // --------------------------------------------------------------------------------------------
 /*@ \subsection{List Assignment} */
@@ -768,8 +777,6 @@ context [list-elems-strict]:
 	[structural]
 
 rule isKResult ('List('ListWrap(X:KList))) => true 	    when isKResult(X)
-rule isKResult ('Some(X:K)) => true	    	            when isKResult(X)
-rule isKResult ('None(_)) => true
 
 rule [list-assign-RHS2Loc]: 	
 	<k> 'ListAssign(_:KResult,, (R:ConvertibleToLoc => convertToLoc(R,r))) ... </k>
@@ -1002,6 +1009,20 @@ rule [nullify]:
 			#fi)
 		... 
 	</heap>
+
+
+
+// ---------------------------------------------------------------------------------------------
+/*@ \subsection{Auxiliary predicates} */ 
+// ---------------------------------------------------------------------------------------------
+
+syntax Bool ::= "currentOverflow" "(" Map "," Loc ")" [function]
+
+rule currentOverflow(Mem:Map(L |-> zval(Array(Crnt,_),_,_,_)), L) => Crnt ==K none
+rule currentOverflow(Mem:Map(L |-> zval(V,_,_,_)), L) => false
+	when notBool (isArrayType(V))
+
+
 
 
 endmodule 

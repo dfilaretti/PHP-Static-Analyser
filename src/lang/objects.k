@@ -83,6 +83,9 @@ rule [instanceof-LHS-object-stdclass]:
 /*@ \subsection{This} */
 // ---------------------------------------------------------------------------------------------
 
+syntax ThisTag ::= "thisTag" "(" K ")" 
+rule isKResult (thisTag(_)) => true
+
 rule [this-obj-cntx]: 	
 	<k> var(X:AString) => thisTag(L) ... </k>
 	<object> L:K </object> // this could be Loc or NULL

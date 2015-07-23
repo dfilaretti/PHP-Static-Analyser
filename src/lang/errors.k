@@ -36,21 +36,21 @@ rule [notice]:
 	<trace> Trace:List => Trace ListItem("notice") </trace>
 	[internal]
 
-// An error is displayed, and the program is aborted
+// A fatal error is displayed, and then propagated to abort the current execution branch
 syntax K ::= "ERROR" "(" String ")"
-
 rule [error]:	
 	<k> (ERROR(ErrorMsg:String) => 
             print("\nFatal error: ") ~> print(ErrorMsg) ~> Bot) ~> K:K </k>
 	<errorManagement> _ => 2 </errorManagement>
 	<trace> Trace:List => Trace ListItem("error") </trace>
-        <errorDump> ... (. => mapConcat((ListItem("<error-trace>") Trace ListItem("</error-trace>")),"\n"))</errorDump> 
+        <errorDump> ... . => mapConcat((ListItem("<error-trace>") Trace ListItem("</error-trace>")),"\n")</errorDump> 
         //SM we should dump the whole confing here ideally
 	<status> X => ERR </status>
         when X =/=K ERR
 	[internal]
 
-rule [error]:	
+// already in ERR state: just propagate Bot
+rule [error]: 
 	<k> ERROR(ErrorMsg:String) => Bot ... </k> 
 	<status> ERR </status>
 	[internal]
