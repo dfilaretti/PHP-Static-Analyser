@@ -1,9 +1,7 @@
 require "memory.k"
-require "meta.k"
 
 module SHARED
 	imports MEMORY
-        imports META
 
 // =/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
 // =/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
@@ -11,13 +9,9 @@ module SHARED
 // =/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
 // =/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
 
-syntax LoopFrame ::= "loopFrame" "(" K "," OptionForeachArrayPair ")"
-
-syntax ForeachArrayPair ::= "foreachArrayPair" "(" Loc "," OptionLoc ")"
-syntax OptionForeachArrayPair ::= ForeachArrayPair | None
 
 // ---------------------------------------------------------------------------------------------
-/*@ \subsection{Helper cnstructs} */ 
+/*@ \subsection{Helper constructs} */ 
 // ---------------------------------------------------------------------------------------------
 
 syntax K ::= "*Cond" "(" K "," K "," K ")"			[strict(1)]
@@ -43,9 +37,6 @@ rule [spec-or-false]:
 	<k> *or(false, K:K) => K ... </k>
 	<trace> Trace:List => Trace ListItem("spec-or-false") </trace>
 	[internal]
-
-syntax ThisTag ::= "thisTag" "(" K ")" 
-rule isKResult (thisTag(_)) => true
 
 // ---------------------------------------------------------------------------------------------
 /*@ \subsection{Macros for solving references} */ 
@@ -79,15 +70,15 @@ rule convertToLanguageValue(V:ConvertibleToLoc) => read(convertToLoc(V,r))
 
 syntax K ::= "isEqualScalar" "(" K "," K ")" [seqstrict]
 
+/* TODO: remove
 rule [isEqual-scalar-RHS2LangValue]:
 	<k> isEqualScalar(_, (R2:ConvertibleToLanguageValue => convertToLanguageValue(R2))) ... </k>
 	<trace> Trace:List => Trace ListItem("isEqual-scalar-RHS2LangValue") </trace>
 	[intermediate]
 
-/* TODO: remove
-rule //[isEqual-scalar-LS2LangValue]:
+rule [isEqual-scalar-LHS2LangValue]:
 	<k> isEqualScalar((R1:ConvertibleToLanguageValue => convertToLanguageValue(R1)), _) ... </k>
-	//<trace> Trace:List => Trace ListItem("isEqual-scalar-LS2LangValue") </trace>
+	<trace> Trace:List => Trace ListItem("isEqual-scalar-LHS2LangValue") </trace>
 	[intermediate]
 */
 
@@ -95,19 +86,6 @@ rule [isEqual-scalar]:
 	<k> isEqualScalar(I1:Int, I2:Int) => I1 ==Int I2 ... </k>
 	<trace> Trace:List => Trace ListItem("isEqual-scalar") </trace>
 	[internal]
-
-context 'Some(HOLE)
-rule 	'Some(V:Value) => V
-
-// ---------------------------------------------------------------------------------------------
-/*@ \subsection{Auxiliary predicates} */ 
-// ---------------------------------------------------------------------------------------------
-
-syntax Bool ::= "currentOverflow" "(" Map "," Loc ")" [function]
-
-rule currentOverflow(Mem:Map(L |-> zval(Array(Crnt,_),_,_,_)), L) => Crnt ==K none
-rule currentOverflow(Mem:Map(L |-> zval(V,_,_,_)), L) => false
-	when notBool (isArrayType(V))
 
 // ---------------------------------------------------------------------------------------------
 /*@ \subsection{Visibility 2 string} */ 
@@ -120,17 +98,29 @@ rule visibility2String(protected) => "protected"
 rule visibility2String(private(_)) => "private"
 
 
+// ---------------------------------------------------------------------------------------------
+/*@ \subsection{List functions} */ 
+// ---------------------------------------------------------------------------------------------
 
-
-//////// LIST OPS
 syntax Int ::= "listLen" "(" List ")" [function]
 rule	listLen(.List) => 0
 rule	listLen(ListItem(_) L:List) => 1 +Int listLen(L)
 
+syntax List ::= "mapConcat(" List "," K ")" [function]
+rule mapConcat(.,_) => .
+rule mapConcat(H T,X) => (H ListItem(X) mapConcat(T,X))
 
 
+// ---------------------------------------------------------------------------------------------
+/*@ \subsection{Set functions} */ 
+// ---------------------------------------------------------------------------------------------
 
-
+syntax Set ::= "removeFromSet" "(" Set "," K ")" [function]
+rule 	removeFromSet(.Set,_) => .Set
+rule 	removeFromSet(SetItem(Y) S,X) => removeFromSet(S,X)
+	when X ==K Y
+rule 	removeFromSet(SetItem(Y) S, X) => SetItem(Y) removeFromSet(S,X) 
+	when X =/=K Y
 
 
 endmodule

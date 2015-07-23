@@ -41,7 +41,7 @@ configuration
 			<loopStack> .List  </loopStack> 
 			<context>
 				<currentForeachItem> .K </currentForeachItem> 
-				<object> .K </object>
+				<object> NULL </object>
                 <class> .K </class> 
                 <function> .K </function>
 			</context>
@@ -106,7 +106,7 @@ rule	<k> resetMem => . ... </k>
 		<functionStack> _ => .List </functionStack>
 		<loopStack> _ => .List </loopStack>
 		<currentScope> _ => . </currentScope>
-		<object> _ => . </object>
+		<object> _ => NULL </object>
 		<class> _ => . </class>
 		<functionArgumentsDeclaration> _ => . </functionArgumentsDeclaration>
 		<varDumpLevel> _ => 0 </varDumpLevel>

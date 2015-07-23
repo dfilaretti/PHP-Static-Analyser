@@ -160,8 +160,8 @@ rule    [binop-min-float]:
 
 // mul
 
-rule    <k> BinOp(mul,Bot,_) => Bot ... </k>
-rule    <k> BinOp(mul,_,Bot) => Bot ... </k>
+rule    <k> BinOp(_,Bot,_) => Bot ... </k>
+rule    <k> BinOp(_,_,Bot) => Bot ... </k>
 
 rule    [binop-mul-int]:    
 	<k> BinOp(mul,I1:AInt,I2:AInt) => I1 *AInt I2 ... </k>

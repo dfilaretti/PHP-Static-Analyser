@@ -1,7 +1,10 @@
 require "lang/init.k"
+require "lang/meta.k"
 
 module CONFIGURATION
 	imports INIT
+	imports META //SM: for NEXT
+
 
 // =/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
 // =/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
@@ -30,6 +33,7 @@ configuration
 			<globalScope> .K </globalScope>
         		<globalStaticScope> .K </globalStaticScope> 
         		<superGlobalScope> .K </superGlobalScope>
+			<rootScope> .K </rootScope>
 		</scopes> 
 		<thematrix> .Map </thematrix>
 		<heap color="red"> .Map </heap>
@@ -45,7 +49,7 @@ configuration
 			<loopStack> .List </loopStack> 
 			<context color="pink">
 				<currentForeachItem> .K </currentForeachItem> 
-				<object> .K </object>
+				<object> NULL </object>
                 <class> .K </class> 
                 <function> .K </function>
 			</context>

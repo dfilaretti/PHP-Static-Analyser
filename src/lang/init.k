@@ -26,7 +26,8 @@ syntax  Internal ::= "buildInitState"
 				   | "initBuiltinFunctions"
 				   | "initBuiltinClasses"
 				   | "initSuperGlobals"
-                   | "initStatus"
+  				   | "initRoot"
+		                   | "initStatus"
 				   
 
 rule [built-init-state]:	
@@ -34,9 +35,10 @@ rule [built-init-state]:
 		initDomain ~>
         initStatus ~> 
 		initScopes ~>
+		initRoot ~>
 		initBuiltinFunctions ~>
 		initBuiltinClasses ~>
-		initSuperGlobals ~>
+	initSuperGlobals ~>
 		buildArrayCompareFun ... </k>
 	<trace> Trace:List => Trace ListItem("built-init-state") </trace>
 	[internal]
@@ -285,19 +287,37 @@ rule [init-scopes]:
 		L  |-> L' 
 		L1 |-> L1'
 		L3 |-> L3'
+		L4 |-> L4'
 	</thematrix> 
 	<heap> . => 
-		L'  |-> zval(Array(none,.List), array, alphaRC(0), false) 
+		L'  |-> zval(Array(none,.List), array, alphaRC(0), false) //SM or 1?
        		L1' |-> zval(Array(none,.List), array, alphaRC(1), false) 
         	L3' |-> zval(Array(none,.List), array, alphaRC(1), false)	
+        	L4' |-> zval(Array(none,.List), array, alphaRC(1), false)	
 	</heap> 
 	<currentScope> . => L </currentScope>
 	<globalScope> . => L </globalScope>
 	<superGlobalScope> . => L1 </superGlobalScope>
 	<globalStaticScope> . => L3 </globalStaticScope>
-	when 	fresh(L:Loc) andBool fresh(L1:Loc) andBool fresh(L3:Loc) andBool
-		fresh(L':Loc) andBool fresh(L1':Loc) andBool fresh(L3':Loc)
-	
+        <rootScope> . => L4 </rootScope>
+	when 	fresh(L:Loc) andBool fresh(L1:Loc) andBool fresh(L3:Loc) andBool fresh(L4:Loc) andBool
+		fresh(L':Loc) andBool fresh(L1':Loc) andBool fresh(L3':Loc) andBool fresh(L4':Loc)
+	[internal]
+
+// ---------------------------------------------------------------------------------------------
+/*@ \subsection{Root initialization} 
+		This operation initializes the root scope. */
+// ---------------------------------------------------------------------------------------------
+
+rule [init-root]:
+	<k> initRoot => 
+			'Expr('ReferenceAssign(ref(Lr, alpha("GLOBALS")),, Lg)) ~>
+			'Expr('ReferenceAssign(ref(Lr, alpha("SUPERGLOBALS")),, Lsg))
+	... </k>    
+        <rootScope> Lr:Loc </rootScope>
+	<superGlobalScope> Lsg:Loc </superGlobalScope>
+	<globalScope> Lg:Loc  </globalScope>
+	<trace> Trace:List => Trace ListItem("init-superglobals") </trace>
 	[internal]
 
 // ---------------------------------------------------------------------------------------------

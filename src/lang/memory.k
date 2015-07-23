@@ -1,12 +1,9 @@
 require "objects.k"
 require "arrays.k"
-require "shared.k"
-
 
 module MEMORY
 	imports OBJECTS
 	imports ARRAYS
-	imports SHARED
 	
 // =/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
 // =/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
@@ -56,8 +53,8 @@ syntax ArrayItemVisibility ::= "public" | "protected" | "private" "(" Id ")"
 
 // Keys can be Int or String. We use NULL to designate cases when no key is provided when 
 // accessing an array (e.g. $x[] = 0). In such cases a default integer key will be provided.
-syntax Key ::= AInt | AString | SpecialValue
-syntax Key ::= "NoKey"
+syntax Key ::= AInt | AString
+syntax Key ::= "NoKey" | SpecialValue | Top
 rule isKResult(K:Key) => true
 
 // For specification purpose language values are not enough, so we need to add other
@@ -76,7 +73,7 @@ syntax RefType  ::= "arr" | "obj" | "nul"
 		  | "bot" // only used in 'ReferenceAssign
 
 syntax Ref ::= BasicRef | LRef | "refNull"
-syntax BasicRef ::= "ref" "(" Loc "," Key ")" [strict(1), klabel('ref)] 
+syntax BasicRef ::= "ref" "(" LocB "," Key ")" [strict(1), klabel('ref)] 
 syntax LRef 	::= "lref" "(" Ref "," Key "," RefType ")" [strict(1), klabel('lref)]  
 
 // Literal values are used in order to delay the evaluation of literal arrays and 
@@ -205,6 +202,9 @@ rule    isFloatType(X) => false
 
 
 syntax Bool ::=  "isIntType" "(" Value ")" 				[function]
+
+//SM-FIXME: we are relying on K conversion from string to int/float in our conversions, and that is not quite right
+// for example in php "1" == "\n1" but in kphp that hangs my shell (loop in maude)
 
 rule    isIntType(X) => true
         when (isAInt(X) ==K true) 
