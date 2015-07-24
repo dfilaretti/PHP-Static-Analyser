@@ -460,20 +460,41 @@ rule [type-juggling-5-none]:
 	<trace> Trace:List => Trace ListItem("type-juggling-5-none") </trace>
 	when (unsatisfiable(isObject(L)) andBool unsatisfiable(isObject(R)))
 
-rule [type-juggling-5-not-LHS]
+rule [type-juggling-5-not-LHS]:
 	<k> comparisonTypeJuggling5(Op, L, R) => lub(comparisonTypeJuggling6(Op, L, R), comparisonRIsGreater(Op)) ... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-5-not-LHS") </trace>
 	when (unsatisfiable(isObject(L)) andBool notBool(unsatisfiable(isObject(R))))
 
-rule [type-juggling-5-not-RHS]
+rule [type-juggling-5-not-RHS]:
 	<k> comparisonTypeJuggling5(Op, L, R) => lub(comparisonTypeJuggling6(Op, L, R), comparisonLIsGreater(Op)) ... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-5-not-RHS") </trace>
 	when (unsatisfiable(isObject(R)) andBool notBool(unsatisfiable(isObject(L))))
 
-rule [type-juggling-5-top]
+rule [type-juggling-5-top]:
 	<k> comparisonTypeJuggling5(Op, L, R) => *toBoolean(Top) ... </k>		//this should be a lub of many things, but by construction it always evaluates to the top Boolean
 	<trace> Trace:List => Trace ListItem("type-juggling-5-top") </trace>
 	when (notBool(unsatisfiable(isObject(R))) andBool notBool(unsatisfiable(isObject(L))) andBool notBool(valid(isObject(L))) andBool notBool(valid(isObject(R))))
+	
+//finally, if only one of the args is an array it's greater, else Top (impossible that both/none are arrays in concrete)
+
+rule [type-juggling-6-LHS]:
+	<k> comparisonTypeJuggling6(Op, L, R) => comparisonLIsGreater(Op) ... </k>
+	<trace> Trace:List => Trace ListItem("type-juggling-6-LHS") </trace>
+	when (valid(isArray(L)))
+
+//this can't happen at the same time as the one above in any domain
+rule [type-juggling-6-RHS]:
+	<k> comparisonTypeJuggling6(Op, L, R) => comparisonRIsGreater(Op) ... </k>
+	<trace> Trace:List => Trace ListItem("type-juggling-6-RHS") </trace>
+	when (valid(isArray(R)))
+
+//if none of them is certainly an array, return Top
+
+rule [type-juggling-6-top]:
+	<k> comparisonTypeJuggling6(Op, L, R) => *toBoolean(Top)	... </k>
+	<trace> Trace:List => Trace ListItem("type-juggling-6-top") </trace>
+	when notBool ((valid(isArray(L))) orBool valid(isArray(R)))
+
 
 /*
 rule [isEqual-type-juggling-1-1]: 	
