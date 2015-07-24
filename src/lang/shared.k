@@ -130,15 +130,18 @@ rule 	removeFromSet(SetItem(Y) S, X) => SetItem(Y) removeFromSet(S,X)
 // given a lattice element and a set of lattice elements, computes the set of lattice elements that intersect with the given one, and transitively with each other
 // example: give [5] and {[2..5],[6..8],[1..3]} it returns {[2..5],[1..3]}
 syntax  List ::= "intersectClose" "(" K "," List ")" [function]
-rule intersectClose(K,L) => _iC(K,L,L)
+rule intersectClose(K,L) => iC(K,L,L)
 
-syntax  List ::= "_iC" "(" K "," List "," List ")" [function]
-rule 	_iC(X,ListItem(H) T,L) => (ListItem(H) _iC(lub(X,H),T,T))
-	when Bot =/=Lattice glb(X,H)
-rule 	_iC(X,ListItem(H) T,L) => _iC(X,T ListItem(H),L)
+syntax  List ::= "iC" "(" K "," List "," List ")" [function]
+rule 	iC(X,ListItem(H) T,L) => (ListItem(H) iC(lub(X,H),T,T))
+	when notBool (Bot ==Lattice glb(X,H))
+rule 	iC(X,ListItem(H) T,L) => iC(X,T ListItem(H),L)
 	when (Bot ==Lattice glb(X,H)) andBool ((T ListItem(H)) =/=List L)
-rule 	_iC(X,ListItem(H) T,L) => .List
+rule 	iC(X,ListItem(H) T,L) => .List
 	when (Bot ==Lattice glb(X,H)) andBool ((T ListItem(H)) ==List L)
+
+syntax  Bool ::= K "<=Lattice" K [function]
+rule V <=Lattice U => (V <Lattice U) orBool (V ==Lattice U)
 
 
 endmodule

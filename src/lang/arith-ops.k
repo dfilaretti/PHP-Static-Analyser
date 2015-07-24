@@ -1,5 +1,5 @@
 require "shared.k"
-//require "model-checking.k"
+//equire "model-checking.k"
 
 module ARITH-OPS 
     imports SHARED

@@ -134,6 +134,11 @@ module LATTICE
 	   rule lub_Value(Bot, V) => V
 	   
 	   rule lub_Value(V, Bot) => V
+
+//SM temporary hack to run examples
+           rule lub_Value(X,NULL) => Top when X =/=K NULL
+           rule lub_Value(NULL,X) => Top when X =/=K NULL
+           rule lub_Value(NULL,NULL) => NULL
 	   
 	   syntax Scalar ::= "valueOfErr"  "(" ErrFlag ")" [function]
 	   

@@ -29,7 +29,7 @@ syntax Bot ::= "Bot"
 syntax ScalarValue ::= AInt | AFloat | ABool | AString     
 syntax CompoundValue ::= Object | Array
 syntax Null ::= "NULL"
-syntax SpecialValue ::= Null //SM why is null non scalar? do we ever use glb,lub on Compound? if not they should use Scalar, not Plain
+syntax SpecialValue ::= Null 
 
 syntax LocB ::= Bot | Loc
 
@@ -112,33 +112,18 @@ syntax OptionARefCount ::= ARefCount | None
 syntax PlainLanguageValue ::= "lub" "(" K "," K ")" [function]
 
 rule lub(Top,_) => Top
-rule lub(X,Top) => Top when X=/=Top //to avoid nondeterminism
+rule lub(X,Top) => Top 
 
-rule lub(X,Bot) => X when X=/=Top
-rule lub(Bot,X) => X when X=/=Top
+rule lub(X,Bot) => X 
+rule lub(Bot,X) => X 
 
 syntax PlainLanguageValue ::= "glb" "(" K "," K ")" [function]
 
 rule glb(Bot,_) => Bot
-rule glb(X,Bot) => Bot when X=/=Bot
+rule glb(X,Bot) => Bot 
 
-rule glb(Top,X) => X when X=/=Bot
-rule glb(X,Top) => X when X=/=Bot
-
-
-//SM: i don't understnad the comment below and the purpose of the commented rule. please clarify or remove
-// NOTE: doesn't work for booleans! 
- 
- /*
-rule lub(V1,V2) => Top
-	when (V1 =/=K Bot andBool V2 =/=K Bot) andBool
-		(getKLabel(V1) =/=KLabel getKLabel(V2))
-*/
-
-
-
-
-
+rule glb(Top,X) => X 
+rule glb(X,Top) => X 
 
 
 
@@ -656,6 +641,26 @@ rule [array-create-elem-update-crnt]:
 	</heap> 
 	[internal]
 	
+
+/* Aliases an element, or creates it if don't exists  */
+
+syntax K ::= "ArrayAliasElem" "(" Loc "," Key "," Loc ")"
+
+rule [array-alias-elem-update]:
+	<k> ArrayAliasElem(L':Loc, X:Key, L2:Loc) => . ... </k>
+	<thematrix> ... L' |-> L1 L3' |-> (_=>L2) ... </thematrix>	
+	<heap>... L1 |-> zval(Array(_,_ ListItem([X,_,L3']) _),_,_,_)  ...</heap>    
+	<trace> Trace:List => Trace ListItem("array-alias-elem-update") </trace>
+	[internal]
+
+rule [array-alias-elem-create]:    
+	<k> ArrayAliasElem(L1':Loc, X:Key, L2:Loc) => ArrayCreateElem(L1', X, public, L2') ... </k>
+	<thematrix> ... L1' |-> L1 (. => L2' |-> L2) ... </thematrix>	
+	<heap>... L1 |-> zval(Array(_,Elems),_,_,_)  ...</heap>
+	<trace> Trace:List => Trace ListItem("array-alias-elem-create") </trace>
+	when (notBool (Elems hasProperty X)) andBool fresh(L2':Loc)
+	[internal]
+
 /* Updates an element, or creates it if don't exists  */
 
 syntax K ::= "ArrayUpdateElem" "(" Loc "," Key "," Loc ")"
@@ -1130,7 +1135,8 @@ rule zval2val(zval(V:PlainLanguageValue,_,_,_)) => V
 
 
 
-
+//SM perhaps decide fragmentation here?
+//SM we think we may currently miss the case of lubbing null for non-fully-fragmented keys
 
 // Inserts a key into an array 
 // the insertion strategy depends on wether there exist a "bigger" key or 

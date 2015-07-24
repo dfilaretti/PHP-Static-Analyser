@@ -279,7 +279,7 @@ syntax  Key ::= "pickScope" "(" AString ")"	[function]
 
 rule
 	pickScope(X) => alpha("SUPERGLOBALS")
-	when 	(X <Lattice lub(alpha("_GET"),lub(alpha("_POST"),alpha("GLOBALS"))))
+	when 	(X <=Lattice alpha("_GET")) orBool (X <=Lattice alpha("_POST")) orBool (X <=Lattice alpha("_GLOBALS"))
             	
 rule
 	pickScope(X) => alpha("GLOBALS")
@@ -303,7 +303,7 @@ syntax Bool ::= "isNotSpecialVar" "(" AString ")"		[function]
 syntax Bool ::= "maybeSpecialVar" "(" AString ")"		[function]
 
 rule 	maybeSpecialVar(X) => (alpha("this") <Lattice X)
-rule	isNotSpecialVar(X) => notBool maybeSpecialVar(X)
+rule	isNotSpecialVar(X) => (notBool maybeSpecialVar(X))
 rule	isSpecialVar(X) => (alpha("this") ==Lattice X)
 
 
@@ -653,7 +653,7 @@ rule [ref-assign-array-elem]:
 		rebuildArray(
 			L',X,
 			getMaxKey(SetItem(X) getLTKeys(Elems,X) getGEQKeys(Elems,X)),
-			L1',L1,Elems) ~>
+			L1',L1,arrayRemove(Elems,X)) ~>
 		ref(L', X) 
 	... </k>
 	<thematrix> 
@@ -669,7 +669,33 @@ rule [ref-assign-array-elem]:
 	... 
 	</heap>
 	<trace> Trace:List => Trace ListItem("ref-assign-fresh-array-elem") </trace>
-	//when notBool (Elems hasProperty X)
+	when isGammaSingleton(X)
+	[step]
+
+rule [ref-assign-array-elem-weak]:
+	<k> 
+		'ReferenceAssign(ref(L':Loc, X:Key),, L1':Loc) =>              	
+		rebuildArray(
+			L',X,
+			getMaxKey(SetItem(X) getLTKeys(Elems,X) getGEQKeys(Elems,X)),
+			L1',L1,Elems) ~>		
+		ArrayAliasElem(L', X, L1) ~>
+		ref(L', X) 
+	... </k>
+	<thematrix> 
+	... 
+		L'  |-> L 
+		L1' |-> L1
+	... 
+	</thematrix>	
+        <heap> 
+	... 
+		L  |-> zval(Array(_,Elems),_,_,_) 
+		L1 |-> _ 
+	... 
+	</heap>
+	<trace> Trace:List => Trace ListItem("ref-assign-fresh-array-elem-weak") </trace>
+	when notBool isGammaSingleton(X)
 	[step]
 
 
@@ -692,7 +718,6 @@ rule rebuildArray(L',X,MaxKey,L1',L1,Elems) =>
 		mergeValuesAtLocs(
 			bot,
 			SetItem(L1')
-			// NOTE: in the old rule, I used to REMOVE X from the set below... 
 			KeySet2LocSet(getLTKeys(Elems,MaxKey) getGEQKeys(Elems,MaxKey),Elems)),
 		L1',
 		true) ~>
