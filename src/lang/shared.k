@@ -123,4 +123,22 @@ rule 	removeFromSet(SetItem(Y) S, X) => SetItem(Y) removeFromSet(S,X)
 	when X =/=K Y
 
 
+// ---------------------------------------------------------------------------------------------
+/*@ \subsection{Lattice functions} */ 
+// ---------------------------------------------------------------------------------------------
+
+// given a lattice element and a set of lattice elements, computes the set of lattice elements that intersect with the given one, and transitively with each other
+// example: give [5] and {[2..5],[6..8],[1..3]} it returns {[2..5],[1..3]}
+syntax  List ::= "intersectClose" "(" K "," List ")" [function]
+rule intersectClose(K,L) => _iC(K,L,L)
+
+syntax  List ::= "_iC" "(" K "," List "," List ")" [function]
+rule 	_iC(X,ListItem(H) T,L) => (ListItem(H) _iC(lub(X,H),T,T))
+	when Bot =/=Lattice glb(X,H)
+rule 	_iC(X,ListItem(H) T,L) => _iC(X,T ListItem(H),L)
+	when (Bot ==Lattice glb(X,H)) andBool ((T ListItem(H)) =/=List L)
+rule 	_iC(X,ListItem(H) T,L) => .List
+	when (Bot ==Lattice glb(X,H)) andBool ((T ListItem(H)) ==List L)
+
+
 endmodule

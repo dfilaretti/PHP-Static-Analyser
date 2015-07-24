@@ -29,10 +29,9 @@ syntax Bot ::= "Bot"
 syntax ScalarValue ::= AInt | AFloat | ABool | AString     
 syntax CompoundValue ::= Object | Array
 syntax Null ::= "NULL"
-syntax SpecialValue ::= Null
+syntax SpecialValue ::= Null //SM why is null non scalar? do we ever use glb,lub on Compound? if not they should use Scalar, not Plain
 
 syntax LocB ::= Bot | Loc
-syntax ScalarValue ::= Bot
 
 // We represent objects as triples consisting of the name of the class, the instance no.
 // (which is completely implementation-dependent) and a Table.
@@ -112,19 +111,22 @@ syntax OptionARefCount ::= ARefCount | None
 
 syntax PlainLanguageValue ::= "lub" "(" K "," K ")" [function]
 
-/* NOTE: moved into sign domain (Daniele). Can we remove it?
-rule lub(V1:AInt,V2:AInt) => lub_AInt(V1,V2)
-rule lub(V1:AFloat,V2:AFloat) => lub_AFloat(V1,V2)
-rule lub(V1:ABool,V2:ABool) => lub_ABool(V1,V2)
-rule lub(V1:AString,V2:AString) => lub_AString(V1,V2)
-*/
-
 rule lub(Top,_) => Top
-rule lub(_,Top) => Top
+rule lub(X,Top) => Top when X=/=Top //to avoid nondeterminism
 
-rule lub(Bot,X) => X
-rule lub(X,Bot) => X
+rule lub(X,Bot) => X when X=/=Top
+rule lub(Bot,X) => X when X=/=Top
 
+syntax PlainLanguageValue ::= "glb" "(" K "," K ")" [function]
+
+rule glb(Bot,_) => Bot
+rule glb(X,Bot) => Bot when X=/=Bot
+
+rule glb(Top,X) => X when X=/=Bot
+rule glb(X,Top) => X when X=/=Bot
+
+
+//SM: i don't understnad the comment below and the purpose of the commented rule. please clarify or remove
 // NOTE: doesn't work for booleans! 
  
  /*
