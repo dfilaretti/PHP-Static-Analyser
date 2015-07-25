@@ -330,6 +330,7 @@ rule [init-superglobals]:
 			'Expr('Assign(ref(Lsg, alpha("_GET")),, 'Array('ListWrap(.KList)))) ~>
 			'Expr('Assign(ref(Lsg, alpha("_COOKIE")),, 'Array('ListWrap(.KList)))) ~>
 			'Expr('Assign(ref(Lsg, alpha("_POST")),, 'Array('ListWrap(.KList)))) ~>
+			'Expr('Assign(ref(Lsg, alpha("_FILES")),, 'Array('ListWrap(.KList)))) ~>
 			'Expr('ReferenceAssign(ref(Lsg, alpha("GLOBALS")),, Lg))
 	... </k>    
 	<superGlobalScope> Lsg:Loc </superGlobalScope>

@@ -1,7 +1,6 @@
 require "program-transformations.k"
 require "builtin-functions.k"
 require "meta.k"
-
 require "../domains/domain/domain.k"
 
 module CORE 
@@ -11,9 +10,8 @@ module CORE
 	imports DOMAIN
 	imports ID-HOOKS
 
-syntax Domain ::= "Concrete"
-				| "Signs"
-				| "Types"
+syntax Domain ::= "Concrete" | "Signs" | "Types"
+
 
 // =/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
 // =/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
@@ -39,12 +37,12 @@ syntax K ::= "runScript" "(" K ")"
 rule runScript(Prog:K) => 
 		addSourceLabels(Prog)  
 		~> refactor 		
-		~> detectDeprecated 
+		~> checkDeprecated 
 		~> initStatic
 
-syntax K ::= "detectDeprecated"
+syntax K ::= "checkDeprecated"
 
-rule 	(quotedCode(Prog:K) ~> detectDeprecated) => detectDeprecated(Prog)
+rule 	(quotedCode(Prog:K) ~> checkDeprecated) => detectDeprecated(Prog)
 
 syntax K ::= "initStatic"
 
@@ -105,68 +103,33 @@ rule [template-document-echo]:
 
 rule    [literal-int]:
 	    <k> 'LNumber('Deci(Str:String)) => alpha(String2Int(Str)) ... </k>
-	    [structural]
-
-rule    [literal-float]:
-	    <k> 'DNumber(Str:String) => alpha(String2Float(Str)) ... </k>
-	    [structural]
-
-rule    [literal-string]:
-	    <k> 'Literal(Str:String) => alpha(Str)	... </k>
-	    [structural]
-
-rule    [literal-true]:
-	    <k> 'True(_) => alpha(true) ... </k>
-    	[structural]
-
-rule    [literal-false]:
-	    <k> 'False(_) => alpha(false) ... </k>
-	    [structural]
-
-rule    [literal-null]:
-	    <k> 'Null(_) => alpha(NULL) ... </k>
-	    [structural]		
-
-
-
-
-/* TODO: remove when done
-rule    [literal-int]:
-	    <k> 'LNumber('Deci(Str:String)) => String2Int(Str) ... </k>
 	    <trace> Trace:List => Trace ListItem("literal-int") </trace>
 	    [structural]
 
 rule    [literal-float]:
-	    <k> 'DNumber(Str:String) => String2Float(Str) ... </k>
+	    <k> 'DNumber(Str:String) => alpha(String2Float(Str)) ... </k>
 	    <trace> Trace:List => Trace ListItem("literal-float") </trace>
 	    [structural]
 
-// can be removed?
-//rule [hello]:
-//	<k> 'Deci(V:Value) => V ... </k>
-//	<trace> Trace:List => Trace ListItem("hello") </trace>
-//	[structural]
-
 rule    [literal-string]:
-	    <k> 'Literal(Str:String) => Str	... </k>
+	    <k> 'Literal(Str:String) => alpha(Str)	... </k>
 	    <trace> Trace:List => Trace ListItem("literal-string") </trace>
 	    [structural]
 
 rule    [literal-true]:
-	    <k> 'True(_) => true ... </k>
+	    <k> 'True(_) => alpha(true) ... </k>
 	    <trace> Trace:List => Trace ListItem("literal-true") </trace>
     	[structural]
 
 rule    [literal-false]:
-	    <k> 'False(_) => false ... </k>
+	    <k> 'False(_) => alpha(false) ... </k>
 	    <trace> Trace:List => Trace ListItem("literal-false") </trace>
 	    [structural]
 
 rule    [literal-null]:
-	    <k> 'Null(_) => NULL ... </k>
+	    <k> 'Null(_) => alpha(NULL) ... </k>
 	    <trace> Trace:List => Trace ListItem("literal-null") </trace>
 	    [structural]		
-*/
 
 
 // ---------------------------------------------------------------------------------------------
@@ -272,28 +235,30 @@ rule [var]:
 //SM-FIXME this rule is wrong: we need to separate 'maybe' case out, and in that case merge with this-obj-cntx
 // in particular, the case for "this" is currently wrong
 
-/*@ The following auxiliary predicate returns true if the variable is a superglobal, 
-	false otherwise */
+/*@ The following auxiliary function returns the key in the rootScope array containing the scope where X should be resolved.*/
+
+syntax  List ::= "superglobalKeys()" [function]
+rule superglobalKeys() => 
+ListItem(alpha("_GET")) 
+ListItem(alpha("_POST")) 
+ListItem(alpha("GLOBALS"))
+ListItem(alpha("_COOKIE"))
+ListItem(alpha("_FILES"))
 
 syntax  Key ::= "pickScope" "(" AString ")"	[function]
 
-rule
-	pickScope(X) => alpha("SUPERGLOBALS")
-	when 	(X <=Lattice alpha("_GET")) orBool (X <=Lattice alpha("_POST")) orBool (X <=Lattice alpha("_GLOBALS"))
-            	
-rule
-	pickScope(X) => alpha("GLOBALS")
-	when 	notBool((alpha("_GET")<Lattice X) orBool 
-		        (alpha("_GLOBALS")<Lattice X) orBool 
-		        (alpha("_POST")<Lattice X))
+rule pickScope(X) => alpha("SUPERGLOBALS")
+     when foldrorBool(false,mapX<=Lattice(X,superglobalKeys()))
 
-rule
-	pickScope(X) => Top
-	when 	(notBool(X <Lattice lub(alpha("_GET"),lub(alpha("_POST"),alpha("GLOBALS")))))
-            	andBool
-                ((alpha("_GET")<Lattice X) orBool 
-		 (alpha("_GLOBALS")<Lattice X) orBool 
-		 (alpha("_POST")<Lattice X))
+rule pickScope(X) => alpha("GLOBALS")
+     when notBool foldrorBool(false,map<=LatticeX(X,superglobalKeys()))
+
+rule pickScope(X) => Top
+     when notBool((
+     foldrorBool(false,mapX<=Lattice(X,superglobalKeys()))
+     ) orBool (
+     notBool foldrorBool(false,map<=LatticeX(X,superglobalKeys()))
+     ))
 
 /*@ The following auxiliary predicate returns true if the variable is special (e.g. this), 
 	false otherwise  */
@@ -645,7 +610,6 @@ rule [ref-assign-obj-prop]:
 	//when notBool (Elems hasProperty X)
 	[intermediate]
 
-// we are relying on the invariant that 
 rule [ref-assign-array-elem]:
 	<k> 
 		'ReferenceAssign(ref(L':Loc, X:Key),, L1':Loc) =>  
@@ -653,7 +617,7 @@ rule [ref-assign-array-elem]:
 		rebuildArray(
 			L',X,
 			getMaxKey(SetItem(X) getLTKeys(Elems,X) getGEQKeys(Elems,X)),
-			L1',L1,arrayRemove(Elems,X)) ~>
+			L1',L1,arrayRemove(Elems,X)) ~> //if x is a singleton, it should not be lubbed to the aliasing source
 		ref(L', X) 
 	... </k>
 	<thematrix> 
