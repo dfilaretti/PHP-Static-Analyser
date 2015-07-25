@@ -142,6 +142,9 @@ rule 	intersectClose1(X,ListItem(H) T,L) => .List
 	when (Bot ==Lattice glb(X,H)) andBool ((T ListItem(H)) ==List L)
 
 
+syntax  Bool ::= K "=/=Lattice" K [function]
+rule V =/=Lattice U => notBool(V ==Lattice U)
+
 syntax  Bool ::= K "<=Lattice" K [function]
 rule V <=Lattice U => (V <Lattice U) orBool (V ==Lattice U)
 
@@ -151,6 +154,10 @@ rule V >Lattice U => U <Lattice V
 syntax  Bool ::= K ">=Lattice" K [function]
 rule V >=Lattice U => U <=Lattice V
 
+
+syntax List ::=  "mapglb=/=LatticeBot(" K "," List ")" [function]
+rule mapglb=/=LatticeBot(_,.) => .
+rule mapglb=/=LatticeBot(X,ListItem(H) T) => ListItem(glb(H,X) =/=K Bot) mapglb=/=LatticeBot(X,T) 
 
 syntax List ::=  "map<=LatticeX(" K "," List ")" [function]
 rule map<=LatticeX(_,.) => .

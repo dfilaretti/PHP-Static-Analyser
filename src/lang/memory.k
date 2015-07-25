@@ -125,7 +125,16 @@ rule glb(X,Bot) => Bot
 rule glb(Top,X) => X 
 rule glb(X,Top) => X 
 
+//SM-FIXME needs to go to domain, and needs to be generalized
+rule glb(X,Y) => X 
+     when X <=Lattice Y 
+rule glb(X,Y) => Y 
+     when Y <Lattice X 
+rule glb(X:AString,Y:AString) => Bot 
+     when notBool((Y <Lattice X) orBool (X <=Lattice Y))
 
+rule X ==Lattice Y => true
+     when X ==K Y
 
 /*
 syntax Bool "hasDifferentType" "(" PlainLanguageValue "," PlainLanguageValue ")" [predicate]

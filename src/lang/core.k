@@ -229,14 +229,15 @@ rule [var2Id]:
 rule [var]:   
 	<k> var(X:AString)  => lref(ref(Lr,pickScope(X)),X,arr) ... </k>
 	<rootScope> Lr:Loc </rootScope>
+	<trace> Trace:List => Trace ListItem("var") </trace>
 	when isNotSpecialVar(X) orBool maybeSpecialVar(X)
 	[step]
 
-//SM-FIXME this rule is wrong: we need to separate 'maybe' case out, and in that case merge with this-obj-cntx
+//SM-FIXME the rule above is wrong: we need to separate 'maybe' case out, and in that case merge with this-obj-cntx
 // in particular, the case for "this" is currently wrong
 
-/*@ The following auxiliary function returns the key in the rootScope array containing the scope where X should be resolved.*/
 
+//SM this should read the keys off the global scope instead of hard-coding them
 syntax  List ::= "superglobalKeys()" [function]
 rule superglobalKeys() => 
 ListItem(alpha("_GET")) 
@@ -245,20 +246,24 @@ ListItem(alpha("GLOBALS"))
 ListItem(alpha("_COOKIE"))
 ListItem(alpha("_FILES"))
 
+/*@ The following auxiliary function returns the key in the rootScope array containing the scope where X should be resolved.*/
 syntax  Key ::= "pickScope" "(" AString ")"	[function]
 
 rule pickScope(X) => alpha("SUPERGLOBALS")
-     when foldrorBool(false,mapX<=Lattice(X,superglobalKeys()))
+     when containedInKeys(X,superglobalKeys())
 
 rule pickScope(X) => alpha("GLOBALS")
-     when notBool foldrorBool(false,map<=LatticeX(X,superglobalKeys()))
+     when doesNotIntersectKeys(X,superglobalKeys())
 
 rule pickScope(X) => Top
-     when notBool((
-     foldrorBool(false,mapX<=Lattice(X,superglobalKeys()))
-     ) orBool (
-     notBool foldrorBool(false,map<=LatticeX(X,superglobalKeys()))
-     ))
+     when maybeInKeys(X,superglobalKeys())
+
+syntax Bool ::= "containedInKeys" "(" AString "," List ")"		[function]
+syntax Bool ::= "doesNotIntersectKeys" "(" AString "," List ")"		[function]
+syntax Bool ::= "maybeInKeys" "(" AString "," List ")"		[function]
+rule containedInKeys(X,Y) => foldrorBool(false,mapX<=Lattice(X,Y)) //SM misses "contained fragmented" case, but still sound
+rule doesNotIntersectKeys(X,Y) => notBool foldrorBool(false,mapglb=/=LatticeBot(X,Y)) 
+rule maybeInKeys(X,Y) => notBool(containedInKeys(X,Y) orBool doesNotIntersectKeys(X,Y)) 
 
 /*@ The following auxiliary predicate returns true if the variable is special (e.g. this), 
 	false otherwise  */
