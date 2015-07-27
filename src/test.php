@@ -1,31 +1,23 @@
 <?php
 
+<<<<<<< HEAD
 $x[NULL] = 123;
 var_dump($x);
 
 /*
-
-	if (2 == 2) {
-		function foo() {
-			return 1;
-		};
-	}
-	else {
-		function boo() {
-			return -1;
-		}
-	}
-
-
-	$x = kkoo();
-*/
+=======
 /*
+class foo { 
+	public $a = "foo";
+	public function bar() { 
+		echo $this->a;
+		$x="this";
+		echo $$x->a;
+	} 
+} 
 
-	if (2 == 2) {
-		$x = 1;
-	}
-	else {
-		$x = -1;
-	}
+$y = new foo;
+$y->bar();
 */
+
 ?>

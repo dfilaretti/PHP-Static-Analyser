@@ -2,7 +2,7 @@ require "errors.k"
 require "functions.k"
 module CLASSES 
     imports ERRORS
-	imports FUNCTIONS
+    imports FUNCTIONS
 
 	syntax Id ::= "this" | "stdClass" | "ROOT"
     

@@ -83,19 +83,26 @@ rule [instanceof-LHS-object-stdclass]:
 /*@ \subsection{This} */
 // ---------------------------------------------------------------------------------------------
 
+syntax ThisTag ::= "thisTag" "(" K ")" 
+rule isKResult (thisTag(_)) => true
+
 rule [this-obj-cntx]: 	
-	<k> var(X:Id) => thisTag(L) ... </k>
-	<object> L:Loc </object>
-	<trace> Trace:List => Trace ListItem("this-obj-cntx") </trace>
-	when Id2String(X) ==String "this"
+	<k> var(X:AString) => thisTag(L) ... </k>
+	<object> L:K </object> // this could be Loc or NULL
+	<trace> Trace:List => Trace ListItem("this-obj") </trace>
+	when isSpecialVar(X)
 	[step]
 
-rule [this-no-obj-cntx]: 	
-	<k> var(X:Id) => thisTag(NULL) ... </k>
-	<object> .K </object>
-	<trace> Trace:List => Trace ListItem("this-no-obj-cntx") </trace>
-	when Id2String(X) ==String "this"
+/* SM: need an extra case with condition maybeSpecialVar doing the merge of case above and below
+
+rule [var] :   
+	<k> var(X:AString)  => lref(ref(Lr,pickScope(X)), X) ... </k>
+	<currentScope> Lg:Loc </currentScope>
+	<superGlobalScope> Lsg:Loc </superGlobalScope>
+	when isNotSpecialVar(X)
 	[step]
+/*
+
 
 // ---------------------------------------------------------------------------------------------
 /*@ \subsection{Object creation (new construct)} */
@@ -248,7 +255,6 @@ rule [ref-assign-fresh-array-elem]:
             	ArrayUpdateElem(L', X, L1') ~>
 		rebuildArray(
 			L',X,
-			getMaxKey(X,getLTKeys(Elems,X) getGEQKeys(Elems,X)),
 			L1',L1,Elems) ~>
 		ref(L', X) 
 	... </k>
@@ -267,6 +273,35 @@ rule [ref-assign-fresh-array-elem]:
 	<trace> Trace:List => Trace ListItem("ref-assign-fresh-array-elem") </trace>
 	//when notBool (Elems hasProperty X)
 	[step]
+
+//SM delete
+/*
+rule [ref-assign-fresh-array-elem]:
+	<k> 
+		'ReferenceAssign(ref(L':Loc, X:Key),, L1':Loc) =>  
+            	ArrayUpdateElem(L', X, L1') ~>
+		rebuildArray(
+			L',X,
+			getMaxKey(SetItem(X) getLTKeys(Elems,X) getGEQKeys(Elems,X)),
+			L1',L1,Elems) ~>
+		ref(L', X) 
+	... </k>
+	<thematrix> 
+	... 
+		L'  |-> L 
+		L1' |-> L1
+	... 
+	</thematrix>	
+        <heap> 
+	... 
+		L  |-> zval(Array(_,Elems),_,_,_) 
+		L1 |-> _ 
+	... 
+	</heap>
+	<trace> Trace:List => Trace ListItem("ref-assign-fresh-array-elem") </trace>
+	//when notBool (Elems hasProperty X)
+	[step]
+*/
 
 rule [obj-access-nested]:
 	<k> 'ObjectAccess(R:Ref,, K:Key) => lref(R, K, obj) ... </k>
