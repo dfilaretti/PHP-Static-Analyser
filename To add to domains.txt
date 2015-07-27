@@ -1,6 +1,16 @@
-To add to lang (at least syntax) : *toNumber
-
 To add to domains : 
 
 isNull isString isBoolean isNumericString(AString) isObject isArray (?) => ABool	(to use with valid, unsat)
 *toObject, *toNumber (id for float and ints, goes to int or float for strings, to ints for other values ?)
+
+Check string2Number
+
+Comparisons for : 
+
+string string
+bool bool (false < true)
+num num
+array array
+obj obj
+
+

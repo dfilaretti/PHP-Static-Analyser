@@ -44,11 +44,10 @@ rule isGammaSingleton(N:ANum)=> false
 
 rule isGammaSingleton(B:ABool) => false
 
-rule isGammaSingleton( (S:String, .List) ) => true
+rule isGammaSingleton( (S:String, L) ) => notBool(MayBeNull inList L)
 
 rule isGammaSingleton ( (AStringTop, _) ) => false
 
-rule isGammaSingleton( (S:String, ListItem(_) _ )) => false
 
 rule isGammaSingleton(Top) => false
 

@@ -402,7 +402,7 @@ rule [type-juggling-2-merge]:
 //"resource" types should be handled here and converted to numbers as well
 
 rule [type-juggling-3-true]:
-	<k> comparisonTypeJuggling3(Op, L, R) => comparison(Op, *toNumber(L), *toNumber(R)) ... </k>
+	<k> comparisonTypeJuggling3(Op, L, R) => comparison(Op, *toFloat(L), *toFloat(R)) ... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-3-true") </trace>
 when ((valid(isString(L)) orBool valid(isNumber(L))) andBool (valid(isString(R)) orBool valid(isNumber(R))))
 
@@ -412,7 +412,7 @@ rule [type-juggling-3-false]:
 when ((unsatisfiable(isString(L)) andBool unsatisfiable(isNumber(L))) orBool (unsatisfiable(isString(R)) andBool unsatisfiable(isNumber(R))))
 
 rule [type-juggling-3-merge]:
-	<k> comparisonTypeJuggling3(Op, L, R) => lub(comparison(Op, *toNumber(L), *toNumber(R)), comparisonTypeJuggling4(Op, L, R)) ... </k>
+	<k> comparisonTypeJuggling3(Op, L, R) => lub(comparison(Op, *toFloat(L), *toFloat(R)), comparisonTypeJuggling4(Op, L, R)) ... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-3-merge") </trace>
 when notBool (	((valid(isString(L)) orBool valid(isNumber(L))) andBool (valid(isString(R)) orBool valid(isNumber(R))))
 			orBool
@@ -447,7 +447,6 @@ rule [type-juggling-5-LHS]:
 	<k> comparisonTypeJuggling5(Op, L, R) => comparisonLIsGreater(Op) ... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-5-LHS") </trace>
 	when (valid(isObject(L)))
-
 	
 //this can't happen at the same time as the one above in any domain
 rule [type-juggling-5-RHS]:
@@ -496,88 +495,8 @@ rule [type-juggling-6-top]:
 	when notBool ((valid(isArray(L))) orBool valid(isArray(R)))
 
 
-/*
-rule [isEqual-type-juggling-1-1]: 	
-	<k> comparison(Op:ComparisonOp,(NULL => ""),S:String) ... </k>
-	<trace> Trace:List => Trace ListItem("isEqual-type-juggling-1-1") </trace>
-	when notBool(isStrictComparison(Op))
-	[intermediate]
-	
-rule [isEqual-type-juggling-1-2]: 	
-	<k> comparison(Op:ComparisonOp,S:String,(NULL => "")) ... </k>
-	<trace> Trace:List => Trace ListItem("isEqual-type-juggling-1-2") </trace>
-	when notBool(isStrictComparison(Op))
-	[intermediate]
 
-// -- convert to boolean if one arg is boolean or null
 
-// TODO: might need update?
-syntax BoolOrNull ::= Bool | Null
-syntax LanguageValue ::= BoolOrNull
-
-rule [isEqual-type-juggling-2]: 	
-	<k> comparison(Op:ComparisonOp,(B:BoolOrNull => *toBoolean(B)),(V2:LanguageValue => *toBoolean(V2))) ... </k>
-	<trace> Trace:List => Trace ListItem("isEqual-type-juggling-2") </trace>
-	when notBool ((isStringType(V2)) orBool (isBoolType(V2)))
-	andBool notBool(isStrictComparison(Op))
-	[intermediate]
-	
-rule [isEqual-type-juggling-3]: 	
-	<k> comparison(Op:ComparisonOp,(V2:LanguageValue => *toBoolean(V2)),(B:BoolOrNull => *toBoolean(B))) ... </k>
-	<trace> Trace:List => Trace ListItem("isEqual-type-juggling-3") </trace>
-	when notBool ((isStringType(V2)) orBool (isBoolType(V2)))
-	andBool notBool(isStrictComparison(Op))
-	[intermediate]
-
-// --  converts "numeric strings" to number
-
-rule 	comparison(Op:ComparisonOp,(V1:AString => string2Number(V1)),_)
-			when (isNumericString(V1)) andBool (notBool(isStrictComparison(Op)))
-			
-rule 	comparison(Op:ComparisonOp,_,(V2:AString => string2Number(V2)))
-			when (isNumericString(V2)) andBool (notBool(isStrictComparison(Op)))
-
-// -- converts any string args to number
-
-//TODO RR : here we should take the number prefix of the string. isNumericString only means that the whole string is a number.
-
-rule [comparison-ac]:
-	<k> comparison(Op:ComparisonOp,V1:Value,(S:AString => alpha(0))) ... </k>
-	<trace> Trace:List => Trace ListItem("comparison-ac") </trace>
-	when (notBool isStringType(V1)) andBool (notBool isNumericString(S)) andBool (notBool(isStrictComparison(Op)))
-	[internal]
-
-rule [comparison-acd]:
-	<k> comparison(Op:ComparisonOp,(S:AString => alpha(0)),V1:Value) ... </k>
-	<trace> Trace:List => Trace ListItem("comparison-acd") </trace>
-	when (notBool isStringType(V1)) andBool (notBool isNumericString(S)) andBool (notBool(isStrictComparison(Op)))
-	[internal]
-
-// -- if any arg is float, the other one is converted to float as well
-rule [isEqual-toFloat-RHS]:
-	<k> comparison(Op:ComparisonOp,V1:AFloat,(V2:AInt => *toFloat(V2))) ... </k>
-	when notBool(isStrictComparison(Op))
-	[intermediate]
-
-rule [isEqual-toFloat-LHS]:	
-	<k> comparison(Op:ComparisonOp,(V1:AInt => *toFloat(V1)),V2:AFloat) ... </k>
-	when notBool(isStrictComparison(Op))
-	[intermediate]
-
-*/
-
-// -- locNull becomes NULL
-rule [comparison-null-RHS]:	
-	<k> comparison(Op:ComparisonOp,(locNull => NULL),_) ... </k>
-	<trace> Trace:List => Trace ListItem("comparison-null-RHS") </trace>
-	when notBool(isStrictComparison(Op))
-	[intermediate]
-
-rule [comparison-null-LHS]:	
-	<k> comparison(Op:ComparisonOp,_,(locNull => NULL)) ... </k>
-	<trace> Trace:List => Trace ListItem("comparison-null-LHS") </trace>
-	when notBool(isStrictComparison(Op))
-	[intermediate]
 
 // isEqual
 
@@ -712,6 +631,23 @@ rule [comparison-greaterEqual-array]:
 	<trace> Trace:List => Trace ListItem("comparison-greaterEqual-array") </trace>
 	when locsHoldSameCompound(M, V1, V2)
 	[intermediate]	
+
+
+//RR: quick fix for default cases, should be moved to domains
+
+rule comparisonLIsGreater(greater, _, _) => alpha(true)
+rule comparisonLIsGreater(greaterEqual, _, _) => alpha(true)
+rule comparisonLIsGreater(less, _, _) => alpha(false)
+rule comparisonLIsGreater(lessEqual, _, _) => alpha(false)
+rule comparisonLIsGreater(equal, _, _) => alpha(false)
+
+rule comparisonRIsGreater(greater, _, _) => alpha(false)
+rule comparisonRIsGreater(greaterEqual, _, _) => alpha(false)
+rule comparisonRIsGreater(less, _, _) => alpha(true)
+rule comparisonRIsGreater(lessEqual, _, _) => alpha(true)
+rule comparisonRIsGreater(equal, _, _) => alpha(false)
+
+	
 
 // ---------------------------------------------------------------------------------------------
 /*@ \subsection{Equality} 

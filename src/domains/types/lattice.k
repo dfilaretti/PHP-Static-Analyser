@@ -17,7 +17,7 @@ module LATTICE
 	   
 	   syntax AInt ::= "(" AIntValue "," List ")"
 	
-       syntax ABoolValue ::= "ABool" 
+       syntax ABoolValue ::= "ABoolTop" | "ABoolTrue" | "ABoolFalse"
 
 	   syntax ABool ::= "(" ABoolValue "," List ")"	   
 	   
@@ -104,7 +104,13 @@ module LATTICE
 	   rule lub_Domain( NULL, D1) => VE(getValue(D1), mergeList (ListItem(MayBeNull), getErrFlags(D1)))
 	   
        syntax Scalar ::= "lub_Value" "(" Scalar "," Scalar ")" [function]
-       rule lub_Value(ABool, ABool)=>ABool	   
+       rule lub_Value(X:ABoolValue, ABoolTop)=>ABoolTop
+	   rule lub_Value(ABoolTop, X:ABoolValue) => ABoolTop
+	   rule lub_Value(ABoolFalse, ABoolFalse) => ABoolFalse
+	   rule lub_Value(ABoolTrue, ABoolTrue) => ABoolTrue
+	   rule lub_Value(ABoolTrue, ABoolFalse) => ABoolTop
+	   rule lub_Value(ABoolFalse, ABoolTrue) => ABoolTop
+	   
 	   rule lub_Value(S1:String, S2:String)=>AStringTop
 	   when S1 =/=String S2
 	   
@@ -236,8 +242,9 @@ module LATTICE
 	   rule F:AFloatValue <ScalarLattice B:ABoolValue => false
 	   
 	   rule ANum <ScalarLattice X => X ==K Top
-	   rule B:ABoolValue <ScalarLattice X => X ==K Top
 	   
+	   
+	   rule B:ABoolValue <ScalarLattice X => X ==K Top orBool ((X ==K ABoolTop)andBool(B =/=K ABoolTop))
 	   
 	   
 	   syntax 	Bool ::= K ">Lattice" K		[function]
@@ -248,8 +255,12 @@ module LATTICE
 	   syntax  Bool ::= "valid" "(" ABool ")"	                [predicate]
 	   syntax  Bool ::= "unsatisfiable" "(" ABool ")"    		[predicate]
 	   
-	   rule valid(_) => false
-	   rule unsatisfiable(_) => false
+	   rule valid(ABoolTop) => false
+	   rule valid(ABoolTrue) => true
+	   rule valid(ABoolFalse) => false
+	   rule unsatisfiable(ABoolTop) => false
+	   rule unsatisfiable(ABoolTrue) => false
+	   rule unsatisfiable(ABoolFalse) => true
 	   
 	   //list manipulation TODO move
 	   
