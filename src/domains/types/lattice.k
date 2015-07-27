@@ -204,8 +204,7 @@ module LATTICE
 	   
 	   rule D1:DomainValue <Lattice D2:DomainValue => generalize(D1) <Lattice generalize(D2)
 	   
-	   rule VE(V1, E1):VEPair <Lattice VE(V2, E2):VEPair =>
-(lub_Value(V1,valueOfErrs(E1)) <ScalarLattice lub_Value(V2,valueOfErrs(E2)))
+	   rule VE(V1, E1):VEPair <Lattice VE(V2, E2):VEPair => (lub_Value(V1,valueOfErrs(E1)) <ScalarLattice lub_Value(V2,valueOfErrs(E2)))
 	   
 	   rule Top <Lattice X:K => false
 	   rule X:K <Lattice Bot => false
@@ -215,6 +214,10 @@ module LATTICE
 	   
 	   rule Bot <Lattice X:K => true
 	   when X =/=K Bot
+	   
+	   rule Top <ScalarLattice _ => false
+	   rule X <ScalarLattice Top => true
+	   when X =/=K Top
 	   
 	   rule AInt <ScalarLattice AInt => false
 	   rule (AFloat <ScalarLattice AFloat) => false
