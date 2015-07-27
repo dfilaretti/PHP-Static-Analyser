@@ -1,5 +1,9 @@
 <?php
 
+$x[NULL] = 123;
+var_dump($x);
+
+/*
 
 	if (2 == 2) {
 		function foo() {
@@ -14,7 +18,7 @@
 
 
 	$x = kkoo();
-
+*/
 /*
 
 	if (2 == 2) {
