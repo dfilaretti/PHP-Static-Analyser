@@ -1,4 +1,8 @@
 <?php
+
+// This is about types. 
+// Should be tested on PHANTM but it's a problem to make it work 
+
 $y=array("foo" => "bar");
 
 if ($GET['foo'])

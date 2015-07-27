@@ -3,8 +3,10 @@
 // Adaptation of our earlier ECOOP example
 
 // Weverca and Pixy report NO vulnerability (unsound)
-// Apparently, they take the "twotwo" approach in both cases, missing the 
-// vulnerability in the first snippet. 
+// (Apparently, they take the "twotwo" approach in both cases, missing the 
+// vulnerability in the first snippet.) 
+
+// RIPS instead finds the vulnerability (!)
 
 $a = array($_POST["one"]);
 $c = $a[0] . ($a[0] = "two");

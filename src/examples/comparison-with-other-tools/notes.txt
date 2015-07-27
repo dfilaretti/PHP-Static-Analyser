@@ -1,0 +1,16 @@
+Notes about the examples
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Pixy and Weverca fails on the ECOOP "onetwo VS twotwo" examples (1-2-3) giving both 
+  false positives and negatives (couldn't test PHANTM). 
+  Surprisingly, however, RIPS runs them correclty! No false positives/negatives.
+  It seems that RIPS model execution order well. 
+
+- raphael-xss.php: it seems that RIPS is weak on type conversions. 
+  When $x is tainted, it raises an error even for $x + 1. 
+  All other tools instead don't raise an error for that. 
+
+- daniele-xss.php: it uses aliasing between array elements. Pixy and Weverca 
+  find the XSS but not RIPS. This also suggests it is weak w.r.t. aliasing.
+
+
