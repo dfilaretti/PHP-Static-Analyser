@@ -1,6 +1,5 @@
 <?php
 
-<<<<<<< HEAD
 $x[NULL] = 123;
 var_dump($x);
 
