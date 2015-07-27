@@ -612,7 +612,7 @@ rule [ref-assign-obj-prop]:
 	...
 	</heap>
 	<trace> Trace:List => Trace ListItem("ref-assign-fresh-obj-prop") </trace>
-	//when notBool (Elems hasProperty X)
+	//when notBool (Elems hasProperty X) //SM why is this commented?
 	[intermediate]
 
 rule [ref-assign-array-elem]:
@@ -621,8 +621,7 @@ rule [ref-assign-array-elem]:
             	ArrayUpdateElem(L', X, L1') ~>
 		rebuildArray(
 			L',X,
-			getMaxKey(SetItem(X) getLTKeys(Elems,X) getGEQKeys(Elems,X)),
-			L1',L1,arrayRemove(Elems,X)) ~> //if x is a singleton, it should not be lubbed to the aliasing source
+			L1',L1,arrayRemove(Elems,X)) ~> //SM if x is a singleton, it should not be lubbed to the aliasing source
 		ref(L', X) 
 	... </k>
 	<thematrix> 
@@ -641,6 +640,62 @@ rule [ref-assign-array-elem]:
 	when isGammaSingleton(X)
 	[step]
 
+rule [ref-assign-array-elem-weak]:
+	<k> 
+		'ReferenceAssign(ref(L':Loc, X:Key),, L1':Loc) =>              	
+		rebuildArray(
+			L',X,
+			L1',L1,Elems) ~>		
+		ArrayAliasElem(L', X, L1) ~>
+		ref(L', X) 
+	... </k>
+	<thematrix> 
+	... 
+		L'  |-> L 
+		L1' |-> L1
+	... 
+	</thematrix>	
+        <heap> 
+	... 
+		L  |-> zval(Array(_,Elems),_,_,_) 
+		L1 |-> _ 
+	... 
+	</heap>
+	<trace> Trace:List => Trace ListItem("ref-assign-fresh-array-elem-weak") </trace>
+	when notBool isGammaSingleton(X)
+	[step]
+
+
+
+//SMT delete
+/*
+rule [ref-assign-array-elem]:
+	<k> 
+		'ReferenceAssign(ref(L':Loc, X:Key),, L1':Loc) =>  
+            	ArrayUpdateElem(L', X, L1') ~>
+		rebuildArray(
+			L',X,
+			getMaxKey(SetItem(X) getLTKeys(Elems,X) getGEQKeys(Elems,X)),
+			L1',L1,arrayRemove(Elems,X)) ~> //SM if x is a singleton, it should not be lubbed to the aliasing source
+		ref(L', X) 
+	... </k>
+	<thematrix> 
+	... 
+		L'  |-> L 
+		L1' |-> L1
+	... 
+	</thematrix>	
+        <heap> 
+	... 
+		L  |-> zval(Array(_,Elems),_,_,_) 
+		L1 |-> _ 
+	... 
+	</heap>
+	<trace> Trace:List => Trace ListItem("ref-assign-fresh-array-elem") </trace>
+	when isGammaSingleton(X)
+	[step]
+
+//SMT fix here
 rule [ref-assign-array-elem-weak]:
 	<k> 
 		'ReferenceAssign(ref(L':Loc, X:Key),, L1':Loc) =>              	
@@ -668,11 +723,39 @@ rule [ref-assign-array-elem-weak]:
 	[step]
 
 
+*/
 
 // --------------- AUXILIARY OPS FOR REFERENCE ASSIGN --------------------
 // .................... TODO: MOVE? --------------------------------------
 
 
+// Auxiliary operation used by the reference assignment. 
+// It takes care of aliasing the required keys (in case there is more
+// then one)....
+
+syntax K ::= "rebuildArray" "(" Loc "," Key "," 
+				Loc "," Loc "," 
+				List ")"
+
+rule [rebuild-array]: 
+    <k> rebuildArray(L',X,L1',L1,Elems) => 
+	// write the lub 
+	write(
+		mergeValuesAtLocs(
+			bot,
+			SetItem(L1')
+			KeySet2LocSet(intersectClose(X,elems2keys(Elems)),Elems)),
+		L1',
+		true) ~>
+	// alias the affected key to the target
+	aliasAllKeys2Loc(L',intersectClose(X,elems2keys(Elems)),L1) ...
+        </k>
+	<trace> Trace:List => Trace ListItem("rebuild-array") </trace>
+        [internal]	
+
+
+//SMT delete
+/*
 // Auxiliary operation used by the reference assignment. 
 // It takes care of aliasing the required keys (in case there is more
 // then one)....
@@ -692,12 +775,15 @@ rule rebuildArray(L',X,MaxKey,L1',L1,Elems) =>
 		true) ~>
 	// alias the affected key to the target
 	aliasAllKeys2Loc(L',getLTKeys(Elems,MaxKey) getGEQKeys(Elems,MaxKey) ,L1)				
+//SMT use interecting keys instead?
+*/
+
 
 
 // given a set of keys, returns the maximum
 // (according to lattice ordering)
 // currently this is called with at least one element
-
+//SM and it does not return the max if X and getMaxKeys(S) are uncomparable
 
 syntax 	K ::= "getMaxKey" "(" Set ")" [function]
 
