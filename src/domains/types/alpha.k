@@ -5,22 +5,30 @@ module ALPHA
 
 	syntax K ::= "alpha" "(" K ")" [function]
 
-	rule alpha(N:Int) => specify(VE(AInt, .List)) [structural]
+	rule alpha(N:Int) =>    (AInt, .List) [structural]
+	rule alpha(F:Float) =>  (AFloat, .List) [structural]	
+	rule alpha(S:String) => (S, .List) [structural]
+	rule alpha(NULL) =>     NULL [structural]
+			
+syntax Bool ::= "isGammaSingleton" "(" K ")" [function]
 
-	rule alpha(F:Float) => specify(VE(AFloat, .List)) [structural]	
+rule isGammaSingleton(NULL) => true
+rule isGammaSingleton(N:ANum)=> false
+rule isGammaSingleton(B:ABool) => false
+rule isGammaSingleton( (S:String, .List) ) => true
+rule isGammaSingleton ( (AStringTop, _) ) => false
+rule isGammaSingleton( (S:String, ListItem(_) _ )) => false
+rule isGammaSingleton(Top) => false
 
 	rule alpha(true) => specify(VE(ABoolTrue, .List))	 [structural]
 	
 	rule alpha(false) => specify(VE(ABoolFalse, .List))	 [structural]
 
-	rule alpha(S:String) => specify(VE(S, .List)) [structural]
+// reference counters
 
-	rule alpha(NULL) => NULL [structural]
-	
-	
-	
-	// abstraction of reference counters
-	syntax K ::= "alphaRC" "(" K ")" [function]
+syntax  ARefCount ::= "ARC0" | "ARC1" | "ARC2" | "ARC>2"
+// abstraction of reference counters
+syntax K ::= "alphaRC" "(" K ")" [function]
 	
 	rule	alphaRC(N:Int) => 
 			#if (N ==Int 0) #then
@@ -53,14 +61,14 @@ rule isGammaSingleton ( (AStringTop, _) ) => false
 
 rule isGammaSingleton(Top) => false
 
-	// reference counters
-	rule 	isGammaSingleton(ARC0)  => true
-	rule 	isGammaSingleton(ARC1)  => true
-	rule 	isGammaSingleton(ARC2)  => true
-	rule 	isGammaSingleton(ARC>2) => false
+// reference counters
+rule 	isGammaSingleton(ARC0)  => true
+rule 	isGammaSingleton(ARC1)  => true
+rule 	isGammaSingleton(ARC2)  => true
+rule 	isGammaSingleton(ARC>2) => false
+
 
 
 //what about Bot ?
-
 
 endmodule

@@ -261,9 +261,14 @@ rule pickScope(X) => Top
 syntax Bool ::= "containedInKeys" "(" AString "," List ")"		[function]
 syntax Bool ::= "doesNotIntersectKeys" "(" AString "," List ")"		[function]
 syntax Bool ::= "maybeInKeys" "(" AString "," List ")"		[function]
-rule containedInKeys(X,Y) => foldrorBool(false,mapX<=Lattice(X,Y)) //SM misses "contained fragmented" case, but still sound
+rule containedInKeys(X,Y) => foldrorBool(false,mapX<=Lattice(X,Y))
+//SM case above misses "contained fragmented" case, but still sound
+//   consider using notStrictlyIncluded(Y,SetItem(X)) as well
 rule doesNotIntersectKeys(X,Y) => notBool foldrorBool(false,mapglb=/=LatticeBot(X,Y)) 
 rule maybeInKeys(X,Y) => notBool(containedInKeys(X,Y) orBool doesNotIntersectKeys(X,Y)) 
+
+
+
 
 /*@ The following auxiliary predicate returns true if the variable is special (e.g. this), 
 	false otherwise  */
@@ -667,63 +672,6 @@ rule [ref-assign-array-elem-weak]:
 
 
 
-//SMT delete
-/*
-rule [ref-assign-array-elem]:
-	<k> 
-		'ReferenceAssign(ref(L':Loc, X:Key),, L1':Loc) =>  
-            	ArrayUpdateElem(L', X, L1') ~>
-		rebuildArray(
-			L',X,
-			getMaxKey(SetItem(X) getLTKeys(Elems,X) getGEQKeys(Elems,X)),
-			L1',L1,arrayRemove(Elems,X)) ~> //SM if x is a singleton, it should not be lubbed to the aliasing source
-		ref(L', X) 
-	... </k>
-	<thematrix> 
-	... 
-		L'  |-> L 
-		L1' |-> L1
-	... 
-	</thematrix>	
-        <heap> 
-	... 
-		L  |-> zval(Array(_,Elems),_,_,_) 
-		L1 |-> _ 
-	... 
-	</heap>
-	<trace> Trace:List => Trace ListItem("ref-assign-fresh-array-elem") </trace>
-	when isGammaSingleton(X)
-	[step]
-
-//SMT fix here
-rule [ref-assign-array-elem-weak]:
-	<k> 
-		'ReferenceAssign(ref(L':Loc, X:Key),, L1':Loc) =>              	
-		rebuildArray(
-			L',X,
-			getMaxKey(SetItem(X) getLTKeys(Elems,X) getGEQKeys(Elems,X)),
-			L1',L1,Elems) ~>		
-		ArrayAliasElem(L', X, L1) ~>
-		ref(L', X) 
-	... </k>
-	<thematrix> 
-	... 
-		L'  |-> L 
-		L1' |-> L1
-	... 
-	</thematrix>	
-        <heap> 
-	... 
-		L  |-> zval(Array(_,Elems),_,_,_) 
-		L1 |-> _ 
-	... 
-	</heap>
-	<trace> Trace:List => Trace ListItem("ref-assign-fresh-array-elem-weak") </trace>
-	when notBool isGammaSingleton(X)
-	[step]
-
-
-*/
 
 // --------------- AUXILIARY OPS FOR REFERENCE ASSIGN --------------------
 // .................... TODO: MOVE? --------------------------------------
@@ -754,51 +702,6 @@ rule [rebuild-array]:
         [internal]	
 
 
-//SMT delete
-/*
-// Auxiliary operation used by the reference assignment. 
-// It takes care of aliasing the required keys (in case there is more
-// then one)....
-
-syntax K ::= "rebuildArray" "(" Loc "," Key "," Key "," 
-				Loc "," Loc "," 
-				List ")"
-
-rule rebuildArray(L',X,MaxKey,L1',L1,Elems) =>
-	// write the lub 
-	write(
-		mergeValuesAtLocs(
-			bot,
-			SetItem(L1')
-			KeySet2LocSet(getLTKeys(Elems,MaxKey) getGEQKeys(Elems,MaxKey),Elems)),
-		L1',
-		true) ~>
-	// alias the affected key to the target
-	aliasAllKeys2Loc(L',getLTKeys(Elems,MaxKey) getGEQKeys(Elems,MaxKey) ,L1)				
-//SMT use interecting keys instead?
-*/
-
-
-
-// given a set of keys, returns the maximum
-// (according to lattice ordering)
-// currently this is called with at least one element
-//SM and it does not return the max if X and getMaxKeys(S) are uncomparable
-
-syntax 	K ::= "getMaxKey" "(" Set ")" [function]
-
-rule 	getMaxKey(.Set) => Bot
-rule 	getMaxKey(SetItem(X)) => X
-rule 	getMaxKey(SetItem(X) S) => 
-		#if (X <Lattice getMaxKey(S)) #then
-			getMaxKey(S)
-		#else
-			X 
-		#fi
-	when S =/=Set .Set
-
- 
-
 // --------------- AUXILIARY OPS FOR REFERENCE ASSIGN --------------------
 // .................... END ------- --------------------------------------
 
@@ -809,10 +712,6 @@ rule [ref-assign-language-value]:
 			'Assign(ref(L:Loc, X:Key),,V:PlainLanguageValue) ... </k>
 	<trace> Trace:List => Trace ListItem("ref-assign-language-value") </trace>
 	[step, error]
-
-
-
-
 
 
 // --------------------------------------------------------------------------------------------

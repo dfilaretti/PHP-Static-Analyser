@@ -300,6 +300,7 @@ rule	<k> runInMem(none, _) => .  ... </k>
                     <globalScope> L2 </globalScope>
                     <globalStaticScope> L3 </globalStaticScope>
                     <superGlobalScope> L4 </superGlobalScope> 
+                    <rootScope> L5 </rootScope> 
                 </scopes>
 		<thematrix> H1' </thematrix>  
                 <heap> H1 </heap>,
@@ -308,10 +309,16 @@ rule	<k> runInMem(none, _) => .  ... </k>
                     <globalScope> L2' </globalScope>
                     <globalStaticScope> L3' </globalStaticScope>
                     <superGlobalScope> L4' </superGlobalScope>   
+                    <rootScope> L5' </rootScope> 
                 </scopes> 
 		<thematrix> H2' </thematrix>
                 <heap> H2 </heap>) => 
-		(H1',H1,H2',H2) |- isomorph(heap_read(H1',H1,L1),heap_read(H2',H2,L1')) 
+		(H1',H1,H2',H2) |- isomorph(heap_read(H1',H1,L5),heap_read(H2',H2,L5')) andBool
+		(H1',H1,H2',H2) |- isomorph(heap_read(H1',H1,L3),heap_read(H2',H2,L3')) andBool
+		#if (L1 =/=K L2)
+ 		    #then (H1',H1,H2',H2) |- isomorph(heap_read(H1',H1,L1),heap_read(H2',H2,L1')) 
+                    #else true 
+		#fi 
 
     // Memory equality (modulo isomorphism)
     ///////////////////////////////////////////////////////////////////////////

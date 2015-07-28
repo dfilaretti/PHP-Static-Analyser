@@ -11,6 +11,28 @@ module ARITH-OPS
 // =/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
 // =/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
 
+
+//SM delete? used somewhere below, but doesn't seem necessary
+syntax K ::= "isEqualScalar" "(" K "," K ")" [seqstrict]
+
+/* TODO: remove
+rule [isEqual-scalar-RHS2LangValue]:
+	<k> isEqualScalar(_, (R2:ConvertibleToLanguageValue => convertToLanguageValue(R2))) ... </k>
+	<trace> Trace:List => Trace ListItem("isEqual-scalar-RHS2LangValue") </trace>
+	[intermediate]
+
+rule [isEqual-scalar-LHS2LangValue]:
+	<k> isEqualScalar((R1:ConvertibleToLanguageValue => convertToLanguageValue(R1)), _) ... </k>
+	<trace> Trace:List => Trace ListItem("isEqual-scalar-LHS2LangValue") </trace>
+	[intermediate]
+*/
+
+rule [isEqual-scalar]:
+	<k> isEqualScalar(I1:Int, I2:Int) => I1 ==Int I2 ... </k>
+	<trace> Trace:List => Trace ListItem("isEqual-scalar") </trace>
+	[internal]
+
+
 // ---------------------------------------------------------------------------------------------
 /*@ \subsection{Negation} */
 // ---------------------------------------------------------------------------------------------

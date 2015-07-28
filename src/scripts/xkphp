@@ -8,9 +8,10 @@ fi
 
 if [ $# -eq 1 ]
 then
-        rm out.xml
-	krun  --parser="java -jar parser/parser.jar" $1 >out.xml
+        rm -f out.xml
+	krun --parser="java -jar parser/parser.jar" $1 >out.xml
         sed -f scripts/process-output.sed -i".bak" out.xml 
+        rm -f out.xml.bak
 fi
 
 if [ $# -eq 2 ]

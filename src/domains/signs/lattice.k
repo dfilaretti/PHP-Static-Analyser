@@ -103,12 +103,9 @@ syntax 	Bool ::= AString ">Lattice" AString [function]
 	(notBool V1 <Lattice V2) andBool (notBool V1 ==K V2)
 */
 
-/*  DF: maybe this is the missing case that makes intersectClose1 stuck?
-	syntax Bool ::= K "==Lattice" K [function]
-	rule A ==Lattice B => (A ==K B) orBool (A ==String B)
-*/
-	
 
+syntax Bool ::= K "==Lattice" K [predicate]
+rule X ==Lattice Y => X ==K Y
 
 
 /*@ \subsection{Lattice Operations} */
@@ -290,4 +287,24 @@ rule	lub_AString(S1:String,S2:String) => AStringTop when (S1 =/=String S2)
 	  
 	   rule AisNumericString((AStringTop,_)) =>ABoolTop
 	   rule AisNumericString((S:String, L)) =>ABoolTop //RR : we may be able to get some precision here, leaving it as is since our current isNumeric is untrusted
+
+
+rule hasInfinitelyManyChildren(X:AString) => false
+rule hasInfinitelyManyChildren(X:ABool) => false 
+rule hasInfinitelyManyChildren(AIntPos) => true
+rule hasInfinitelyManyChildren(AIntNeg) => true
+rule hasInfinitelyManyChildren(AIntTop) => true
+rule hasInfinitelyManyChildren(AIntBot) => false
+rule hasInfinitelyManyChildren(AIntZero) => false
+rule hasInfinitelyManyChildren(AFloatPos) => true
+rule hasInfinitelyManyChildren(AFloatNeg) => true
+rule hasInfinitelyManyChildren(AFloatTop) => true
+rule hasInfinitelyManyChildren(AFloatBot) => false
+rule hasInfinitelyManyChildren(AFloatZero) => false
+rule hasInfinitelyManyChildren(Top) => false 
+rule hasInfinitelyManyChildren(Bot) => false 
+
+rule intersects(X,H) => notBool((Bot ==Lattice glb(X,H)) orBool (AStringBot ==Lattice glb(X,H)))
+//SM perhaps ==K is enough/better/more appropriate
+
 endmodule

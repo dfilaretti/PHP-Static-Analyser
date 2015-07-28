@@ -1,25 +1,19 @@
 module LATTICE
        
-	    // backward compatibility
-		//syntax  ARefCount ::= Int
-
-		syntax  ARefCount ::= "ARC0" | "ARC1" | "ARC2" | "ARC>2"
-
 	   
-	   
-	   syntax ErrFlag ::= "MayBeNull" | "VisibilityErr" | "ImplicitTypeConversion" | "NullTypeConversion"
+       syntax ErrFlag ::= "MayBeNull" | "VisibilityErr" | "ImplicitTypeConversion" | "NullTypeConversion"
 	   
        syntax AStringValue ::= "AStringTop" | String | Bot
        
-	   syntax AString ::= "(" AStringValue "," List ")"
+       syntax AString ::= "(" AStringValue "," List ")"
 	   
        syntax AIntValue ::= "AInt" | Bot
 	   
-	   syntax AInt ::= "(" AIntValue "," List ")"
+       syntax AInt ::= "(" AIntValue "," List ")"
 	
        syntax ABoolValue ::= "ABoolTop" | "ABoolTrue" | "ABoolFalse" | Bot
 
-	   syntax ABool ::= "(" ABoolValue "," List ")"	   
+       syntax ABool ::= "(" ABoolValue "," List ")"	   
 	   
        syntax AFloatValue ::= "AFloat" | Bot
 	   
@@ -32,11 +26,11 @@ module LATTICE
 	   syntax PlainLanguageValue ::= ANum | DomainValue
 	   
 	   syntax Scalar ::= ANumValue | AStringValue | ABoolValue | Null | Bot | Top
-//SM added top above?
 	
 	   syntax Scalar ::= "getValue" "(" DomainValue ")" [function]
 	   
-	   syntax DomainValue ::= ANum | AString | ABool | Null | Bot | Top
+
+	   syntax DomainValue ::= ANum | AString | ABool | Null //| Top | Bot //SM PlainLanguageValue
 	   
 	   syntax VEPair ::= "VE" "(" Scalar "," List ")"
 	   
@@ -95,10 +89,10 @@ module LATTICE
 	   rule getErrFlags ( (V:ABoolValue, E:List) ) => E
 	   rule getErrFlags( NULL ) => .List
 	   
-	   rule lub_Domain(D1,D2) =>  VE ( lub_Value(getValue(D1), getValue(D2)), mergeList(getErrFlags(D1), getErrFlags(D2)) )
+	   rule lub_Domain(D1,D2) =>  VE(lub_Value(getValue(D1), getValue(D2)), mergeList(getErrFlags(D1), getErrFlags(D2)) )
 	   when D1 =/=K NULL andBool D2 =/=K NULL
 	   
-	   rule lub_Domain( D1, NULL) => VE (getValue(D1), mergeList (ListItem(MayBeNull), getErrFlags(D1)))
+	   rule lub_Domain( D1, NULL) => VE(getValue(D1), mergeList (ListItem(MayBeNull), getErrFlags(D1)))
 	   when D1 =/=K NULL
 	   
 	   rule lub_Domain(NULL, NULL) => VE(NULL, .List)
@@ -206,6 +200,10 @@ module LATTICE
 	   syntax Bool ::= Scalar "<ScalarLattice" Scalar [function]
 
 	   rule D1:DomainValue ==Lattice D2:DomainValue => generalize(D1) ==Lattice generalize(D2) 
+           rule Top ==Lattice X => X ==K Top
+           rule X ==Lattice Top => X ==K Top
+           rule Bot ==Lattice X => X ==K Bot
+           rule X ==Lattice Bot => X ==K Bot          
 
 	   rule VE(V1, E1):VEPair ==Lattice VE(V2, E2):VEPair => (lub_Value(V1,valueOfErrs(E1)) ==K lub_Value(V2,valueOfErrs(E2)))
            
@@ -369,5 +367,15 @@ module LATTICE
 	   rule AisNumericString((S:String, L)) => (ABoolTop, .List) //RR : we may be able to get some precision here, leaving it as is since our current isNumeric is untrusted
 	   
 	   
+
+rule hasInfinitelyManyChildren(X:AString) => getValue(X) ==K AStringTop
+rule hasInfinitelyManyChildren(X:ABool) => false 
+rule hasInfinitelyManyChildren(X:AInt) => false 
+rule hasInfinitelyManyChildren(X:AFloat) => false 
+rule hasInfinitelyManyChildren(Top) => false 
+rule hasInfinitelyManyChildren(Bot) => false 
+
+rule intersects(X,H) => Bot =/=Lattice glb(X,H) 
+//SM perhaps ==K is enough/better/more appropriate
 
 endmodule
