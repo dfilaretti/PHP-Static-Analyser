@@ -13,4 +13,11 @@ Notes about the examples
 - daniele-xss.php: it uses aliasing between array elements. Pixy and Weverca 
   find the XSS but not RIPS. This also suggests it is weak w.r.t. aliasing.
 
+- break: none of the tools I tried misses vulnerabilities in my simple examples. 
+  However, we are more precise then Pixy and RIPS.
 
+- recursion: Pixy and RIPS report errors even when a (vuln) function is not called
+
+- weird: look at 'recursion-def-only-false-alarms'. Vuln function not called. 
+  If XSS is inside IF pixy report no false alarm. 
+  If it is not (but still inside function body) then it does 
