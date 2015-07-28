@@ -186,6 +186,14 @@ rule isKResult(T:Type) => true
 
 /*@ We define here some helper predicates that will make the semantic rules more concise. */
 
+syntax ABool ::= "AisNull" "(" K ")" [function]
+syntax ABool ::= "AisString" "(" K ")" [function]
+syntax ABool ::= "AisBoolean" "(" K ")" [function]
+syntax ABool ::= "AisObject" "(" K ")" [function]
+syntax ABool ::= "AisArray" "(" K ")" [function]
+syntax ABool ::= "AisNumber" "(" K ")" [function]
+
+
 // TODO: can use builtin (isArray(V) == true)
 syntax Bool ::=  "isArrayType" "(" Value ")"			[function]
 rule    isArrayType(V:Array) => true                  

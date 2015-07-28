@@ -1,7 +1,7 @@
 To add to domains : 
 
-isNull isString isBoolean isNumericString(AString) isObject isArray (?) => ABool	(to use with valid, unsat)
-*toObject, *toNumber (id for float and ints, goes to int or float for strings, to ints for other values ?)
+isNull isString isBoolean isNumericString(AString) isObject isArray isNumber (?) => ABool	(to use with valid, unsat)
+*toObject
 
 Check string2Number
 

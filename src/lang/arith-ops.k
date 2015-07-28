@@ -319,23 +319,23 @@ when notBool(isStrictComparison(Op))
 rule [type-juggling-0-true]:
 	<k> comparisonTypeJuggling0(Op, L, R) => comparisonTypeJuggling0IsNumeric(Op, *toString(L), *toString(R)) ... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-0-true") </trace>
-when ((valid(isString(L)) orBool valid(isNull(L))) andBool (valid(isString(R)) orBool valid(isNull(R))))
+when ((valid(AisString(L)) orBool valid(AisNull(L))) andBool (valid(AisString(R)) orBool valid(AisNull(R))))
 
 //if they aren't, go to next step of type juggling
 
 rule [type-juggling-0-false]:
 	<k> comparisonTypeJuggling0(Op, L, R) => comparisonTypeJuggling1(Op, L, R) ... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-0-false") </trace>
-when ((unsatisfiable(isString(L)) andBool unsatisfiable(isNull(L))) orBool (unsatisfiable(isString(R)) andBool unsatisfiable(isNull(R))))
+when ((unsatisfiable(AisString(L)) andBool unsatisfiable(AisNull(L))) orBool (unsatisfiable(AisString(R)) andBool unsatisfiable(AisNull(R))))
 
 //if we don't know, merge
  
 rule [type-juggling-0-merge]:
 	<k> comparisonTypeJuggling0(Op, L, R) => lub(comparisonTypeJuggling1(Op, L, R), comparisonTypeJuggling0IsNumeric(Op, *toString(L), *toString(R))) ... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-0-merge") </trace>
-when notBool (	((unsatisfiable(isString(L)) andBool unsatisfiable(isNull(L))) orBool (unsatisfiable(isString(R)) andBool unsatisfiable(isNull(R)))) 
+when notBool (	((unsatisfiable(AisString(L)) andBool unsatisfiable(AisNull(L))) orBool (unsatisfiable(AisString(R)) andBool unsatisfiable(AisNull(R)))) 
 			orBool 
-				((valid(isString(L)) orBool valid(isNull(L))) andBool (valid(isString(R)) orBool valid(isNull(R))))
+				((valid(AisString(L)) orBool valid(AisNull(L))) andBool (valid(AisString(R)) orBool valid(AisNull(R))))
 			)
  
  
@@ -345,17 +345,17 @@ when notBool (	((unsatisfiable(isString(L)) andBool unsatisfiable(isNull(L))) or
 rule [type-juggling-0-isNumeric-true]:
 	<k> comparisonTypeJuggling0IsNumeric(Op, L:AString, R:AString) => comparison(Op, String2Number(L), String2Number(R)) ... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-0-isNumeric-true") </trace>
-when valid(isNumericString(L)) andBool valid(isNumericString(R))
+when valid(AisNumericString(L)) andBool valid(AisNumericString(R))
 
 rule [type-juggling-0-isNumeric-false]:
 	<k> comparisonTypeJuggling0IsNumeric(Op, L:AString, R:AString) => comparison(Op, L, R) ... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-0-isNumeric-false") </trace>
-when unsatisfiable(isNumericString(L)) orBool unsatisfiable(isNumericString(R))
+when unsatisfiable(AisNumericString(L)) orBool unsatisfiable(AisNumericString(R))
 
 rule [type-juggling-0-isNumeric-merge]:
 	<k> comparisonTypeJuggling0IsNumeric(Op, L:AString, R:AString) => lub(comparison(Op, String2Number(L), String2Number(R)), comparison(Op, String2Number(L), String2Number(R))) ... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-0-isNumeric-merge") </trace>
-when notBool ((valid(isNumericString(L)) andBool valid(isNumericString(R))) orBool (valid(isNumericString(L)) andBool valid(isNumericString(R))))
+when notBool ((valid(AisNumericString(L)) andBool valid(AisNumericString(R))) orBool (valid(AisNumericString(L)) andBool valid(AisNumericString(R))))
 
 
 //if one arg is bool or NULL, compare as booleans, else go to next step
@@ -363,19 +363,19 @@ when notBool ((valid(isNumericString(L)) andBool valid(isNumericString(R))) orBo
 rule [type-juggling-1-true]:
 	<k> comparisonTypeJuggling1(Op, L, R) => comparison(Op, *toBoolean(L), *toBoolean(R)) ... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-1-true") </trace>
-when ((valid(isBoolean(L)) orBool valid(isNull(L))) andBool (valid(isBoolean(R)) orBool valid(isBoolean(R))))
+when ((valid(AisBoolean(L)) orBool valid(AisNull(L))) andBool (valid(AisBoolean(R)) orBool valid(AisBoolean(R))))
 
 rule [type-juggling-1-false]:
 	<k> comparisonTypeJuggling1(Op, L, R) => comparisonTypeJuggling2(Op, L, R) ... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-1-false") </trace>
-when ((unsatisfiable(isBoolean(L)) andBool unsatisfiable(isNull(L))) orBool (unsatisfiable(isBoolean(R)) andBool unsatisfiable(isNull(R))))
+when ((unsatisfiable(AisBoolean(L)) andBool unsatisfiable(AisNull(L))) orBool (unsatisfiable(AisBoolean(R)) andBool unsatisfiable(AisNull(R))))
  
 rule [type-juggling-1-merge]:
 	<k> comparisonTypeJuggling1(Op, L, R) => lub(comparison(Op, *toBoolean(L), *toBoolean(R)), comparisonTypeJuggling2(Op, L, R))  ... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-1-merge") </trace>
-when notBool(	((valid(isBoolean(L)) orBool valid(isNull(L))) andBool (valid(isBoolean(R)) orBool valid(isBoolean(R)))) 
+when notBool(	((valid(AisBoolean(L)) orBool valid(AisNull(L))) andBool (valid(AisBoolean(R)) orBool valid(AisBoolean(R)))) 
 			orBool 
-		    	((unsatisfiable(isBoolean(L)) andBool unsatisfiable(isNull(L))) orBool (unsatisfiable(isBoolean(R)) andBool unsatisfiable(isNull(R))))
+		    	((unsatisfiable(AisBoolean(L)) andBool unsatisfiable(AisNull(L))) orBool (unsatisfiable(AisBoolean(R)) andBool unsatisfiable(AisNull(R))))
 			)
  
 //if both args are objects, compare them, else go to next step
@@ -384,19 +384,19 @@ when notBool(	((valid(isBoolean(L)) orBool valid(isNull(L))) andBool (valid(isBo
 rule [type-juggling-2-true]:
 	<k> comparisonTypeJuggling2(Op, L, R) => comparison(Op, L, R) ... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-2-true") </trace>
-when (valid(isObject(L)) andBool valid(isObject(R)))
+when (valid(AisObject(L)) andBool valid(AisObject(R)))
 
 rule [type-juggling-2-false]:
 	<k> comparisonTypeJuggling2(Op, L, R) => comparisonTypeJuggling3(Op, L, R) ... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-2-false") </trace>
-	when (unsatisfiable(isObject(L)) orBool unsatisfiable(isObject(R)))
+	when (unsatisfiable(AisObject(L)) orBool unsatisfiable(AisObject(R)))
 
 //if we merge, convert may-objects to objects to have only concrete-relevant comparison rules
 
 rule [type-juggling-2-merge]:
 	<k> comparisonTypeJuggling2(Op, L, R) => lub(comparison(Op, *toObject(L), *toObject(R)) , comparisonTypeJuggling3(Op, L, R) ... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-2-merge") </trace>
-	when notBool ((valid(isObject(L)) andBool valid(isObject(R))) orBool (unsatisfiable(isObject(L)) orBool unsatisfiable(isObject(R))))
+	when notBool ((valid(AisObject(L)) andBool valid(AisObject(R))) orBool (unsatisfiable(AisObject(L)) orBool unsatisfiable(AisObject(R))))
 
 //if both args are string or numbers, compare as numbers (the case where they are both strings is handled in step 0)
 //"resource" types should be handled here and converted to numbers as well
@@ -404,19 +404,19 @@ rule [type-juggling-2-merge]:
 rule [type-juggling-3-true]:
 	<k> comparisonTypeJuggling3(Op, L, R) => comparison(Op, *toFloat(L), *toFloat(R)) ... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-3-true") </trace>
-when ((valid(isString(L)) orBool valid(isNumber(L))) andBool (valid(isString(R)) orBool valid(isNumber(R))))
+when ((valid(AisString(L)) orBool valid(AisNumber(L))) andBool (valid(AisString(R)) orBool valid(AisNumber(R))))
 
 rule [type-juggling-3-false]:
 	<k> comparisonTypeJuggling3(Op, L, R) => comparisonTypeJuggling4(Op, L, R) ... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-3-false") </trace>
-when ((unsatisfiable(isString(L)) andBool unsatisfiable(isNumber(L))) orBool (unsatisfiable(isString(R)) andBool unsatisfiable(isNumber(R))))
+when ((unsatisfiable(AisString(L)) andBool unsatisfiable(AisNumber(L))) orBool (unsatisfiable(AisString(R)) andBool unsatisfiable(AisNumber(R))))
 
 rule [type-juggling-3-merge]:
 	<k> comparisonTypeJuggling3(Op, L, R) => lub(comparison(Op, *toFloat(L), *toFloat(R)), comparisonTypeJuggling4(Op, L, R)) ... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-3-merge") </trace>
-when notBool (	((valid(isString(L)) orBool valid(isNumber(L))) andBool (valid(isString(R)) orBool valid(isNumber(R))))
+when notBool (	((valid(AisString(L)) orBool valid(AisNumber(L))) andBool (valid(AisString(R)) orBool valid(AisNumber(R))))
 			orBool
-				((unsatisfiable(isString(L)) andBool unsatisfiable(isNumber(L))) orBool (unsatisfiable(isString(R)) andBool unsatisfiable(isNumber(R))))
+				((unsatisfiable(AisString(L)) andBool unsatisfiable(AisNumber(L))) orBool (unsatisfiable(AisString(R)) andBool unsatisfiable(AisNumber(R))))
 			)
 			
 //if both args are arrays, compare them, else go to next step
@@ -424,21 +424,21 @@ when notBool (	((valid(isString(L)) orBool valid(isNumber(L))) andBool (valid(is
 rule [type-juggling-4-true]:
 	<k> comparisonTypeJuggling4(Op, L, R) => comparison(Op, L, R) ... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-4-true") </trace>
-when (valid(isArray(L)) andBool valid(isArray(R)))					//RR-FIXME need another name to distinguish from builtin ?
+when (valid(AisArray(L)) andBool valid(AisArray(R)))					//RR-FIXME need another name to distinguish from builtin ?
 
 
 rule [type-juggling-4-false]:
 	<k> comparisonTypeJuggling4(Op, L, R) => comparisonTypeJuggling5(Op, L, R) ... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-4-false") </trace>
-	when (unsatisfiable(isArray(L)) orBool unsatisfiable(isArray(R)))
+	when (unsatisfiable(AisArray(L)) orBool unsatisfiable(AisArray(R)))
 	
 //in the merge case, convert to arrays like in 2 for objects
 rule [type-juggling-4-merge]:
 	<k> comparisonTypeJuggling4(Op, L, R) => lub(comparison(Op, *toArray(L), *toArray(R)), comparisonTypeJuggling5(Op, L, R)) ... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-4-false") </trace>
-	when notBool(	(valid(isArray(L)) andBool valid(isArray(R)))
+	when notBool(	(valid(AisArray(L)) andBool valid(AisArray(R)))
 				orBool
-					(unsatisfiable(isArray(L)) orBool unsatisfiable(isArray(R)))
+					(unsatisfiable(AisArray(L)) orBool unsatisfiable(AisArray(R)))
 				)
 				
 //Default case : if one of the args is an object, it's greater. If both may be objects (impossible in concrete because of step 2), time to return Top...
@@ -446,53 +446,53 @@ rule [type-juggling-4-merge]:
 rule [type-juggling-5-LHS]:
 	<k> comparisonTypeJuggling5(Op, L, R) => comparisonLIsGreater(Op) ... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-5-LHS") </trace>
-	when (valid(isObject(L)))
+	when (valid(AisObject(L)))
 	
 //this can't happen at the same time as the one above in any domain
 rule [type-juggling-5-RHS]:
 	<k> comparisonTypeJuggling5(Op, L, R) => comparisonRIsGreater(Op) ... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-5-RHS") </trace>
-	when (valid(isObject(R)))
+	when (valid(AisObject(R)))
 
 rule [type-juggling-5-none]:
 	<k> comparisonTypeJuggling5(Op, L, R) => comparisonTypeJuggling6(Op, L, R) ... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-5-none") </trace>
-	when (unsatisfiable(isObject(L)) andBool unsatisfiable(isObject(R)))
+	when (unsatisfiable(AisObject(L)) andBool unsatisfiable(AisObject(R)))
 
 rule [type-juggling-5-not-LHS]:
 	<k> comparisonTypeJuggling5(Op, L, R) => lub(comparisonTypeJuggling6(Op, L, R), comparisonRIsGreater(Op)) ... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-5-not-LHS") </trace>
-	when (unsatisfiable(isObject(L)) andBool notBool(unsatisfiable(isObject(R))))
+	when (unsatisfiable(AisObject(L)) andBool notBool(unsatisfiable(AisObject(R))))
 
 rule [type-juggling-5-not-RHS]:
 	<k> comparisonTypeJuggling5(Op, L, R) => lub(comparisonTypeJuggling6(Op, L, R), comparisonLIsGreater(Op)) ... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-5-not-RHS") </trace>
-	when (unsatisfiable(isObject(R)) andBool notBool(unsatisfiable(isObject(L))))
+	when (unsatisfiable(AisObject(R)) andBool notBool(unsatisfiable(AisObject(L))))
 
 rule [type-juggling-5-top]:
 	<k> comparisonTypeJuggling5(Op, L, R) => *toBoolean(Top) ... </k>		//this should be a lub of many things, but by construction it always evaluates to the top Boolean
 	<trace> Trace:List => Trace ListItem("type-juggling-5-top") </trace>
-	when (notBool(unsatisfiable(isObject(R))) andBool notBool(unsatisfiable(isObject(L))) andBool notBool(valid(isObject(L))) andBool notBool(valid(isObject(R))))
+	when (notBool(unsatisfiable(AisObject(R))) andBool notBool(unsatisfiable(AisObject(L))) andBool notBool(valid(AisObject(L))) andBool notBool(valid(AisObject(R))))
 	
 //finally, if only one of the args is an array it's greater, else Top (impossible that both/none are arrays in concrete)
 
 rule [type-juggling-6-LHS]:
 	<k> comparisonTypeJuggling6(Op, L, R) => comparisonLIsGreater(Op) ... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-6-LHS") </trace>
-	when (valid(isArray(L)))
+	when (valid(AisArray(L)))
 
 //this can't happen at the same time as the one above in any domain
 rule [type-juggling-6-RHS]:
 	<k> comparisonTypeJuggling6(Op, L, R) => comparisonRIsGreater(Op) ... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-6-RHS") </trace>
-	when (valid(isArray(R)))
+	when (valid(AisArray(R)))
 
 //if none of them is certainly an array, return Top
 
 rule [type-juggling-6-top]:
 	<k> comparisonTypeJuggling6(Op, L, R) => *toBoolean(Top)	... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-6-top") </trace>
-	when notBool ((valid(isArray(L))) orBool valid(isArray(R)))
+	when notBool ((valid(AisArray(L))) orBool valid(AisArray(R)))
 
 
 
