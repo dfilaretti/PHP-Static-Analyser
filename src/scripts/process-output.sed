@@ -8,7 +8,7 @@ s/\(.*\)'`(_,_`)\(.*\)/\1\2/g
 /<control>/,/<\/control>/d
 
 # improve memory presentation
-#s/[ ]*ListItem("\([^"]*\)")/<t>\1<\/t>/g
+s/[ ]*ListItem("\([^"]*\)")/<t>\1<\/t>/g
 s/[ ]*#symLoc(\([^)]*\)) |-> #symLoc(\([^)]*\))/<x>\1 > \2<\/x>/g
 s/[ ]*#symLoc(\([^)]*\)) |-> zval /<\/m><m>\1 > /g
 

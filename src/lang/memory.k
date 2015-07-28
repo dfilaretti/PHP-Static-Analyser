@@ -908,13 +908,14 @@ rule [write-loc-exists]:
 // everything gets merged with NULL.
 // Not sure this is what we want!
 
+//SMT fix
 rule [write-loc-exists]:
 	<k> write(V:KResult,L':Loc,false) => 
 		zvalWrite(L', @Value, lub(V,V1)) ~> 
 		zvalWrite(L', @Type, typeOf(lub(V,V1))) ... </k>
 	<thematrix> ... L' |-> L ... </thematrix>	
 	<heap> ... L |-> zval(V1,_,_,_) ... </heap>
-	<trace> Trace:List => Trace ListItem("write-loc-exists") </trace>
+	<trace> Trace:List => Trace ListItem("write-loc-exists======================>") ListItem(K2String(V1)) </trace>
 	[internal]
 
 
@@ -984,7 +985,7 @@ rule [copy-value-to-loc-scalar]:
 	when notBool (isArrayType(V) orBool isObjectType(V))
 	[internal]
 
-
+//SMT
 
 
 
@@ -1069,23 +1070,16 @@ rule [copyArrayMembers-nil]:
 // ---------------------------------------------------------------------------------------------
 
 
-/* SMT
-
 
 //SM these implement what was previously known as fully and partially fragmented predicates. 
 
 syntax 	Bool ::= "GivenKeysCoverKeyRange(" Set ")"		[predicate]
-rule GivenKeysCoverKeyRange(S) => notStrictlyIncluded(set2list(S),lubAllSetElements(S))
-
-// LUBs a set of values  //SM was: PLainLanguageValue instead of K
-syntax 	K ::= "lubAllSetElements" "(" Set ")" [function]
-rule	lubAllSetElements(.Set) => Bot
-rule	lubAllSetElements(SetItem(V) S) => lub(V,lubAllSetElements(S))
+rule GivenKeysCoverKeyRange(S) => notStrictlyIncluded(set2list(S),SetItem(lubAllSetElements(S)))
 
 syntax 	Bool ::= "notStrictlyIncluded(" List "," Set ")"		[predicate]
 rule notStrictlyIncluded(_,.) => true
 rule notStrictlyIncluded(Ks,SetItem(E) S) => notStrictlyIncluded(Ks,S) //element is covered and can be discarded
-     when (E =/=K Bot) andBool containedInKeys(E,KS) // E <=Lattice than some element in Ks
+     when (E =/=K Bot) andBool containedInKeys(E,Ks) // E <=Lattice than some element in Ks
 rule notStrictlyIncluded(Ks,SetItem(E) S) => false //too many children: introduces computable approximation
      when (notBool containedInKeys(E,Ks)) andBool hasInfinitelyManyChildren(E) 
 rule notStrictlyIncluded(Ks,SetItem(E) S) => notStrictlyIncluded(Ks,S children(E)) //remove element, check children
@@ -1098,38 +1092,12 @@ rule notStrictlyIncluded(Ks,SetItem(E) S) => false //reached bottom without bein
 syntax 	Set ::= "children(" K ")"		[function]
 rule children(_) => SetItem(Bot) //trivially sound approximation
 
-//K is a lattice element
-// this is lattice-dependent
+//K is a lattice element, this is lattice-dependent
 syntax 	Bool ::= "hasInfinitelyManyChildren(" K ")"		[function]
-rule hasInfinitelyManyChildren(AStringTop) = true
-rule hasInfinitelyManyChildren(X) = false when X =/=K AStringTop
-
-
-
-*/
-
-
-
-// fully and partially fragmented predicates. 
-// NOTE; the definition of fullyFragmented is bogus. 
-// (see comments somewhere else in the code). 
-// It should be imoproved OR we could use worst-case always
-
-syntax 	Bool ::= Key "fullyFragmentedIn" Set		[predicate]
-
-rule 	K fullyFragmentedIn S => true 	
-	when lubAllSetElements(S) ==K K
-
-syntax 	Bool ::= Key "partiallyFragmentedIn" Set	[predicate]
-
-rule 	K partiallyFragmentedIn S => true 	
-	when lubAllSetElements(S) <Lattice K
 
 // LUBs a set of values 
 syntax 	PlainLanguageValue ::= "lubAllSetElements" "(" Set ")" [function]
-
 rule	lubAllSetElements(.Set) => Bot
-
 rule	lubAllSetElements(SetItem(V:PlainLanguageValue) S) => lub(V,lubAllSetElements(S))
 
 // Takes a bunch of locations and merge the contained values

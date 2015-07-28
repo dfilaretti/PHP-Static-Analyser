@@ -261,17 +261,11 @@ rule pickScope(X) => Top
 syntax Bool ::= "containedInKeys" "(" AString "," List ")"		[function]
 syntax Bool ::= "doesNotIntersectKeys" "(" AString "," List ")"		[function]
 syntax Bool ::= "maybeInKeys" "(" AString "," List ")"		[function]
-rule containedInKeys(X,Y) => foldrorBool(false,mapX<=Lattice(X,Y)) //SM misses "contained fragmented" case, but still sound
-rule doesNotIntersectKeys(X,Y) => notBool foldrorBool(false,mapglb=/=LatticeBot(X,Y)) 
-rule maybeInKeys(X,Y) => notBool(containedInKeys(X,Y) orBool doesNotIntersectKeys(X,Y)) 
-
-
-/* SMT
-rule containedInKeys(X,Y) => foldrorBool(false,mapX<=Lattice(X,Y)) 
+rule containedInKeys(X,Y) => foldrorBool(false,mapX<=Lattice(X,Y))
 //SM case above misses "contained fragmented" case, but still sound
 //   consider using notStrictlyIncluded(Y,SetItem(X)) as well
-*/
-
+rule doesNotIntersectKeys(X,Y) => notBool foldrorBool(false,mapglb=/=LatticeBot(X,Y)) 
+rule maybeInKeys(X,Y) => notBool(containedInKeys(X,Y) orBool doesNotIntersectKeys(X,Y)) 
 
 
 
