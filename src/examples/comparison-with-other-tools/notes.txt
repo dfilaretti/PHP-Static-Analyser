@@ -21,3 +21,5 @@ Notes about the examples
 - weird: look at 'recursion-def-only-false-alarms'. Vuln function not called. 
   If XSS is inside IF pixy report no false alarm. 
   If it is not (but still inside function body) then it does 
+
+- pass by reference: seems to be only supported by Weverca
