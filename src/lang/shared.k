@@ -110,6 +110,14 @@ syntax List ::= "mapConcat(" List "," K ")" [function]
 rule mapConcat(.,_) => .
 rule mapConcat(H T,X) => (H ListItem(X) mapConcat(T,X))
 
+syntax List ::= "elems2keys(" List ")" [function]
+rule elems2keys(.List) => .List
+rule elems2keys(ListItem([K,_,_]) T) => (ListItem(K) elems2keys(T))
+
+syntax List ::= "set2list(" Set ")" [function]
+rule set2list(.Set) => .List
+rule set2list(SetItem(E) S) => ListItem(E) set2list(S)
+
 
 // ---------------------------------------------------------------------------------------------
 /*@ \subsection{Set functions} */ 
@@ -129,16 +137,48 @@ rule 	removeFromSet(SetItem(Y) S, X) => SetItem(Y) removeFromSet(S,X)
 
 // given a lattice element and a set of lattice elements, computes the set of lattice elements that intersect with the given one, and transitively with each other
 // example: give [5] and {[2..5],[6..8],[1..3]} it returns {[2..5],[1..3]}
-syntax  List ::= "intersectClose" "(" K "," List ")" [function]
-rule intersectClose(K,L) => _iC(K,L,L)
 
-syntax  List ::= "_iC" "(" K "," List "," List ")" [function]
-rule 	_iC(X,ListItem(H) T,L) => (ListItem(H) _iC(lub(X,H),T,T))
-	when Bot =/=Lattice glb(X,H)
-rule 	_iC(X,ListItem(H) T,L) => _iC(X,T ListItem(H),L)
+syntax Set ::= "intersectClose" "(" K "," List ")" [function]
+rule intersectClose(K,L) => intersectClose1(K,L,L)
+
+syntax Set ::= "intersectClose1" "(" K "," List "," List ")" [function]
+rule 	intersectClose1(X,.List,.List) => .Set
+rule 	intersectClose1(X,ListItem(H) T,L) => (SetItem(H) intersectClose1(lub(X,H),T,T))
+	when Bot <Lattice glb(X,H) //SM ideally =/=LAttice but it gets stuck
+rule 	intersectClose1(X,ListItem(H) T,L) => intersectClose1(X,T ListItem(H),L)
 	when (Bot ==Lattice glb(X,H)) andBool ((T ListItem(H)) =/=List L)
-rule 	_iC(X,ListItem(H) T,L) => .List
+rule 	intersectClose1(X,ListItem(H) T,L) => .Set
 	when (Bot ==Lattice glb(X,H)) andBool ((T ListItem(H)) ==List L)
+
+
+syntax Bool ::= K "=/=Lattice" K [function]
+rule V =/=Lattice U => notBool(V ==Lattice U)
+
+syntax Bool ::= K "<=Lattice" K [function]
+rule V <=Lattice U => (V <Lattice U) orBool (V ==Lattice U)
+
+syntax Bool ::= K ">Lattice" K [function]
+rule V >Lattice U => U <Lattice V
+
+syntax Bool ::= K ">=Lattice" K [function]
+rule V >=Lattice U => U <=Lattice V
+
+
+syntax List ::= "mapglb=/=LatticeBot(" K "," List ")" [function]
+rule mapglb=/=LatticeBot(_,.) => .
+rule mapglb=/=LatticeBot(X,ListItem(H) T) => ListItem(glb(H,X) =/=K Bot) mapglb=/=LatticeBot(X,T) 
+
+syntax List ::= "map<=LatticeX(" K "," List ")" [function]
+rule map<=LatticeX(_,.) => .
+rule map<=LatticeX(X,ListItem(H) T) => ListItem(H <=Lattice X) map<=LatticeX(X,T) 
+
+syntax List ::= "mapX<=Lattice(" K "," List ")" [function]
+rule mapX<=Lattice(_,.) => .
+rule mapX<=Lattice(X,ListItem(H) T) => ListItem(X <=Lattice H) mapX<=Lattice(X,T) 
+
+syntax Bool ::= "foldrorBool(" K "," List ")" [function]
+rule foldrorBool(X,.) => X
+rule foldrorBool(X,ListItem(H) T) => H orBool foldrorBool(X,T) 
 
 
 endmodule

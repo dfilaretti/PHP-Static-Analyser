@@ -1,7 +1,6 @@
 require "program-transformations.k"
 require "builtin-functions.k"
 require "meta.k"
-
 require "../domains/domain/domain.k"
 
 module CORE 
@@ -11,9 +10,8 @@ module CORE
 	imports DOMAIN
 	imports ID-HOOKS
 
-syntax Domain ::= "Concrete"
-				| "Signs"
-				| "Types"
+syntax Domain ::= "Concrete" | "Signs" | "Types"
+
 
 // =/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
 // =/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
@@ -39,12 +37,12 @@ syntax K ::= "runScript" "(" K ")"
 rule runScript(Prog:K) => 
 		addSourceLabels(Prog)  
 		~> refactor 		
-		~> detectDeprecated 
+		~> checkDeprecated 
 		~> initStatic
 
-syntax K ::= "detectDeprecated"
+syntax K ::= "checkDeprecated"
 
-rule 	(quotedCode(Prog:K) ~> detectDeprecated) => detectDeprecated(Prog)
+rule 	(quotedCode(Prog:K) ~> checkDeprecated) => detectDeprecated(Prog)
 
 syntax K ::= "initStatic"
 
@@ -105,68 +103,33 @@ rule [template-document-echo]:
 
 rule    [literal-int]:
 	    <k> 'LNumber('Deci(Str:String)) => alpha(String2Int(Str)) ... </k>
-	    [structural]
-
-rule    [literal-float]:
-	    <k> 'DNumber(Str:String) => alpha(String2Float(Str)) ... </k>
-	    [structural]
-
-rule    [literal-string]:
-	    <k> 'Literal(Str:String) => alpha(Str)	... </k>
-	    [structural]
-
-rule    [literal-true]:
-	    <k> 'True(_) => alpha(true) ... </k>
-    	[structural]
-
-rule    [literal-false]:
-	    <k> 'False(_) => alpha(false) ... </k>
-	    [structural]
-
-rule    [literal-null]:
-	    <k> 'Null(_) => alpha(NULL) ... </k>
-	    [structural]		
-
-
-
-
-/* TODO: remove when done
-rule    [literal-int]:
-	    <k> 'LNumber('Deci(Str:String)) => String2Int(Str) ... </k>
 	    <trace> Trace:List => Trace ListItem("literal-int") </trace>
 	    [structural]
 
 rule    [literal-float]:
-	    <k> 'DNumber(Str:String) => String2Float(Str) ... </k>
+	    <k> 'DNumber(Str:String) => alpha(String2Float(Str)) ... </k>
 	    <trace> Trace:List => Trace ListItem("literal-float") </trace>
 	    [structural]
 
-// can be removed?
-//rule [hello]:
-//	<k> 'Deci(V:Value) => V ... </k>
-//	<trace> Trace:List => Trace ListItem("hello") </trace>
-//	[structural]
-
 rule    [literal-string]:
-	    <k> 'Literal(Str:String) => Str	... </k>
+	    <k> 'Literal(Str:String) => alpha(Str)	... </k>
 	    <trace> Trace:List => Trace ListItem("literal-string") </trace>
 	    [structural]
 
 rule    [literal-true]:
-	    <k> 'True(_) => true ... </k>
+	    <k> 'True(_) => alpha(true) ... </k>
 	    <trace> Trace:List => Trace ListItem("literal-true") </trace>
     	[structural]
 
 rule    [literal-false]:
-	    <k> 'False(_) => false ... </k>
+	    <k> 'False(_) => alpha(false) ... </k>
 	    <trace> Trace:List => Trace ListItem("literal-false") </trace>
 	    [structural]
 
 rule    [literal-null]:
-	    <k> 'Null(_) => NULL ... </k>
+	    <k> 'Null(_) => alpha(NULL) ... </k>
 	    <trace> Trace:List => Trace ListItem("literal-null") </trace>
 	    [structural]		
-*/
 
 
 // ---------------------------------------------------------------------------------------------
@@ -266,34 +229,41 @@ rule [var2Id]:
 rule [var]:   
 	<k> var(X:AString)  => lref(ref(Lr,pickScope(X)),X,arr) ... </k>
 	<rootScope> Lr:Loc </rootScope>
+	<trace> Trace:List => Trace ListItem("var") </trace>
 	when isNotSpecialVar(X) orBool maybeSpecialVar(X)
 	[step]
 
-//SM-FIXME this rule is wrong: we need to separate 'maybe' case out, and in that case merge with this-obj-cntx
+//SM-FIXME the rule above is wrong: we need to separate 'maybe' case out, and in that case merge with this-obj-cntx
 // in particular, the case for "this" is currently wrong
 
-/*@ The following auxiliary predicate returns true if the variable is a superglobal, 
-	false otherwise */
 
+//SM this should read the keys off the global scope instead of hard-coding them
+syntax  List ::= "superglobalKeys()" [function]
+rule superglobalKeys() => 
+ListItem(alpha("_GET")) 
+ListItem(alpha("_POST")) 
+ListItem(alpha("GLOBALS"))
+ListItem(alpha("_COOKIE"))
+ListItem(alpha("_FILES"))
+
+/*@ The following auxiliary function returns the key in the rootScope array containing the scope where X should be resolved.*/
 syntax  Key ::= "pickScope" "(" AString ")"	[function]
 
-rule
-	pickScope(X) => alpha("SUPERGLOBALS")
-	when 	(X <Lattice lub(alpha("_GET"),lub(alpha("_POST"),alpha("GLOBALS"))))
-            	
-rule
-	pickScope(X) => alpha("GLOBALS")
-	when 	notBool((alpha("_GET")<Lattice X) orBool 
-		        (alpha("_GLOBALS")<Lattice X) orBool 
-		        (alpha("_POST")<Lattice X))
+rule pickScope(X) => alpha("SUPERGLOBALS")
+     when containedInKeys(X,superglobalKeys())
 
-rule
-	pickScope(X) => Top
-	when 	(notBool(X <Lattice lub(alpha("_GET"),lub(alpha("_POST"),alpha("GLOBALS")))))
-            	andBool
-                ((alpha("_GET")<Lattice X) orBool 
-		 (alpha("_GLOBALS")<Lattice X) orBool 
-		 (alpha("_POST")<Lattice X))
+rule pickScope(X) => alpha("GLOBALS")
+     when doesNotIntersectKeys(X,superglobalKeys())
+
+rule pickScope(X) => Top
+     when maybeInKeys(X,superglobalKeys())
+
+syntax Bool ::= "containedInKeys" "(" AString "," List ")"		[function]
+syntax Bool ::= "doesNotIntersectKeys" "(" AString "," List ")"		[function]
+syntax Bool ::= "maybeInKeys" "(" AString "," List ")"		[function]
+rule containedInKeys(X,Y) => foldrorBool(false,mapX<=Lattice(X,Y)) //SM misses "contained fragmented" case, but still sound
+rule doesNotIntersectKeys(X,Y) => notBool foldrorBool(false,mapglb=/=LatticeBot(X,Y)) 
+rule maybeInKeys(X,Y) => notBool(containedInKeys(X,Y) orBool doesNotIntersectKeys(X,Y)) 
 
 /*@ The following auxiliary predicate returns true if the variable is special (e.g. this), 
 	false otherwise  */
@@ -303,7 +273,7 @@ syntax Bool ::= "isNotSpecialVar" "(" AString ")"		[function]
 syntax Bool ::= "maybeSpecialVar" "(" AString ")"		[function]
 
 rule 	maybeSpecialVar(X) => (alpha("this") <Lattice X)
-rule	isNotSpecialVar(X) => notBool maybeSpecialVar(X)
+rule	isNotSpecialVar(X) => (notBool maybeSpecialVar(X))
 rule	isSpecialVar(X) => (alpha("this") ==Lattice X)
 
 
@@ -642,18 +612,16 @@ rule [ref-assign-obj-prop]:
 	...
 	</heap>
 	<trace> Trace:List => Trace ListItem("ref-assign-fresh-obj-prop") </trace>
-	//when notBool (Elems hasProperty X)
+	//when notBool (Elems hasProperty X) //SM why is this commented?
 	[intermediate]
 
-// we are relying on the invariant that 
 rule [ref-assign-array-elem]:
 	<k> 
 		'ReferenceAssign(ref(L':Loc, X:Key),, L1':Loc) =>  
             	ArrayUpdateElem(L', X, L1') ~>
 		rebuildArray(
 			L',X,
-			getMaxKey(SetItem(X) getLTKeys(Elems,X) getGEQKeys(Elems,X)),
-			L1',L1,Elems) ~>
+			L1',L1,arrayRemove(Elems,X)) ~> //SM if x is a singleton, it should not be lubbed to the aliasing source
 		ref(L', X) 
 	... </k>
 	<thematrix> 
@@ -669,15 +637,125 @@ rule [ref-assign-array-elem]:
 	... 
 	</heap>
 	<trace> Trace:List => Trace ListItem("ref-assign-fresh-array-elem") </trace>
-	//when notBool (Elems hasProperty X)
+	when isGammaSingleton(X)
+	[step]
+
+rule [ref-assign-array-elem-weak]:
+	<k> 
+		'ReferenceAssign(ref(L':Loc, X:Key),, L1':Loc) =>              	
+		rebuildArray(
+			L',X,
+			L1',L1,Elems) ~>		
+		ArrayAliasElem(L', X, L1) ~>
+		ref(L', X) 
+	... </k>
+	<thematrix> 
+	... 
+		L'  |-> L 
+		L1' |-> L1
+	... 
+	</thematrix>	
+        <heap> 
+	... 
+		L  |-> zval(Array(_,Elems),_,_,_) 
+		L1 |-> _ 
+	... 
+	</heap>
+	<trace> Trace:List => Trace ListItem("ref-assign-fresh-array-elem-weak") </trace>
+	when notBool isGammaSingleton(X)
 	[step]
 
 
+
+//SMT delete
+/*
+rule [ref-assign-array-elem]:
+	<k> 
+		'ReferenceAssign(ref(L':Loc, X:Key),, L1':Loc) =>  
+            	ArrayUpdateElem(L', X, L1') ~>
+		rebuildArray(
+			L',X,
+			getMaxKey(SetItem(X) getLTKeys(Elems,X) getGEQKeys(Elems,X)),
+			L1',L1,arrayRemove(Elems,X)) ~> //SM if x is a singleton, it should not be lubbed to the aliasing source
+		ref(L', X) 
+	... </k>
+	<thematrix> 
+	... 
+		L'  |-> L 
+		L1' |-> L1
+	... 
+	</thematrix>	
+        <heap> 
+	... 
+		L  |-> zval(Array(_,Elems),_,_,_) 
+		L1 |-> _ 
+	... 
+	</heap>
+	<trace> Trace:List => Trace ListItem("ref-assign-fresh-array-elem") </trace>
+	when isGammaSingleton(X)
+	[step]
+
+//SMT fix here
+rule [ref-assign-array-elem-weak]:
+	<k> 
+		'ReferenceAssign(ref(L':Loc, X:Key),, L1':Loc) =>              	
+		rebuildArray(
+			L',X,
+			getMaxKey(SetItem(X) getLTKeys(Elems,X) getGEQKeys(Elems,X)),
+			L1',L1,Elems) ~>		
+		ArrayAliasElem(L', X, L1) ~>
+		ref(L', X) 
+	... </k>
+	<thematrix> 
+	... 
+		L'  |-> L 
+		L1' |-> L1
+	... 
+	</thematrix>	
+        <heap> 
+	... 
+		L  |-> zval(Array(_,Elems),_,_,_) 
+		L1 |-> _ 
+	... 
+	</heap>
+	<trace> Trace:List => Trace ListItem("ref-assign-fresh-array-elem-weak") </trace>
+	when notBool isGammaSingleton(X)
+	[step]
+
+
+*/
 
 // --------------- AUXILIARY OPS FOR REFERENCE ASSIGN --------------------
 // .................... TODO: MOVE? --------------------------------------
 
 
+// Auxiliary operation used by the reference assignment. 
+// It takes care of aliasing the required keys (in case there is more
+// then one)....
+
+syntax K ::= "rebuildArray" "(" Loc "," Key "," 
+				Loc "," Loc "," 
+				List ")"
+
+rule [rebuild-array]: 
+    <k> rebuildArray(L',X,L1',L1,Elems) => 
+	// write the lub 
+	write(
+		mergeValuesAtLocs(
+			bot,
+			SetItem(L1')
+			KeySet2LocSet(intersectClose(X,elems2keys(Elems)),Elems)),
+		L1',
+		true) ~>
+	// alias the affected key to the target
+	aliasAllKeys2Loc(L',intersectClose(X,elems2keys(Elems)),L1) ...
+        </k>
+	<trace> Trace:List => Trace ListItem("rebuild-array") </trace>
+        [internal]	
+
+
+//SMT delete
+/*
 // Auxiliary operation used by the reference assignment. 
 // It takes care of aliasing the required keys (in case there is more
 // then one)....
@@ -692,18 +770,20 @@ rule rebuildArray(L',X,MaxKey,L1',L1,Elems) =>
 		mergeValuesAtLocs(
 			bot,
 			SetItem(L1')
-			// NOTE: in the old rule, I used to REMOVE X from the set below... 
 			KeySet2LocSet(getLTKeys(Elems,MaxKey) getGEQKeys(Elems,MaxKey),Elems)),
 		L1',
 		true) ~>
 	// alias the affected key to the target
 	aliasAllKeys2Loc(L',getLTKeys(Elems,MaxKey) getGEQKeys(Elems,MaxKey) ,L1)				
+//SMT use interecting keys instead?
+*/
+
 
 
 // given a set of keys, returns the maximum
 // (according to lattice ordering)
 // currently this is called with at least one element
-
+//SM and it does not return the max if X and getMaxKeys(S) are uncomparable
 
 syntax 	K ::= "getMaxKey" "(" Set ")" [function]
 
