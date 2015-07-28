@@ -5,12 +5,14 @@
 
 
 //SM testing simple while
-
+/*
 $x=1;
-while(true){$x = $x+1;}
+while(true){$x = $x+1;} //loop detected, all good
+*/
+
 
 //SM testing array read/write
-/*
+
 $y = "y1";
 
 $x[1] = 1;
@@ -34,7 +36,7 @@ $x[$w] = "w1";
 // with (A) ok: $y gets ARC2 Top and all other keys weakly aliased to it 
 // with (B)
 //$x[$w] =& $y;
-*/
+/**/
 
 
 //SM testing globals/superglobals resolution

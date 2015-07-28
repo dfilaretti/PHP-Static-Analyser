@@ -128,10 +128,7 @@ rule 	intersectClose1(X,ListItem(H) T,L) => intersectClose1(X,T ListItem(H),L)
 rule 	intersectClose1(X,ListItem(H) T,L) => .Set
 	when (notBool intersects(X,H)) andBool ((T ListItem(H)) ==List L)
 
-syntax Bool ::= "intersects" "(" K "," K ")" [predicate]
-rule intersects(X,H) => notBool((Bot ==Lattice glb(X,H)) orBool (AStringBot ==Lattice glb(X,H)))
-//SM perhaps ==K is enough/better/more appropriate
-
+syntax Bool ::= "intersects" "(" K "," K ")" [predicate] // defined in the domains
 
 syntax Bool ::= K "=/=Lattice" K [function]
 rule V =/=Lattice U => notBool(V ==Lattice U)

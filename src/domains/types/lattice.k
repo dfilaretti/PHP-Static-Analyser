@@ -27,7 +27,7 @@ module LATTICE
 	
 	   syntax Scalar ::= "getValue" "(" DomainValue ")" [function]
 	   
-	   syntax DomainValue ::= ANum | AString | ABool | Null
+	   syntax DomainValue ::= ANum | AString | ABool | Null //| Top | Bot //SM PlainLanguageValue
 	   
 	   syntax VEPair ::= "VE" "(" Scalar "," List ")"
 	   
@@ -191,6 +191,10 @@ module LATTICE
 	   syntax Bool ::= Scalar "<ScalarLattice" Scalar [function]
 
 	   rule D1:DomainValue ==Lattice D2:DomainValue => generalize(D1) ==Lattice generalize(D2) 
+           rule Top ==Lattice X => X ==K Top
+           rule X ==Lattice Top => X ==K Top
+           rule Bot ==Lattice X => X ==K Bot
+           rule X ==Lattice Bot => X ==K Bot          
 
 	   rule VE(V1, E1):VEPair ==Lattice VE(V2, E2):VEPair => (lub_Value(V1,valueOfErrs(E1)) ==K lub_Value(V2,valueOfErrs(E2)))
            
@@ -288,5 +292,15 @@ module LATTICE
 	   rule addErrFlag(E,L) => ListItem(E) L
 	   when notBool(E inList L)
 	   
+
+rule hasInfinitelyManyChildren(X:AString) => getValue(X) ==K AStringTop
+rule hasInfinitelyManyChildren(X:ABool) => false 
+rule hasInfinitelyManyChildren(X:AInt) => false 
+rule hasInfinitelyManyChildren(X:AFloat) => false 
+rule hasInfinitelyManyChildren(Top) => false 
+rule hasInfinitelyManyChildren(Bot) => false 
+
+rule intersects(X,H) => Bot =/=Lattice glb(X,H) 
+//SM perhaps ==K is enough/better/more appropriate
 
 endmodule
