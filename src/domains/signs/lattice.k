@@ -31,17 +31,12 @@ module LATTICE
 // NOTE: theoretically, this should be defined for everything. 
 //       In practice, I only need it for Keys (int and string)
 
-
-
 rule lub(V1:AInt,V2:AInt) => lub_AInt(V1,V2)
 rule lub(V1:AFloat,V2:AFloat) => lub_AFloat(V1,V2)
 rule lub(V1:ABool,V2:ABool) => lub_ABool(V1,V2)
 rule lub(V1:AString,V2:AString) => lub_AString(V1,V2)
 rule lub(V1,V2) => Top
      when (V1 =/=K Bot) andBool (V2 =/=K Bot) andBool (getKLabel(V1) =/=KLabel getKLabel(V2)) andBool notBool (isBoolType(V1) andBool isBoolType(V2))
-
-
-
 
 
 syntax 	Bool ::= K "<Lattice" K		[function]
@@ -108,10 +103,11 @@ syntax 	Bool ::= AString ">Lattice" AString [function]
 	(notBool V1 <Lattice V2) andBool (notBool V1 ==K V2)
 */
 
+/*  DF: maybe this is the missing case that makes intersectClose1 stuck?
 	syntax Bool ::= K "==Lattice" K [function]
-	rule A ==Lattice B => A ==K B
-
-
+	rule A ==Lattice B => (A ==K B) orBool (A ==String B)
+*/
+	
 
 
 
@@ -223,8 +219,6 @@ rule	lub_AString(S1:String,S2:String) => AStringTop when (S1 =/=String S2)
 
 
 
-
-// GLB
     
 
     // valid 
