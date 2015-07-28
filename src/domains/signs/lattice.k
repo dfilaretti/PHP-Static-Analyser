@@ -103,11 +103,19 @@ syntax 	Bool ::= AString ">Lattice" AString [function]
 	(notBool V1 <Lattice V2) andBool (notBool V1 ==K V2)
 */
 
-/*  DF: maybe this is the missing case that makes intersectClose1 stuck?
-	syntax Bool ::= K "==Lattice" K [function]
-	rule A ==Lattice B => (A ==K B) orBool (A ==String B)
-*/
-	
+//  DF: maybe this is the missing case that makes intersectClose1 stuck?
+	syntax Bool ::= K "==Lattice" K [predicate]
+//	rule A ==Lattice B => (A ==K B) orBool (A ==String B)
+
+rule X ==Lattice Y => X ==K Y
+
+//rule X ==Lattice Y => true
+//     when X ==K Y
+
+//SM delete
+//rule X:String ==Lattice Y:String => false
+//     when X =/=String Y 
+
 
 
 

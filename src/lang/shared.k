@@ -64,28 +64,6 @@ syntax LanguageValue ::= "convertToLanguageValue" "(" ConvertibleToLanguageValue
 rule convertToLanguageValue(L:Loc) => read(L)
 rule convertToLanguageValue(V:ConvertibleToLoc) => read(convertToLoc(V,r))
 
-// ---------------------------------------------------------------------------------------------
-/*@ \subsection{Internal "arithmetic"} */ 
-// ---------------------------------------------------------------------------------------------
-
-syntax K ::= "isEqualScalar" "(" K "," K ")" [seqstrict]
-
-/* TODO: remove
-rule [isEqual-scalar-RHS2LangValue]:
-	<k> isEqualScalar(_, (R2:ConvertibleToLanguageValue => convertToLanguageValue(R2))) ... </k>
-	<trace> Trace:List => Trace ListItem("isEqual-scalar-RHS2LangValue") </trace>
-	[intermediate]
-
-rule [isEqual-scalar-LHS2LangValue]:
-	<k> isEqualScalar((R1:ConvertibleToLanguageValue => convertToLanguageValue(R1)), _) ... </k>
-	<trace> Trace:List => Trace ListItem("isEqual-scalar-LHS2LangValue") </trace>
-	[intermediate]
-*/
-
-rule [isEqual-scalar]:
-	<k> isEqualScalar(I1:Int, I2:Int) => I1 ==Int I2 ... </k>
-	<trace> Trace:List => Trace ListItem("isEqual-scalar") </trace>
-	[internal]
 
 // ---------------------------------------------------------------------------------------------
 /*@ \subsection{Visibility 2 string} */ 
@@ -144,11 +122,15 @@ rule intersectClose(K,L) => intersectClose1(K,L,L)
 syntax Set ::= "intersectClose1" "(" K "," List "," List ")" [function]
 rule 	intersectClose1(X,.List,.List) => .Set
 rule 	intersectClose1(X,ListItem(H) T,L) => (SetItem(H) intersectClose1(lub(X,H),T,T))
-	when Bot <Lattice glb(X,H) //SM ideally =/=LAttice but it gets stuck
+	when intersects(X,H) //SM ideally =/=Lattice but it gets stuck
 rule 	intersectClose1(X,ListItem(H) T,L) => intersectClose1(X,T ListItem(H),L)
-	when (Bot ==Lattice glb(X,H)) andBool ((T ListItem(H)) =/=List L)
+	when (notBool intersects(X,H)) andBool ((T ListItem(H)) =/=List L)
 rule 	intersectClose1(X,ListItem(H) T,L) => .Set
-	when (Bot ==Lattice glb(X,H)) andBool ((T ListItem(H)) ==List L)
+	when (notBool intersects(X,H)) andBool ((T ListItem(H)) ==List L)
+
+syntax Bool ::= "intersects" "(" K "," K ")" [predicate]
+rule intersects(X,H) => notBool((Bot ==Lattice glb(X,H)) orBool (AStringBot ==Lattice glb(X,H)))
+//SM perhaps ==K is enough/better/more appropriate
 
 
 syntax Bool ::= K "=/=Lattice" K [function]
