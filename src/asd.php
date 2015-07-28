@@ -16,7 +16,6 @@ while(true){$x = $x+1;} //loop detected, all good
 $y = "y1";
 
 $x[1] = 1;
-$x[2] = 2;
 $x["c"] = "c1";
 $x["d"] = "d1";
 $x["e"] =& $x["d"]; //strong aliasing
