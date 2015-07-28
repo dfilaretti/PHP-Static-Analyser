@@ -9,25 +9,27 @@ module LATTICE
 	   
 	   syntax ErrFlag ::= "MayBeNull" | "VisibilityErr" | "ImplicitTypeConversion" | "NullTypeConversion"
 	   
-       syntax AStringValue ::= "AStringTop" | String
+       syntax AStringValue ::= "AStringTop" | String | Bot
        
 	   syntax AString ::= "(" AStringValue "," List ")"
 	   
-       syntax AIntValue ::= "AInt" 
+       syntax AIntValue ::= "AInt" | Bot
 	   
 	   syntax AInt ::= "(" AIntValue "," List ")"
 	
-       syntax ABoolValue ::= "ABoolTop" | "ABoolTrue" | "ABoolFalse"
+       syntax ABoolValue ::= "ABoolTop" | "ABoolTrue" | "ABoolFalse" | Bot
 
 	   syntax ABool ::= "(" ABoolValue "," List ")"	   
 	   
-       syntax AFloatValue ::= "AFloat"
+       syntax AFloatValue ::= "AFloat" | Bot
 	   
 	   syntax AFloat ::= "(" AFloatValue "," List ")"
 	   
 	   syntax ANumValue ::= AFloatValue | AIntValue | "ANum"
 	   
 	   syntax ANum ::= AInt| AFloat| "(" "ANum" "," List ")"
+	   
+	   syntax PlainLanguageValue ::= ANum | DomainValue
 	   
 	   syntax Scalar ::= ANumValue | AStringValue | ABoolValue | Null | Bot | Top
 //SM added top above?
@@ -299,73 +301,72 @@ module LATTICE
 
 //Type predicates	   
 
-	   rule AisNull( Array(_,_)) => ABoolFalse
-	   rule AisNull(OID(_,_,_)) => ABoolFalse
-	   rule AisNull(NULL) => ABoolTrue
-	   rule AisNull(Top) => ABoolTop
+	   rule AisNull( Array(_,_)) => (ABoolFalse, .List)
+	   rule AisNull(OID(_,_,_)) => (ABoolFalse, .List)
+	   rule AisNull(NULL) => (ABoolTrue, .List)
+	   rule AisNull(Top) => (ABoolTop, .List)
 	   
 	   rule AisNull(D:DomainValue) => AisNull(generalize(D))
 	   when D =/=K NULL andBool D =/=K Top
 	   
-	   rule AisNull( VE(V,E)) => ABoolTop
+	   rule AisNull( VE(V,E)) => (ABoolTop, .List)
 	   when MayBeNull inList E
 	   
-	   rule AisNull( VE(V,E)) => ABoolFalse
+	   rule AisNull( VE(V,E)) => (ABoolFalse, .List)
 	   when notBool(MayBeNull inList E)
 	   
+	   rule AisString( Array(_,_)) => (ABoolFalse, .List)
+	   rule AisString(OID(_,_,_)) => (ABoolFalse, .List)
+	   rule AisString(X:AInt) => (ABoolFalse, .List)
+	   rule AisString(X:AFloat) => (ABoolFalse, .List)
+	   rule AisString(X:ABool) => (ABoolFalse, .List)
+	   rule AisString(X:AString) => (ABoolTrue, .List)
+	   rule AisString(Null) => (ABoolFalse, .List)
+	   rule AisString(Top) => (ABoolTop, .List)
+	   rule AisString(Anum) => (ABoolFalse, .List)
 	   
-	   rule AisString( Array(_,_)) => ABoolFalse
-	   rule AisString(OID(_,_,_)) => ABoolFalse
-	   rule AisString(X:AInt) => ABoolFalse
-	   rule AisString(X:AFloat) => ABoolFalse
-	   rule AisString(X:ABool) => ABoolFalse
-	   rule AisString(X:AString) => ABoolTrue
-	   rule AisString(Null) => ABoolFalse
-	   rule AisString(Top) => ABoolTop
-	   rule AisString(Anum) => ABoolFalse
+	   rule AisBoolean( Array(_,_)) => (ABoolFalse, .List)
+	   rule AisBoolean(OID(_,_,_)) => (ABoolFalse, .List)
+	   rule AisBoolean(X:AInt) => (ABoolFalse, .List)
+	   rule AisBoolean(X:AFloat) => (ABoolFalse, .List)
+	   rule AisBoolean(X:ABool) => (ABoolTrue, .List)
+	   rule AisBoolean(X:AString) => (ABoolFalse, .List)
+	   rule AisBoolean(Null) => (ABoolFalse, .List)
+	   rule AisBoolean(Top) => (ABoolTop, .List)
+	   rule AisBoolean(ANum) => (ABoolFalse, .List)
 	   
-	   rule AisBoolean( Array(_,_)) => ABoolFalse
-	   rule AisBoolean(OID(_,_,_)) => ABoolFalse
-	   rule AisBoolean(X:AInt) => ABoolFalse
-	   rule AisBoolean(X:AFloat) => ABoolFalse
-	   rule AisBoolean(X:ABool) => ABoolTrue
-	   rule AisBoolean(X:AString) => ABoolFalse
-	   rule AisBoolean(Null) => ABoolFalse
-	   rule AisBoolean(Top) => ABoolTop
-	   rule AisBoolean(ANum) => ABoolFalse
+	   rule AisObject( Array(_,_)) => (ABoolFalse, .List)
+	   rule AisObject(OID(_,_,_)) => (ABoolTrue, .List)
+	   rule AisObject(X:AInt) => (ABoolFalse, .List)
+	   rule AisObject(X:AFloat) => (ABoolFalse, .List)
+	   rule AisObject(X:ABool) => (ABoolFalse, .List)
+	   rule AisObject(X:AString) => (ABoolFalse, .List)
+	   rule AisObject(Null) => (ABoolFalse, .List)
+	   rule AisObject(Top) => (ABoolTop, .List)
+	   rule AisObject(ANum) => (ABoolFalse, .List)
 	   
-	   rule AisObject( Array(_,_)) => ABoolFalse
-	   rule AisObject(OID(_,_,_)) => ABoolTrue
-	   rule AisObject(X:AInt) => ABoolFalse
-	   rule AisObject(X:AFloat) => ABoolFalse
-	   rule AisObject(X:ABool) => ABoolFalse
-	   rule AisObject(X:AString) => ABoolFalse
-	   rule AisObject(Null) => ABoolFalse
-	   rule AisObject(Top) => ABoolTop
-	   rule AisObject(ANum) => ABoolFalse
+	   rule AisArray( Array(_,_)) => (ABoolTrue, .List)
+	   rule AisArray(OID(_,_,_)) => (ABoolFalse, .List)
+	   rule AisArray(X:AInt) => (ABoolFalse, .List)
+	   rule AisArray(X:AFloat) => (ABoolFalse, .List)
+	   rule AisArray(X:ABool) => (ABoolFalse, .List)
+	   rule AisArray(X:AString) => (ABoolFalse, .List)
+	   rule AisArray(Null) => (ABoolFalse, .List)
+	   rule AisArray(Top) => (ABoolTop, .List)
+	   rule AisArray(ANum) => (ABoolFalse, .List)
 	   
-	   rule AisArray( Array(_,_)) => ABoolTrue
-	   rule AisArray(OID(_,_,_)) => ABoolFalse
-	   rule AisArray(X:AInt) => ABoolFalse
-	   rule AisArray(X:AFloat) => ABoolFalse
-	   rule AisArray(X:ABool) => ABoolFalse
-	   rule AisArray(X:AString) => ABoolFalse
-	   rule AisArray(Null) => ABoolFalse
-	   rule AisArray(Top) => ABoolTop
-	   rule AisArray(ANum) => ABoolFalse
-	   
-	   rule AisNumber( Array(_,_)) => ABoolFalse
-	   rule AisNumber(OID(_,_,_)) => ABoolFalse
-	   rule AisNumber(X:AInt) => ABoolTrue
-	   rule AisNumber(X:AFloat) => ABoolTrue
-	   rule AisNumber(X:ABool) => ABoolFalse
-	   rule AisNumber(X:AString) => ABoolFalse
-	   rule AisNumber(Null) => ABoolFalse
-	   rule AisNumber(Top) => ABoolTop
-	   rule AisNumber(ANum) => ABoolTrue
+	   rule AisNumber( Array(_,_)) => (ABoolFalse, .List)
+	   rule AisNumber(OID(_,_,_)) => (ABoolFalse, .List)
+	   rule AisNumber(X:AInt) => (ABoolTrue, .List)
+	   rule AisNumber(X:AFloat) => (ABoolTrue, .List)
+	   rule AisNumber(X:ABool) => (ABoolFalse, .List)
+	   rule AisNumber(X:AString) => (ABoolFalse, .List)
+	   rule AisNumber(Null) => (ABoolFalse, .List)
+	   rule AisNumber(Top) => (ABoolTop, .List)
+	   rule AisNumber(ANum) => (ABoolTrue, .List)
 	  
-	   rule AisNumericString((AStringTop,_)) => ABoolTop
-	   rule AisNumericString((S:String, L)) => ABoolTop //RR : we may be able to get some precision here, leaving it as is since our current isNumeric is untrusted
+	   rule AisNumericString((AStringTop,_)) => (ABoolTop, .List)
+	   rule AisNumericString((S:String, L)) => (ABoolTop, .List) //RR : we may be able to get some precision here, leaving it as is since our current isNumeric is untrusted
 	   
 	   
 

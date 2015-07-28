@@ -89,10 +89,10 @@ syntax KResult ::= Value
 // we want abstract refcounters to be KResults too!
 syntax KResult ::= ARefCount
 
-// NOTE: aven if the particular domain has no concrete integers, we might want them to 
+// NOTE: even if the particular domain has no concrete integers, we might want them to 
 // be KResults anyway. For example, we might still use them for reference counting... 
 
-syntax KResult ::= Int | String //TODO : String is temporary !
+syntax KResult ::= Int | Bool | String //TODO : String is temporary !
 
 /* For convenience, we define a set of option types */
 
@@ -109,7 +109,7 @@ syntax OptionARefCount ::= ARefCount | None
 // ---------------------------------------------------------------------------------------------
 /*@ \subsection{Lub} */
 
-syntax PlainLanguageValue ::= "lub" "(" K "," K ")" [function]
+syntax PlainLanguageValue ::= "lub" "(" PlainLanguageValue "," PlainLanguageValue ")" [function]
 
 rule lub(Top,_) => Top
 rule lub(X,Top) => Top 

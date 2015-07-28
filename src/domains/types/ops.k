@@ -78,9 +78,11 @@ module OPS
 	   
 	   rule ABoolOfTuple(NULL) => ABoolFalse
 	   rule ABoolOfTuple( (V, E):AInt ) => lub_Value(*valueToBool(V), ABoolOfErrs(E)) 
-	   rule ABoolOfTuple( (V, E):AFloat ) => lub_Value(*valueToBool(V), ABoolOfErrs(E)) 
-	   rule ABoolOfTuple( (V, E):AString ) => lub_Value(*valueToBool(V), ABoolOfErrs(E)) 
-	   rule ABoolOfTuple( (V, E):ABool ) => lub_Value(*valueToBool(V), ABoolOfErrs(E)) 
+	   //rule ABoolOfTuple( (V, E):AFloat ) => lub_Value(*valueToBool(V), ABoolOfErrs(E)) 
+	   //rule ABoolOfTuple( (V, E):AString ) => lub_Value(*valueToBool(V), ABoolOfErrs(E)) 
+	   //rule ABoolOfTuple( (V, E):ABool ) => lub_Value(*valueToBool(V), ABoolOfErrs(E)) 
+	   
+	   rule ABoolOfTuple((V, E):ABool) => ABoolFalse //lub_Value(*valueToBool(V), ABoolOfErrs(E)) 
 	   
 	   // Domain operations
 	   
@@ -108,12 +110,12 @@ module OPS
        syntax AInt ::= AInt "modAInt" AInt [function]
        syntax AInt ::= "negative_AInt" "(" AInt ")" [function]       
 	   
-	   rule (V1, E1) +AInt (V2, E2) => (AIntOfTuple( (V1, E1) ) +AIntValue AIntOfTuple( (V2, E2) ), mergeList(FilterErrFlags(E1), FilterErrFlags(E2)) )
-	   rule (V1, E1) -AInt (V2, E2) => (AIntOfTuple( (V1, E1) ) -AIntValue AIntOfTuple( (V2, E2) ), mergeList(FilterErrFlags(E1), FilterErrFlags(E2)) )
-	   rule (V1, E1) *AInt (V2, E2) => (AIntOfTuple( (V1, E1) ) *AIntValue AIntOfTuple( (V2, E2) ), mergeList(FilterErrFlags(E1), FilterErrFlags(E2)) )
-	   rule (V1, E1) /AInt (V2, E2) => (AIntOfTuple( (V1, E1) ) /AIntValue AIntOfTuple( (V2, E2) ), mergeList(FilterErrFlags(E1), FilterErrFlags(E2)) )
-	   rule (V1, E1) modAInt (V2, E2) => (AIntOfTuple( (V1, E1) ) modAIntValue AIntOfTuple( (V2, E2) ), mergeList(FilterErrFlags(E1), FilterErrFlags(E2)) )
-	   rule negative_AInt((V1, E1)) => (negative_AIntValue(AIntOfTuple((V1, E1))), FilterErrFlags(E1))
+	   rule (V1:AIntValue, E1) +AInt (V2:AIntValue, E2) => (AIntOfTuple( (V1, E1) ) +AIntValue AIntOfTuple( (V2, E2) ), mergeList(FilterErrFlags(E1), FilterErrFlags(E2)) )
+	   rule (V1:AIntValue, E1) -AInt (V2:AIntValue, E2) => (AIntOfTuple( (V1, E1) ) -AIntValue AIntOfTuple( (V2, E2) ), mergeList(FilterErrFlags(E1), FilterErrFlags(E2)) )
+	   rule (V1:AIntValue, E1) *AInt (V2:AIntValue, E2) => (AIntOfTuple( (V1, E1) ) *AIntValue AIntOfTuple( (V2, E2) ), mergeList(FilterErrFlags(E1), FilterErrFlags(E2)) )
+	   rule (V1:AIntValue, E1) /AInt (V2:AIntValue, E2) => (AIntOfTuple( (V1, E1) ) /AIntValue AIntOfTuple( (V2, E2) ), mergeList(FilterErrFlags(E1), FilterErrFlags(E2)) )
+	   rule (V1:AIntValue, E1) modAInt (V2:AIntValue, E2) => (AIntOfTuple( (V1, E1) ) modAIntValue AIntOfTuple( (V2, E2) ), mergeList(FilterErrFlags(E1), FilterErrFlags(E2)) )
+	   rule negative_AInt((V1:AIntValue, E1)) => (negative_AIntValue(AIntOfTuple((V1, E1))), FilterErrFlags(E1))
        
 
 	   syntax AFloatValue ::= AFloatValue "+AFloatValue" AFloatValue	[function]
@@ -135,11 +137,11 @@ module OPS
        rule negative_AFloatValue(AFloat) => AFloat
 
 	   
-	   rule (V1, E1) +AFloat (V2, E2) => (AFloatOfTuple( (V1, E1) ) +AFloatValue AFloatOfTuple( (V2, E2) ), mergeList(FilterErrFlags(E1), FilterErrFlags(E2)) )
-	   rule (V1, E1) -AFloat (V2, E2) => (AFloatOfTuple( (V1, E1) ) -AFloatValue AFloatOfTuple( (V2, E2) ), mergeList(FilterErrFlags(E1), FilterErrFlags(E2)) )
-	   rule (V1, E1) *AFloat (V2, E2) => (AFloatOfTuple( (V1, E1) ) *AFloatValue AFloatOfTuple( (V2, E2) ), mergeList(FilterErrFlags(E1), FilterErrFlags(E2)) )
-	   rule (V1, E1) /AFloat (V2, E2) => (AFloatOfTuple( (V1, E1) ) /AFloatValue AFloatOfTuple( (V2, E2) ), mergeList(FilterErrFlags(E1), FilterErrFlags(E2)) )
-	   rule negative_AFloat((V1, E1)) => (negative_AFloatValue(AFloatOfTuple((V1, E1))), FilterErrFlags(E1))
+	   rule (V1:AFloatValue, E1) +AFloat (V2:AFloatValue, E2) => (AFloatOfTuple( (V1, E1) ) +AFloatValue AFloatOfTuple( (V2, E2) ), mergeList(FilterErrFlags(E1), FilterErrFlags(E2)) )
+	   rule (V1:AFloatValue, E1) -AFloat (V2:AFloatValue, E2) => (AFloatOfTuple( (V1, E1) ) -AFloatValue AFloatOfTuple( (V2, E2) ), mergeList(FilterErrFlags(E1), FilterErrFlags(E2)) )
+	   rule (V1:AFloatValue, E1) *AFloat (V2:AFloatValue, E2) => (AFloatOfTuple( (V1, E1) ) *AFloatValue AFloatOfTuple( (V2, E2) ), mergeList(FilterErrFlags(E1), FilterErrFlags(E2)) )
+	   rule (V1:AFloatValue, E1) /AFloat (V2:AFloatValue, E2) => (AFloatOfTuple( (V1, E1) ) /AFloatValue AFloatOfTuple( (V2, E2) ), mergeList(FilterErrFlags(E1), FilterErrFlags(E2)) )
+	   rule negative_AFloat((V1:AFloatValue, E1)) => (negative_AFloatValue(AFloatOfTuple((V1, E1))), FilterErrFlags(E1))
 	   
 	   
 	   rule [greater-aint]:
@@ -273,6 +275,10 @@ module OPS
 	rule 	[toBoolean-false]:    
 	        <k> *toBoolean(false) => (ABoolFalse, .List) ... </k>
 	        [internal]
+			
+		rule 	[toBoolean-top]:    
+	        <k> *toBoolean(Top) => (ABoolTop, .List) ... </k>
+	        [internal]
 
 // Object case: we add it, even if the online docs says this behaviour is "PHP 4 only"
 // Since the expected behaviour for PHP 5 is not mentioned, I guess it is undefined..?
@@ -335,8 +341,10 @@ module OPS
 	
 	rule *valueToBool(Bot) => Bot
 	
+	rule *valueToBool(NULL) => ABoolFalse
+	
 	rule *valueToBool(V) => ABoolTop
-	when V =/=K Bot
+	when V =/=K Bot andBool V =/=K NULL
 	
 	syntax AStringValue ::= "*valueToString" "(" Scalar ")" [function]
 	
@@ -474,13 +482,13 @@ module OPS
 	
 	// valid/unsatisfiable
 	
-	syntax Bool ::= "valid" "(" ABool ")"	                [predicate]   
-	syntax Bool ::= "unsatisfiable" "(" ABool ")"    		[predicate]
+	syntax Bool ::= "valid" "(" ABool ")"	                [function]   
+	syntax Bool ::= "unsatisfiable" "(" ABool ")"    		[function]
 	syntax Bool ::= "valid_value" "(" ABoolValue ")" [function]
 	syntax Bool ::= "unsatisfiable_value" "(" ABoolValue ")" [function]
 	
 	rule valid(B) => valid_value(ABoolOfTuple(B))
-	rule unsatisfiable(B) => unsatisfiable_value(ABoolOfTuple(B))
+	rule unsatisfiable(B:ABool) => unsatisfiable_value(ABoolOfTuple(B))
 	   
 	rule valid_value(ABoolTop) => false
 	rule valid_value(ABoolTrue) => true
@@ -488,9 +496,6 @@ module OPS
 	rule unsatisfiable_value(ABoolTop) => false
 	rule unsatisfiable_value(ABoolTrue) => false
 	rule unsatisfiable_value(ABoolFalse) => true
-	   
-	
-	
 	
 	//@ \section{Operations on reference counters}
 

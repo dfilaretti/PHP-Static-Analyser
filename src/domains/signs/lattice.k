@@ -228,4 +228,66 @@ rule	lub_AString(S1:String,S2:String) => AStringTop when (S1 =/=String S2)
     // unsatisfiable
 	syntax  Bool ::= "unsatisfiable" "(" ABool ")"    [predicate]
 	rule 	unsatisfiable(B) => B ==K ABoolFalse 
+
+	   rule AisNull( Array(_,_)) =>ABoolFalse
+	   rule AisNull(OID(_,_,_)) =>ABoolFalse
+	   rule AisNull(NULL) =>ABoolTrue
+	   rule AisNull(Top) =>ABoolTop
+	   
+	   rule AisNull(D:DomainValue) => AisNull(generalize(D))
+	   when D =/=K NULL andBool D =/=K Top
+	   
+	   rule AisNull( VE(V,E)) =>ABoolTop
+	   when MayBeNull inList E
+	   
+	   rule AisNull( VE(V,E)) =>ABoolFalse
+	   when notBool(MayBeNull inList E)
+	   
+	   rule AisString( Array(_,_)) =>ABoolFalse
+	   rule AisString(OID(_,_,_)) =>ABoolFalse
+	   rule AisString(X:AInt) =>ABoolFalse
+	   rule AisString(X:AFloat) =>ABoolFalse
+	   rule AisString(X:ABool) =>ABoolFalse
+	   rule AisString(X:AString) =>ABoolTrue
+	   rule AisString(Null) =>ABoolFalse
+	   rule AisString(Top) =>ABoolTop
+	   
+	   rule AisBoolean( Array(_,_)) =>ABoolFalse
+	   rule AisBoolean(OID(_,_,_)) =>ABoolFalse
+	   rule AisBoolean(X:AInt) =>ABoolFalse
+	   rule AisBoolean(X:AFloat) =>ABoolFalse
+	   rule AisBoolean(X:ABool) =>ABoolTrue
+	   rule AisBoolean(X:AString) =>ABoolFalse
+	   rule AisBoolean(Null) =>ABoolFalse
+	   rule AisBoolean(Top) =>ABoolTop
+	   
+	   rule AisObject( Array(_,_)) =>ABoolFalse
+	   rule AisObject(OID(_,_,_)) =>ABoolTrue
+	   rule AisObject(X:AInt) =>ABoolFalse
+	   rule AisObject(X:AFloat) =>ABoolFalse
+	   rule AisObject(X:ABool) =>ABoolFalse
+	   rule AisObject(X:AString) =>ABoolFalse
+	   rule AisObject(Null) =>ABoolFalse
+	   rule AisObject(Top) =>ABoolTop
+	   
+	   rule AisArray( Array(_,_)) =>ABoolTrue
+	   rule AisArray(OID(_,_,_)) =>ABoolFalse
+	   rule AisArray(X:AInt) =>ABoolFalse
+	   rule AisArray(X:AFloat) =>ABoolFalse
+	   rule AisArray(X:ABool) =>ABoolFalse
+	   rule AisArray(X:AString) =>ABoolFalse
+	   rule AisArray(Null) =>ABoolFalse
+	   rule AisArray(Top) =>ABoolTop
+	   
+	   rule AisNumber( Array(_,_)) =>ABoolFalse
+	   rule AisNumber(OID(_,_,_)) =>ABoolFalse
+	   rule AisNumber(X:AInt) =>ABoolTrue
+	   rule AisNumber(X:AFloat) =>ABoolTrue
+	   rule AisNumber(X:ABool) =>ABoolFalse
+	   rule AisNumber(X:AString) =>ABoolFalse
+	   rule AisNumber(Null) =>ABoolFalse
+	   rule AisNumber(Top) =>ABoolTop
+	  
+	   rule AisNumericString((AStringTop,_)) =>ABoolTop
+	   rule AisNumericString((S:String, L)) =>ABoolTop //RR : we may be able to get some precision here, leaving it as is since our current isNumeric is untrusted
 endmodule
