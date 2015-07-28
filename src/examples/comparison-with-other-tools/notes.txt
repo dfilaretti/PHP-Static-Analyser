@@ -34,3 +34,34 @@ Notes about the examples
   as a function name. 
 
 - having trouble tricking Weverca
+
+- weverca: it seems a bit "brute force" but after a constant it gives up. 
+  for example, I tried, a recursive call. I got 5 warnings then it stopped. 
+  Can we exploit this? 
+
+- possible ways to trick weverca: 
+	* check for constants after which it gives up (see above) 
+	* $_GET/etc. used as variable variables:
+
+		function foo() {
+			if (?) 
+ 				$k = "_GET"
+			else
+				$k = "foo"
+
+			echo $k["bar"];
+		}
+
+		
+
+			
+
+
+
+
+
+
+
+
+
+
