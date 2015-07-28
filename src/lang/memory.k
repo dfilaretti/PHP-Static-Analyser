@@ -188,6 +188,7 @@ syntax ABool ::= "AisBoolean" "(" K ")" [function]
 syntax ABool ::= "AisObject" "(" K ")" [function]
 syntax ABool ::= "AisArray" "(" K ")" [function]
 syntax ABool ::= "AisNumber" "(" K ")" [function]
+syntax ABool ::= "AisNumericString" "(" AString ")" [function]
 
 
 // TODO: can use builtin (isArray(V) == true)

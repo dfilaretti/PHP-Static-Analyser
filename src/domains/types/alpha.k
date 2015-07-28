@@ -9,7 +9,9 @@ module ALPHA
 
 	rule alpha(F:Float) => specify(VE(AFloat, .List)) [structural]	
 
-	rule alpha(B:Bool) => specify(VE(ABool, .List))	 [structural]
+	rule alpha(true) => specify(VE(ABoolTrue, .List))	 [structural]
+	
+	rule alpha(false) => specify(VE(ABoolFalse, .List))	 [structural]
 
 	rule alpha(S:String) => specify(VE(S, .List)) [structural]
 
@@ -44,7 +46,7 @@ rule isGammaSingleton(N:ANum)=> false
 
 rule isGammaSingleton(B:ABool) => false
 
-rule isGammaSingleton( (S:String, L) ) => notBool(MayBeNull inList L)
+rule isGammaSingleton( (S:String, L) ) => valueOfErrs(L) ==K Bot
 
 rule isGammaSingleton ( (AStringTop, _) ) => false
 

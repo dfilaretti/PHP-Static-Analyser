@@ -343,7 +343,7 @@ when notBool (	((unsatisfiable(AisString(L)) andBool unsatisfiable(AisNull(L))) 
 //if both strings are numeric, compare as numbers, else keep them as strings
 
 rule [type-juggling-0-isNumeric-true]:
-	<k> comparisonTypeJuggling0IsNumeric(Op, L:AString, R:AString) => comparison(Op, String2Number(L), String2Number(R)) ... </k>
+	<k> comparisonTypeJuggling0IsNumeric(Op, L:AString, R:AString) => comparison(Op, string2Number(L), string2Number(R)) ... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-0-isNumeric-true") </trace>
 when valid(AisNumericString(L)) andBool valid(AisNumericString(R))
 
@@ -353,7 +353,7 @@ rule [type-juggling-0-isNumeric-false]:
 when unsatisfiable(AisNumericString(L)) orBool unsatisfiable(AisNumericString(R))
 
 rule [type-juggling-0-isNumeric-merge]:
-	<k> comparisonTypeJuggling0IsNumeric(Op, L:AString, R:AString) => lub(comparison(Op, String2Number(L), String2Number(R)), comparison(Op, String2Number(L), String2Number(R))) ... </k>
+	<k> comparisonTypeJuggling0IsNumeric(Op, L:AString, R:AString) => lub(comparison(Op, string2Number(L), string2Number(R)), comparison(Op, L, R)) ... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-0-isNumeric-merge") </trace>
 when notBool ((valid(AisNumericString(L)) andBool valid(AisNumericString(R))) orBool (valid(AisNumericString(L)) andBool valid(AisNumericString(R))))
 
@@ -394,7 +394,7 @@ rule [type-juggling-2-false]:
 //if we merge, convert may-objects to objects to have only concrete-relevant comparison rules
 
 rule [type-juggling-2-merge]:
-	<k> comparisonTypeJuggling2(Op, L, R) => lub(comparison(Op, *toObject(L), *toObject(R)) , comparisonTypeJuggling3(Op, L, R) ... </k>
+	<k> comparisonTypeJuggling2(Op, L, R) => lub(comparison(Op, *toObject(L), *toObject(R)) , comparisonTypeJuggling3(Op, L, R)) ... </k>
 	<trace> Trace:List => Trace ListItem("type-juggling-2-merge") </trace>
 	when notBool ((valid(AisObject(L)) andBool valid(AisObject(R))) orBool (unsatisfiable(AisObject(L)) orBool unsatisfiable(AisObject(R))))
 
@@ -633,19 +633,19 @@ rule [comparison-greaterEqual-array]:
 	[intermediate]	
 
 
-//RR: quick fix for default cases, should be moved to domains
+//RR: quick fix for default cases, maybe should be moved to domains and take value params
 
-rule comparisonLIsGreater(greater, _, _) => alpha(true)
-rule comparisonLIsGreater(greaterEqual, _, _) => alpha(true)
-rule comparisonLIsGreater(less, _, _) => alpha(false)
-rule comparisonLIsGreater(lessEqual, _, _) => alpha(false)
-rule comparisonLIsGreater(equal, _, _) => alpha(false)
+rule comparisonLIsGreater(greater) => alpha(true)
+rule comparisonLIsGreater(greaterEqual) => alpha(true)
+rule comparisonLIsGreater(less) => alpha(false)
+rule comparisonLIsGreater(lessEqual) => alpha(false)
+rule comparisonLIsGreater(equal) => alpha(false)
 
-rule comparisonRIsGreater(greater, _, _) => alpha(false)
-rule comparisonRIsGreater(greaterEqual, _, _) => alpha(false)
-rule comparisonRIsGreater(less, _, _) => alpha(true)
-rule comparisonRIsGreater(lessEqual, _, _) => alpha(true)
-rule comparisonRIsGreater(equal, _, _) => alpha(false)
+rule comparisonRIsGreater(greater) => alpha(false)
+rule comparisonRIsGreater(greaterEqual) => alpha(false)
+rule comparisonRIsGreater(less) => alpha(true)
+rule comparisonRIsGreater(lessEqual) => alpha(true)
+rule comparisonRIsGreater(equal) => alpha(false)
 
 	
 

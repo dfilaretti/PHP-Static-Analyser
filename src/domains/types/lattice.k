@@ -260,16 +260,7 @@ module LATTICE
 	   rule A:K >Lattice B:K => B <Lattice A
 	
 
-	   syntax  Bool ::= "valid" "(" ABool ")"	                [predicate]
-	   syntax  Bool ::= "unsatisfiable" "(" ABool ")"    		[predicate]
-	   
-	   rule valid(ABoolTop) => false
-	   rule valid(ABoolTrue) => true
-	   rule valid(ABoolFalse) => false
-	   rule unsatisfiable(ABoolTop) => false
-	   rule unsatisfiable(ABoolTrue) => false
-	   rule unsatisfiable(ABoolFalse) => true
-	   
+
 	   //list manipulation TODO move
 	   
 	   syntax Bool ::= ErrFlag "inList" List   [function]
@@ -373,6 +364,8 @@ module LATTICE
 	   rule AisNumber(Top) => ABoolTop
 	   rule AisNumber(ANum) => ABoolTrue
 	  
+	   rule AisNumericString((AStringTop,_)) => ABoolTop
+	   rule AisNumericString((S:String, L)) => ABoolTop //RR : we may be able to get some precision here, leaving it as is since our current isNumeric is untrusted
 	   
 	   
 

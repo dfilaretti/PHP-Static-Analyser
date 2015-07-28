@@ -55,8 +55,9 @@ rule [internal-print]:
 	[internal, output]
 */
 
+//RR : had to change Bool to ABool ?
 rule [internal-print]:    
-	<k> print (B:Bool  => *toString(B)) ... </k>
+	<k> print (B:ABool  => *toString(B)) ... </k>
 	<trace> Trace:List => Trace ListItem("internal-print") </trace>
 	[internal, output]
 

@@ -504,7 +504,10 @@ rule [vardump-string]:
 	<trace> Trace:List => Trace ListItem("vardump-string") </trace>
 	[internal]
 
+//RR-FIXME : Should take ABool instead of Bool, maybe move to domains. Zval(B:Bool, ...) is incorrect because Bool isn't a Value, ABool is.	
+
 /* var_dumping a boolean  */
+/*
 rule [vardump-bool]:    
 	<k> var_dump (L':Loc) => 
             *Cond(IsRef, print("&"), .) ~>
@@ -517,7 +520,7 @@ rule [vardump-bool]:
 	<heap> ... L |-> zval(B:Bool,_,_,IsRef) ... </heap>
 	<trace> Trace:List => Trace ListItem("vardump-bool") </trace>
 	[internal]
-
+*/
 /* var_dumping NULL  */
 rule [vardump-null]:    
 	<k> var_dump (L':Loc) => 

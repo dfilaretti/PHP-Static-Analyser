@@ -243,7 +243,7 @@ module OPS
 	rule *toInteger(O:CompoundValue) => WARNING("conversion of compound types to integer is undefined (http://www.php.net/manual/en/language.types.integer.php)\n") ~> (AInt, ListItem(ImplicitTypeConversion))
  
  // to boolean
-    syntax  ABool ::= "*toBoolean" "(" LanguageValue ")" [function]
+    syntax  ABool ::= "*toBoolean" "(" K ")" [function]
 
     rule    [toBoolean-bool]:    
 	        <k> *toBoolean(B:ABool) => B ... </k>
@@ -266,7 +266,7 @@ module OPS
 	        <k> *toBoolean(Array(_,Elems)) => (ABoolTop, ListItem(ImplicitTypeConversion)) ... </k>
 	        [internal]
 			
-	rule	[toBoolean-true]:    
+	rule	[toBoolean-true]:
 	        <k> *toBoolean(true) => (ABoolTrue, .List) ... </k>
 	        [internal]
 	
@@ -382,7 +382,7 @@ module OPS
 	syntax K ::= "string2Number" "(" AString ")" [strict]
 	
 	rule [string2Number]:
-			<k> string2Number(S:AString) => (AInt, addErrFlag(ImplicitTypeConversion, FilterErrFlags(getErrFlags(S)))) ... </k> //TODO : should be Anum
+			<k> string2Number(S:AString) => (AInt, addErrFlag(ImplicitTypeConversion, FilterErrFlags(getErrFlags(S)))) ... </k> //RR-FIXME: should be Anum
 			<trace> Trace:List => Trace ListItem("string2Number") </trace>
 			[internal]
 	
@@ -470,6 +470,25 @@ module OPS
 	rule [init-domain]:
 		<k> initDomain => . ... </k>
 		<domain> .K => Types </domain>
+	
+	
+	// valid/unsatisfiable
+	
+	syntax Bool ::= "valid" "(" ABool ")"	                [predicate]   
+	syntax Bool ::= "unsatisfiable" "(" ABool ")"    		[predicate]
+	syntax Bool ::= "valid_value" "(" ABoolValue ")" [function]
+	syntax Bool ::= "unsatisfiable_value" "(" ABoolValue ")" [function]
+	
+	rule valid(B) => valid_value(ABoolOfTuple(B))
+	rule unsatisfiable(B) => unsatisfiable_value(ABoolOfTuple(B))
+	   
+	rule valid_value(ABoolTop) => false
+	rule valid_value(ABoolTrue) => true
+	rule valid_value(ABoolFalse) => false
+	rule unsatisfiable_value(ABoolTop) => false
+	rule unsatisfiable_value(ABoolTrue) => false
+	rule unsatisfiable_value(ABoolFalse) => true
+	   
 	
 	
 	
