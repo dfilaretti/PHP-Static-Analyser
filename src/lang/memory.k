@@ -135,8 +135,8 @@ rule glb(X:AString,Y:AString) => Bot
 rule glb(X:AString,Y:AInt) => Bot 
      when notBool((Y <Lattice X) orBool (X <=Lattice Y))
 
-rule X ==Lattice Y => true
-     when X ==K Y
+
+
 
 /*
 syntax Bool "hasDifferentType" "(" PlainLanguageValue "," PlainLanguageValue ")" [predicate]
@@ -204,7 +204,7 @@ rule    isFloatType(X) => false
 syntax Bool ::=  "isIntType" "(" Value ")" 				[function]
 
 //SM-FIXME: we are relying on K conversion from string to int/float in our conversions, and that is not quite right
-// for example in php "1" == "\n1" but in kphp that hangs my shell (loop in maude)
+// for example in php "1" == "\n1" but in kphp that hangs my shell (loop in maude?)
 
 rule    isIntType(X) => true
         when (isAInt(X) ==K true) 
@@ -262,7 +262,7 @@ rule V isScalar => isStringType(V) orBool isIntType(V) orBool isFloatType(V) orB
 
 syntax Bool ::= Type "==Type" Type [function]
 
-rule unknown ==Type _ => true
+rule unknown ==Type _ => true //SM why is unknown ==Type Aint?
 
 rule _ ==Type unknown => true
 
@@ -849,11 +849,11 @@ rule biggestIntKey(ListItem([Key:AInt,_,_]) Tail) => maxAInt(Key, biggestIntKey(
 /* Return the biggest of two (abstract) integers  */
 
 syntax AInt ::= "maxAInt" "(" AInt "," AInt ")" [function]
-
+//SM: if we fix a pattern for concrete-predicate cases, it should be used here
 rule maxAInt(I1, I2) => I1	       	when valid(greater(I1,I2))
 rule maxAInt(I1, I2) => I2	   	when valid(lessEqual(I1,I2))
 rule maxAInt(I1, I2) => lub(I1,I2)	when notBool (valid(lessEqual(I1,I2)) orBool valid(greater(I1,I2)))
-//SM: if we fix a pattern for concrete-predicate cases, it should be used here
+
 
 
 // ---------------------------------------------------------------------------------------------
@@ -1068,28 +1068,47 @@ rule [copyArrayMembers-nil]:
 // Auxiliary operations for static analysis
 // ---------------------------------------------------------------------------------------------
 
-//SMT delete
-/*
-syntax 	Set ::= "getLTKeys" "(" List "," Key ")"		[function]
 
-rule	getLTKeys(.List,_) => .Set
+/* SMT
 
-rule 	getLTKeys(ListItem([K1,_,_]) Elems ,K) => SetItem(K1) getLTKeys(Elems,K) 
-	when K1 <Lattice K
 
-rule 	getLTKeys(ListItem([K1,_,_]) Elems ,K) => getLTKeys(Elems,K) 
-	when (notBool (K1 <Lattice K))
+//SM these implement what was previously known as fully and partially fragmented predicates. 
 
-syntax 	Set ::= "getGEQKeys" "(" List "," Key ")" 	[function]
+syntax 	Bool ::= "GivenKeysCoverKeyRange(" Set ")"		[predicate]
+rule GivenKeysCoverKeyRange(S) => notStrictlyIncluded(set2list(S),lubAllSetElements(S))
 
-rule	getGEQKeys(.List,_) => .Set
+// LUBs a set of values  //SM was: PLainLanguageValue instead of K
+syntax 	K ::= "lubAllSetElements" "(" Set ")" [function]
+rule	lubAllSetElements(.Set) => Bot
+rule	lubAllSetElements(SetItem(V) S) => lub(V,lubAllSetElements(S))
 
-rule 	getGEQKeys(ListItem([K1,_,_]) Elems ,K) => SetItem(K1) getGEQKeys(Elems,K) 
-	when (K <Lattice K1) orBool (K1 ==Lattice K)
+syntax 	Bool ::= "notStrictlyIncluded(" List "," Set ")"		[predicate]
+rule notStrictlyIncluded(_,.) => true
+rule notStrictlyIncluded(Ks,SetItem(E) S) => notStrictlyIncluded(Ks,S) //element is covered and can be discarded
+     when (E =/=K Bot) andBool containedInKeys(E,KS) // E <=Lattice than some element in Ks
+rule notStrictlyIncluded(Ks,SetItem(E) S) => false //too many children: introduces computable approximation
+     when (notBool containedInKeys(E,Ks)) andBool hasInfinitelyManyChildren(E) 
+rule notStrictlyIncluded(Ks,SetItem(E) S) => notStrictlyIncluded(Ks,S children(E)) //remove element, check children
+     when notBool (containedInKeys(E,Ks) orBool hasInfinitelyManyChildren(E))
+rule notStrictlyIncluded(Ks,SetItem(E) S) => false //reached bottom without being covered before
+     when E ==K Bot
 
-rule 	getGEQKeys(ListItem([K1,_,_]) Elems ,K) => getGEQKeys(Elems,K) 
-	when (notBool (K <Lattice K1))
+//assume: hasInfinitelyManyChildren(K) is true
+//should go in each domain
+syntax 	Set ::= "children(" K ")"		[function]
+rule children(_) => SetItem(Bot) //trivially sound approximation
+
+//K is a lattice element
+// this is lattice-dependent
+syntax 	Bool ::= "hasInfinitelyManyChildren(" K ")"		[function]
+rule hasInfinitelyManyChildren(AStringTop) = true
+rule hasInfinitelyManyChildren(X) = false when X =/=K AStringTop
+
+
+
 */
+
+
 
 // fully and partially fragmented predicates. 
 // NOTE; the definition of fullyFragmented is bogus. 
@@ -1152,31 +1171,8 @@ rule zval2val(zval(V:PlainLanguageValue,_,_,_)) => V
 
 
 
-//SM delete
-/*
-//SM perhaps decide fragmentation here?
-//SM we think we may currently miss the case of lubbing null for non-fully-fragmented keys
-
-// Inserts a key into an array 
-// the insertion strategy depends on wether there exist a "bigger" key or 
-// wether the key is "fragmented" in the array 
-
-syntax K ::= "insertKey" "(" Loc "," Key "," Set "," Set "," RefType ")"
-
-rule [insert-key]:
-	<k>
-		insertKey(L',K,KLT,KGEQ,InitValue) =>
-		ArrayCreateElem(L', K, public, 
-			allocValue(mergeValuesAtLocs(InitValue,KeySet2LocSet(KLT KGEQ,ArrayElems)))) ~>
-		insertKey1(L',K,(KLT KGEQ),InitValue) ...
-	</k>
-	<thematrix> ... L' |-> L ... </thematrix>
-	<heap> ... L |-> zval(Array(_,ArrayElems),_,_,_) ... </heap>
-*/
 
 
-//SM perhaps decide fragmentation here?
-//SM we think we may currently miss the case of lubbing null for non-fully-fragmented keys
 
 // Inserts a key into an array 
 // the insertion strategy depends on wether there exist a "bigger" key or 
@@ -1192,7 +1188,7 @@ rule [insert-key]:
 		insertKey1(L',K,KEYS,InitValue) ...
 	</k>
 	<thematrix> ... L' |-> L ... </thematrix>
-        <trace> T:List => T ListItem("==================>") ListItem(K) ListItem(":::") set2list(KEYS) ListItem("|||") </trace>
+        <trace> T:List => T ListItem("insert-key") </trace>
 	<heap> ... L |-> zval(Array(_,ArrayElems),_,_,_) ... </heap>
 
 syntax K ::= "insertKey1" "(" Loc "," Key "," Set "," RefType ")"
@@ -1207,8 +1203,10 @@ rule [insert-key-1]:
 				vheap_read(
 					H',
 					array_read_v(
-						arrayZval2ArrayProps(heap_read(H',H,L')),K)))) ~>
-		/* TODO: decomment
+						arrayZval2ArrayProps(heap_read(H',H,L')),K)))) ~>		 
+		/*
+                //SM note that in principle in a fully-fragmented case we don't need to add null
+                // but in a partially-fragmented case we do need
 		#if (K partiallyFragmentedIn KGEQ) #then
 			'Assign(ref(L',K),,NULL) // new semantics 'Assign semantics required
 		#else .K ~>	
@@ -1302,7 +1300,7 @@ rule [rget-array-prop]:
 		RgetRef1(L',X,intersectClose(X,elems2keys(ArrayValues)),InitValue) ... 
 	</k>
 	<thematrix> ... L' |-> L ... </thematrix>
-	<heap>... L |-> zval(Array(_,ArrayValues),_,_,_)  ...</heap>
+	<heap>... L |-> zval(Array(_,ArrayValues:List),_,_,_)  ...</heap>
      	<trace> Trace:List => Trace ListItem("rget-array-prop") </trace>
 	[internal]
 
@@ -1324,46 +1322,8 @@ rule [rget-obj-prop]:
 		L1 |-> zval(Array(_,ArrayValues:List),_,_,_)  
 	...
 	</heap>
-//SMT can factor these rules probably
-
-
-//SMT delete
-/*
-// We are ready to resolve a reference. Therefore we calculate the set of keys which 
-// are < and >= the given case, so that we can do case analysis in the following rules...
-
-// array 
-rule [rget-array-prop]:
-	<k> 
-		RgetRef(ref(L':Loc, X:Key),InitValue) =>  
-		RgetRef1(L',X,getLTKeys(ArrayValues,X), getGEQKeys(ArrayValues,X),InitValue) ... 
-	</k>
-	<thematrix> ... L' |-> L ... </thematrix>
-	<heap>... L |-> zval(Array(_,ArrayValues),_,_,_)  ...</heap>
-     	<trace> Trace:List => Trace ListItem("rget-array-prop") </trace>
+     	<trace> Trace:List => Trace ListItem("rget-obj-prop") </trace>
 	[internal]
-
-// object
-rule [rget-obj-prop]:
-	<k> 
-		RgetRef(ref(L':Loc, X:Key),InitValue) => 
-	   	RgetRef1(L',X,getLTKeys(ArrayValues,X), getGEQKeys(ArrayValues,X),InitValue) ... 
-	</k>
-	<thematrix> 
-	... 
-		L'  |-> L 
-		L1' |-> L1
-	... 
-	</thematrix>
-	<heap>
-	... 
-		L  |-> zval(OID(L1':Loc,_,_),_,_,_)
-		L1 |-> zval(Array(_,ArrayValues:List),_,_,_)  
-	...
-	</heap>
-*/
-
-
 
 
 
@@ -1373,23 +1333,6 @@ rule [rget-obj-prop]:
 
 syntax K ::= "RgetRef1" "(" Loc "," Key "," Set "," RefType ")"	
 
-//SMT delete
-/*
-syntax K ::= "RgetRef1" "(" Loc "," Key "," Set "," Set "," RefType ")"	
-
-// Case 1: the key X is "not present" at all in the array i.e. there are no other keys 
-// which are =, < or >= to X. 
-// This is our old "key not found" case.
-
-rule [rget1-array-prop-undefined]:
-	<k> 
-		RgetRef1(L',X,KLT,KGEQ,_) => 
-		NOTICE("Undefined variable: %s in %s on line %d\n") ~> 
-		sref(locNull,X) ... 
-	</k>
-	when (KLT ==Set .Set) andBool (KGEQ ==Set .Set) 
-
-*/
 
 // Case 1: the key X does not intersect with any key in the array
 // This is our old "key not found" case.
@@ -1423,95 +1366,6 @@ rule [rget1-obj-prop-undefined]:
 	<trace> Trace:List => Trace ListItem("rget-obj-prop-undefined") </trace>
 	when notBool (E hasProperty X)
 	[internal]
-*/
-
-
-
-//SMT delete
-/*
-// Case 2: the key X is actually present in the array. 
-// This case resembles the original "key found" case. 
-// Notice that I check wether (X in KGEQ) and this may not be necessary...
-// (but it helps me keeping track of the various cases I wrote on paper)
-
-// NOTE: we add here the cases for objects as well! 
-
-// arrays
-rule [rget1-array-prop-literally-found]:
-	<k> RgetRef1(L',X,_,KGEQ,_) =>  sref(L1,X) ... </k>
-	<thematrix> ... L' |-> L ... </thematrix>
-	<heap>... L |-> zval(Array(_,_:List ListItem([X,public,L1]) _:List),_,_,_)  ...</heap>
-	when (X in KGEQ) 
-	[internal]
-//SMT normal case for rget1
-
-
-
-// objects
-
-// public (i.e. no restrictions)
-rule [rget-obj-prop-public]:
-	<k> RgetRef1(L':Loc,X:AString,_,_,_) => sref(L2,X) ... </k>
-	<class> Context:K </class>
-	<thematrix> 
-	... 
-		L'  |-> L 
-		L1' |-> L1
-	... 
-	</thematrix>	
-	<heap>
-	... 
-		L |-> zval(OID(L1':Loc,_,_),_,_,_)  
-		L1 |-> zval(Array(_,(E:List ListItem([X,public,L2:Loc]) F:List)),_,_,_)
-	...
-	</heap>
-	<trace> Trace:List => Trace ListItem("rget-obj-prop-public") </trace>
-	when notBool (E F hasPrivateProperty X for Context)
-	[internal]
-
-// protected        
-rule [rget-obj-prop-protected]:    
-	<k> RgetRef1(L':Loc,X:AString,_,_,_) => 
-		*Cond(isVisible(ObjClass, Context, protected), sref(L2,X), ERROR("ERROR-PROTECTED")) ... </k>
-	<class> Context:K </class>
-	<thematrix> 
-	... 
-		L'  |-> L 
-		L1' |-> L1
-	... 
-	</thematrix>	
-	<heap>
-	... 
-		L |-> zval(OID(L1':Loc,ObjClass:Id,_),_,_,_)  
-		L1 |-> zval(Array(_,(E:List ListItem([X,protected,L2:Loc]) F:List)),_,_,_)
-	...
-	</heap>
-	<trace> Trace:List => Trace ListItem("rget-obj-prop-protected") </trace>
-	when notBool (E F hasPrivateProperty X for Context)
-	[internal]
-	
-// private
-rule [rget-obj-prop-private]:
-	<k> RgetRef1(L':Loc,X:AString,_,_,_) => sref(L2,X) ... </k>
-	<class> Context </class>
-	<thematrix> 
-	... 
-		L'  |-> L 
-		L1' |-> L1
-	... 
-	</thematrix>	
-	<heap>
-	... 
-		L |-> zval(OID(L1':Loc,ObjClass,_),_,_,_)  
-        	L1 |-> zval(Array(_,(E:List ListItem([X,private(Context),L2:Loc]) F:List)),_,_,_)
-	...
-	</heap>
-	<trace> Trace:List => Trace ListItem("rget-obj-prop-private") </trace>
-	[internal]
-
-// TODO: Seems we miss an error case for when trying to access a private property from 
-// 	 the wrong context.
-
 */
 
 
@@ -1604,11 +1458,9 @@ syntax Loc ::= "sref" "(" Loc "," Key ")"
 
 syntax K ::= "sref2loc" "(" LocB ")" [strict]
 rule sref2loc(sref(L,X)) => L 
-//rule sref2loc(L) => L //SM how to have this and make it mutually exclusive wrt rule above?
 rule sref2loc(locNull) => locNull 
 rule sref2loc(Bot) => Bot 
-rule <k> ref(sref(L,X) => L,Y) ... </k> //SM still needed in some cases
-
+rule ref(sref(L,X) => L,Y)
 
 
 // Case 3: the key X is not present, but at least one intersecting key is present
@@ -1625,103 +1477,6 @@ rule [rget1-array-prop-bigger]:
 	<thematrix> ... L' |-> L ... </thematrix>
 	<heap> ... L |-> zval(V:Array,_,_,_) </heap>
 	when notBool X in KEYS 
-
-
-//SM delete
-/*
-
-// Case 3: the key X is not present, but a "bigger" key, say X1 is present 
-// (e.g. X = Pos, X1 = Top | NZ | ... )
-// In this case we insert the key using the insertKey internal operation. 
-// NOTE: are we sure we want to insert it and not reading one of the "bigger" keys?  
-
-rule [rget1-obj-prop-bigger]:
-	<k> RgetRef1((L' => L1'),X,KLT,KGEQ,InitValue) ... </k>
-	<thematrix> ... L' |-> L  ... </thematrix>
-	<heap> ... L |-> zval(OID(L1',_,_),_,_,_) </heap>
-	when (KGEQ =/=Set .Set) andBool (notBool X in KGEQ) 
-
-rule [rget1-array-prop-bigger]:
-	<k> RgetRef1(L',X,KLT,KGEQ,InitValue) => insertKey(L',X,KLT,KGEQ,InitValue) ... </k>
-	<thematrix> ... L' |-> L ... </thematrix>
-	<heap> ... L |-> zval(V:Array,_,_,_) </heap>
-	when (KGEQ =/=Set .Set) andBool (notBool X in KGEQ) 
-//SMT there is a bigger one: we insert the key and proceed like in all other cases
-
-
-// Case 4: they key X is "fully fragmented" in the array. This happens e.g. if 
-// X = {Pos -> v1, Neg -> v2} and X = NZ
-// Again, we insert the key 
-
-// TODO: the fullyFragmented predicate is broken! 
-//       it is true for cases which ARE NOT fully fragmented! 
-//       E.g.: Top fullyFragmentedIn {Pos, Neg} => true
-//       but we know it should be false!
-// 	 At the moment case 4 and 5 do the same, if we fix the predicate we can benefit from the 2 variants.
-
-rule [rget1-obj-prop-fully-fragmented]:
-	<k> RgetRef1((L' => L1'),X,KLT,KGEQ,InitValue) ... </k>
-	<thematrix> ... L' |-> L ... </thematrix>
-	<heap> ... L |-> zval(OID(L1',_,_),_,_,_) </heap>
-	when (KGEQ ==Set .Set) andBool (X fullyFragmentedIn KLT) 
-//SMT why is this repeated and not done once and for all like for lgetref?	
-
-rule [rget1-array-prop-fully-fragmented]:
-	<k> RgetRef1(L',X,KLT,KGEQ,InitValue) => insertKey(L',X,KLT,KGEQ,InitValue) ... </k>
-	<thematrix> ... L' |-> L ... </thematrix>
-	<heap> ... L |-> zval(V:Array,_,_,_) </heap>
-	when (KGEQ ==Set .Set) andBool (X fullyFragmentedIn KLT) 
-
-
-
-
-
-// Case 5: they key X is "partialy fragmented" in the array. This happens e.g. if 
-// X = {Pos -> v1, Neg -> v2} and X = Top
-// Again, we insert the key but also LUB the value with NULL
-
-rule [rget1-obj-prop-partially-fragmented]:
-	<k> RgetRef1((L' => L1'),X,KLT,KGEQ,InitValue) ... </k>
-	<thematrix> ... L' |-> L ... </thematrix>
-	<heap> ... L |-> zval(OID(L1',_,_),_,_,_) </heap>
-	when (KGEQ ==Set .Set) andBool (X partiallyFragmentedIn KLT) 
-   //SMT why is this repeated and not done once and for all like for lgetref?	
-
-rule [rget1-array-prop-partially-fragmented]:
-	<k> RgetRef1(L',X,KLT,KGEQ,InitValue) => insertKey(L',X,KLT,KGEQ,InitValue) ... </k>
-	<thematrix> ... L' |-> L ... </thematrix>
-	<heap> ... L |-> zval(V:Array,_,_,_) </heap>
-	when (KGEQ ==Set .Set) andBool (X partiallyFragmentedIn KLT) 
-
-//SMT again does nothing useful
-
-
-// TODO: I guess cases 3, 4 and 5 could be factorised. I.e. we would then have 3 cases
-//       (i) "no key"
-//       (ii) "key found ="
-//       (iii) all other cases: key < or key fragmented (fully7partially)
-//       The insertKey procedure would in turn do the case analysis
-
-
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // not a compound value
 // NOTE: no need to change anything here: should work for new semantics as well.
@@ -1752,10 +1507,6 @@ rule [rget-string-undef]:
 	<heap> ... L |-> zval(Str:AString,_,_,_) ... </heap>
 	<trace> Trace:List => Trace ListItem("rget-string-undef") </trace>
 	[internal]
-
-
-
-
 
 
 // ---------------------------------------------------------------------------------------------
@@ -1793,21 +1544,6 @@ rule [lget-array-prop]:
 	<heap>... L |-> zval(Array(_,ArrayValues),_,_,_)  ...</heap> //bmk
         when X =/=K NoKey
 	[internal]
-
-//SM delete
-/*
-// Array case
-rule [lget-array-prop]:
-	<k> 
-		LgetRef(ref(L':Loc, X:Key),InitValue) =>  
-		LgetRef1(L',X,getLTKeys(ArrayValues,X), getGEQKeys(ArrayValues,X),InitValue) ... 
-//SMT compute intersecting keys
-	</k>
-	<thematrix> ... L' |-> L ... </thematrix>
-	<heap>... L |-> zval(Array(_,ArrayValues),_,_,_)  ...</heap>
-        when X =/=K NoKey
-	[internal]
-*/
 
 
 rule [lget-obj-prop]:
@@ -1849,83 +1585,6 @@ rule [lget1-array-prop-literally-found]:
 	<heap>... L |-> zval(Array(_,_:List ListItem([X,public,L1]) _:List),_,_,_)  ...</heap>
 	when X in KEYS
 	[internal]
-
-//SM delete
-/*
-syntax K ::= "LgetRef1" "(" Loc "," Key "," Set "," Set "," RefType ")"
-
-// Case 1: the key X is "not present" at all in the array i.e. there are no other keys 
-// which are =, < or >= to X. 
-// It needs to be inserted!
-
-rule [lget1-array-prop-undefined]:
-	<k> 
-		LgetRef1(L',X,KLT,KGEQ,InitValue) => insertKey(L',X,KLT,KGEQ,InitValue) ... 
-	</k>
-	when (KLT ==Set .Set) andBool (KGEQ ==Set .Set) 
-//SMT intersection set is empty
-//or we can say if key not in set, just go on to insertkey
-
-
-// Case 2: the key X is actually present in the array. 
-// As in the original rules, we call Rget
-
-rule [lget1-array-prop-literally-found]:
-	<k> LgetRef1(L',X,KLT,KGEQ,InitValue) => Rget(ref(L',X))  ... </k>
-	<thematrix> ... L' |-> L ... </thematrix>
-	<heap>... L |-> zval(Array(_,_:List ListItem([X,public,L1]) _:List),_,_,_)  ...</heap>
-	when (X in KGEQ) 
-	[internal]
-//SMT the key is in the set
-*/
-
-
-//SMT delete
-/*
-//SMT looks like the rules below are pointless, they do the same as first rule
-
-
-// Case 3: the key X is not present, but a "bigger" key, say X1 is present 
-// (e.g. X = Pos, X1 = Top | NZ | ... )
-// In this case we insert the key using the insertKey internal operation. 
-// NOTE: are we sure we want to insert it and not reading one of the "bigger" keys?  
-
-rule [lget1-array-prop-bigger]:
-	<k> LgetRef1(L',X,KLT,KGEQ,InitValue) => insertKey(L',X,KLT,KGEQ,InitValue) ... </k>
-	when (KGEQ =/=Set .Set) andBool (notBool X in KGEQ) 
-
-// Case 4: they key X is "fully fragmented" in the array. This happens e.g. if 
-// X = {Pos -> v1, Neg -> v2} and X = NZ
-// Again, we insert the key 
-
-// TODO: the fullyFragmented predicate is broken! 
-//       it is true for cases which ARE NOT fully fragmented! 
-//       E.g.: Top fullyFragmentedIn {Pos, Neg} => true
-//       but we know it should be false!
-
-rule [lget1-array-prop-fully-fragmented]:
-	<k> LgetRef1(L',X,KLT,KGEQ,InitValue) => insertKey(L',X,KLT,KGEQ,InitValue) ... </k>
-	when (KGEQ ==Set .Set) andBool (X fullyFragmentedIn KLT) 
-
-// Case 5: they key X is "partialy fragmented" in the array. This happens e.g. if 
-// X = {Pos -> v1, Neg -> v2} and X = Top
-// Again, we insert the key but also LUB the value with NULL
-
-
-rule [lget1-array-prop-partially-fragmented]:
-	<k> LgetRef1(L',X,KLT,KGEQ,InitValue) => insertKey(L',X,KLT,KGEQ,InitValue) ... </k>
-	when (KGEQ ==Set .Set) andBool (X partiallyFragmentedIn KLT) 
-
-
-// TODO: I guess cases 3, 4 and 5 could be factorised. I.e. we would then have 3 cases
-//       (i) "no key"
-//       (ii) "key found ="
-//       (iii) all other cases: key < or key fragmented (fully7partially)
-//       The insertKey procedure would in turn do the case analysis
-*/
-
-
-
 
 // Error case
 rule [lget-error-1]:    

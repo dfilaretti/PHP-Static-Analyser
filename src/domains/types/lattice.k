@@ -1,25 +1,19 @@
 module LATTICE
        
-	    // backward compatibility
-		//syntax  ARefCount ::= Int
-
-		syntax  ARefCount ::= "ARC0" | "ARC1" | "ARC2" | "ARC>2"
-
 	   
-	   
-	   syntax ErrFlag ::= "MayBeNull" | "VisibilityErr" | "ImplicitTypeConversion" | "NullTypeConversion"
+       syntax ErrFlag ::= "MayBeNull" | "VisibilityErr" | "ImplicitTypeConversion" | "NullTypeConversion"
 	   
        syntax AStringValue ::= "AStringTop" | String
        
-	   syntax AString ::= "(" AStringValue "," List ")"
+       syntax AString ::= "(" AStringValue "," List ")"
 	   
        syntax AIntValue ::= "AInt" 
 	   
-	   syntax AInt ::= "(" AIntValue "," List ")"
+       syntax AInt ::= "(" AIntValue "," List ")"
 	
        syntax ABoolValue ::= "ABool" 
 
-	   syntax ABool ::= "(" ABoolValue "," List ")"	   
+       syntax ABool ::= "(" ABoolValue "," List ")"	   
 	   
        syntax AFloatValue ::= "AFloat"
 	   
@@ -30,7 +24,6 @@ module LATTICE
 	   syntax ANum ::= AInt| AFloat| "(" "ANum" "," List ")"
 	   
 	   syntax Scalar ::= ANumValue | AStringValue | ABoolValue | Null | Bot | Top
-//SM added top above?
 	
 	   syntax Scalar ::= "getValue" "(" DomainValue ")" [function]
 	   
@@ -93,10 +86,10 @@ module LATTICE
 	   rule getErrFlags ( (V:ABoolValue, E:List) ) => E
 	   rule getErrFlags( NULL ) => .List
 	   
-	   rule lub_Domain(D1,D2) =>  VE ( lub_Value(getValue(D1), getValue(D2)), mergeList(getErrFlags(D1), getErrFlags(D2)) )
+	   rule lub_Domain(D1,D2) =>  VE(lub_Value(getValue(D1), getValue(D2)), mergeList(getErrFlags(D1), getErrFlags(D2)) )
 	   when D1 =/=K NULL andBool D2 =/=K NULL
 	   
-	   rule lub_Domain( D1, NULL) => VE (getValue(D1), mergeList (ListItem(MayBeNull), getErrFlags(D1)))
+	   rule lub_Domain( D1, NULL) => VE(getValue(D1), mergeList (ListItem(MayBeNull), getErrFlags(D1)))
 	   when D1 =/=K NULL
 	   
 	   rule lub_Domain(NULL, NULL) => VE(NULL, .List)
