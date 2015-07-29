@@ -210,7 +210,7 @@ rule
 
 /*@
 
-syntax K ::= "string2Number" "(" AString ")"
+syntax PlainLanguageValue ::= "string2Number" "(" AString ")" [function]
 
 rule [string2Number-empty]:
 	<k> string2Number("") => 0 ... </k>

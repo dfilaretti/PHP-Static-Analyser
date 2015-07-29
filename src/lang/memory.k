@@ -114,6 +114,9 @@ syntax PlainLanguageValue ::= "lub" "(" PlainLanguageValue "," PlainLanguageValu
 rule lub(Top,_) => Top
 rule lub(X,Top) => Top 
 
+rule lub(X,Y) => X 
+when X ==K Y
+
 rule lub(X,Bot) => X 
 rule lub(Bot,X) => X 
 

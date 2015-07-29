@@ -3,7 +3,6 @@ To add to domains :
 isNull isString isBoolean isNumericString(AString) isObject isArray isNumber (?) => ABool	(to use with valid, unsat)
 *toObject
 
-Check string2Number
 
 Comparisons for : 
 

@@ -15,9 +15,8 @@ syntax Bool ::= "isGammaSingleton" "(" K ")" [function]
 rule isGammaSingleton(NULL) => true
 rule isGammaSingleton(N:ANum)=> false
 rule isGammaSingleton(B:ABool) => false
-rule isGammaSingleton( (S:String, .List) ) => true
+rule isGammaSingleton( (S:String, L) ) => valueOfErrs(L) ==K Bot
 rule isGammaSingleton ( (AStringTop, _) ) => false
-rule isGammaSingleton( (S:String, ListItem(_) _ )) => false
 rule isGammaSingleton(Top) => false
 
 	rule alpha(true) => specify(VE(ABoolTrue, .List))	 [structural]
@@ -45,21 +44,6 @@ syntax K ::= "alphaRC" "(" K ")" [function]
 				#fi
 			#fi
 			
-	
-syntax Bool ::= "isGammaSingleton" "(" K ")" [function]
-
-rule isGammaSingleton(NULL) => true
-
-rule isGammaSingleton(N:ANum)=> false
-
-rule isGammaSingleton(B:ABool) => false
-
-rule isGammaSingleton( (S:String, L) ) => valueOfErrs(L) ==K Bot
-
-rule isGammaSingleton ( (AStringTop, _) ) => false
-
-
-rule isGammaSingleton(Top) => false
 
 // reference counters
 rule 	isGammaSingleton(ARC0)  => true

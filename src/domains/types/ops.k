@@ -16,17 +16,17 @@ module OPS
 	   
 	   syntax AIntValue ::= "AIntOfErrs" "(" List ")" [function]
 	   
-	   rule AIntOfErrs(.List) => Bot
+	   rule AIntOfErrs(.List) => AIntBot
 	   
 	   rule AIntOfErrs( ListItem(E)  L) =>  lub_Value(AIntOfErr(E), AIntOfErrs(L))
 	   
 	   syntax AIntValue ::= "AIntOfTuple" "(" DomainValue ")" [function]
 	   
 	   rule AIntOfTuple(NULL) => AInt
-	   rule AIntOfTuple( (V, E):AInt ) => lub_Value(*valueToInteger(V), AIntOfErrs(E)) 
-	   rule AIntOfTuple( (V, E):AFloat ) => lub_Value(*valueToInteger(V), AIntOfErrs(E)) 
-	   rule AIntOfTuple( (V, E):AString) => lub_Value(*valueToInteger(V), AIntOfErrs(E)) 
-	   rule AIntOfTuple( (V, E):ABool) => lub_Value(*valueToInteger(V), AIntOfErrs(E)) 
+	   rule AIntOfTuple( (V:AIntValue, E):AInt ) => lub_Value(*valueToInteger(V), AIntOfErrs(E)) 
+	   rule AIntOfTuple( (V:AFloatValue, E):AFloat ) => lub_Value(*valueToInteger(V), AIntOfErrs(E)) 
+	   rule AIntOfTuple( (V:AStringValue, E):AString) => lub_Value(*valueToInteger(V), AIntOfErrs(E)) 
+	   rule AIntOfTuple( (V:ABoolValue, E):ABool) => lub_Value(*valueToInteger(V), AIntOfErrs(E)) 
 	   
 	   syntax AFloatValue ::= "AFloatOfErr" "(" ErrFlag ")" [function]
 	   
@@ -34,17 +34,17 @@ module OPS
 	   
 	   syntax AFloatValue ::= "AFloatOfErrs" "(" List ")" [function]
 	   
-	   rule AFloatOfErrs(.List) => Bot
+	   rule AFloatOfErrs(.List) => AFloatBot
 	   
 	   rule AFloatOfErrs( ListItem(E)  L) =>  lub_Value(AFloatOfErr(E), AFloatOfErrs(L))
 	   
 	   syntax AFloatValue ::= "AFloatOfTuple" "(" DomainValue ")" [function]
 	   
 	   rule AFloatOfTuple(NULL) => AFloat
-	   rule AFloatOfTuple( (V, E):AInt ) => lub_Value(*valueToFloat(V), AFloatOfErrs(E)) 
-	   rule AFloatOfTuple( (V, E):AFloat ) => lub_Value(*valueToFloat(V), AFloatOfErrs(E)) 
-	   rule AFloatOfTuple( (V, E):AString ) => lub_Value(*valueToFloat(V), AFloatOfErrs(E)) 
-	   rule AFloatOfTuple( (V, E):ABool ) => lub_Value(*valueToFloat(V), AFloatOfErrs(E)) 
+	   rule AFloatOfTuple( (V:AIntValue, E):AInt ) => lub_Value(*valueToFloat(V), AFloatOfErrs(E)) 
+	   rule AFloatOfTuple( (V:AFloatValue, E):AFloat ) => lub_Value(*valueToFloat(V), AFloatOfErrs(E)) 
+	   rule AFloatOfTuple( (V:AStringValue, E):AString ) => lub_Value(*valueToFloat(V), AFloatOfErrs(E)) 
+	   rule AFloatOfTuple( (V:ABoolValue, E):ABool ) => lub_Value(*valueToFloat(V), AFloatOfErrs(E)) 
 	   
 	   syntax AStringValue ::= "AStringOfErr" "(" ErrFlag ")" [function]
 	   
@@ -52,17 +52,17 @@ module OPS
 	   
 	   syntax AStringValue ::= "AStringOfErrs" "(" List ")" [function]
 	   
-	   rule AStringOfErrs(.List) => Bot
+	   rule AStringOfErrs(.List) => AStringBot
 	   
 	   rule AStringOfErrs( ListItem(E)  L) =>  lub_Value(AStringOfErr(E), AStringOfErrs(L))
 	   
 	   syntax AStringValue ::= "AStringOfTuple" "(" K ")" [function]
 	 
 	   rule AStringOfTuple(NULL) => ""
-	   rule AStringOfTuple( (V, E):AInt ) => lub_Value(*valueToString(V), AStringOfErrs(E)) 
-	   rule AStringOfTuple( (V, E):AFloat ) => lub_Value(*valueToString(V), AStringOfErrs(E)) 
-	   rule AStringOfTuple( (V, E):AString ) => lub_Value(*valueToString(V), AStringOfErrs(E)) 
-	   rule AStringOfTuple( (V, E):ABool ) => lub_Value(*valueToString(V), AStringOfErrs(E)) 
+	   rule AStringOfTuple( (V:AIntValue, E):AInt ) => lub_Value(*valueToString(V), AStringOfErrs(E)) 
+	   rule AStringOfTuple( (V:AFloatValue, E):AFloat ) => lub_Value(*valueToString(V), AStringOfErrs(E)) 
+	   rule AStringOfTuple( (V:AStringValue, E):AString ) => lub_Value(*valueToString(V), AStringOfErrs(E)) 
+	   rule AStringOfTuple( (V:ABoolValue, E):ABool ) => lub_Value(*valueToString(V), AStringOfErrs(E)) 
 	   
 	   syntax ABoolValue ::= "ABoolOfErr" "(" ErrFlag ")" [function]
 	   
@@ -70,19 +70,17 @@ module OPS
 	   
 	   syntax ABoolValue ::= "ABoolOfErrs" "(" List ")" [function]
 	   
-	   rule ABoolOfErrs(.List) => Bot
+	   rule ABoolOfErrs(.List) => ABoolBot
 	   
 	   rule ABoolOfErrs( ListItem(E)  L) =>  lub_Value(ABoolOfErr(E), ABoolOfErrs(L))
 	   
 	   syntax ABoolValue ::= "ABoolOfTuple" "(" DomainValue ")" [function]
 	   
 	   rule ABoolOfTuple(NULL) => ABoolFalse
-	   rule ABoolOfTuple( (V, E):AInt ) => lub_Value(*valueToBool(V), ABoolOfErrs(E)) 
-	   //rule ABoolOfTuple( (V, E):AFloat ) => lub_Value(*valueToBool(V), ABoolOfErrs(E)) 
-	   //rule ABoolOfTuple( (V, E):AString ) => lub_Value(*valueToBool(V), ABoolOfErrs(E)) 
-	   //rule ABoolOfTuple( (V, E):ABool ) => lub_Value(*valueToBool(V), ABoolOfErrs(E)) 
-	   
-	   rule ABoolOfTuple((V, E):ABool) => ABoolFalse //lub_Value(*valueToBool(V), ABoolOfErrs(E)) 
+	   rule ABoolOfTuple( (V:AIntValue, E):AInt ) => lub_Value(*valueToBool(V), ABoolOfErrs(E)) 
+	   rule ABoolOfTuple( (V:AFloatValue, E):AFloat ) => lub_Value(*valueToBool(V), ABoolOfErrs(E)) 
+	   rule ABoolOfTuple( (V:AStringValue, E):AString ) => lub_Value(*valueToBool(V), ABoolOfErrs(E)) 
+	   rule ABoolOfTuple( (V:ABoolValue, E):ABool ) => lub_Value(*valueToBool(V), ABoolOfErrs(E)) 
 	   
 	   // Domain operations
 	   
@@ -247,119 +245,97 @@ module OPS
  // to boolean
     syntax  ABool ::= "*toBoolean" "(" K ")" [function]
 
-    rule    [toBoolean-bool]:    
-	        <k> *toBoolean(B:ABool) => B ... </k>
-	        [internal]
+    rule  *toBoolean(B:ABool) => B [internal]
 
-    rule    [toBoolean-int]:
-	        <k> *toBoolean(N:AInt) => (ABoolOfTuple(N), addErrFlag(ImplicitTypeConversion,FilterErrFlags(getErrFlags(N)))) ... </k>
-	        [internal]
+    rule  *toBoolean(N:AInt) => (ABoolOfTuple(N), addErrFlag(ImplicitTypeConversion,FilterErrFlags(getErrFlags(N))))    [internal]
 
-    rule    [toBoolean-float]:    
-	        <k> *toBoolean(F:AFloat) => (ABoolOfTuple(F), addErrFlag(ImplicitTypeConversion,FilterErrFlags(getErrFlags(F))))... </k>
-	        [internal]
+    rule  *toBoolean(F:AFloat) => (ABoolOfTuple(F), addErrFlag(ImplicitTypeConversion,FilterErrFlags(getErrFlags(F))))   [internal]
 
-    rule    [toBoolean-string]:    
-	        <k> *toBoolean(S:AString) => (ABoolOfTuple(S), addErrFlag(ImplicitTypeConversion,FilterErrFlags(getErrFlags(S)))) ... </k>
-	        [internal]
+    rule  *toBoolean(S:AString) => (ABoolOfTuple(S), addErrFlag(ImplicitTypeConversion,FilterErrFlags(getErrFlags(S))))   [internal]
 
 
-    rule    [toBoolean-array]:    
-	        <k> *toBoolean(Array(_,Elems)) => (ABoolTop, ListItem(ImplicitTypeConversion)) ... </k>
-	        [internal]
+    rule  *toBoolean(Array(_,Elems)) => (ABoolTop, ListItem(ImplicitTypeConversion)) 	        [internal]
 			
-	rule	[toBoolean-true]:
-	        <k> *toBoolean(true) => (ABoolTrue, .List) ... </k>
-	        [internal]
+	rule  *toBoolean(true) => (ABoolTrue, .List)        [internal]
 	
-	rule 	[toBoolean-false]:    
-	        <k> *toBoolean(false) => (ABoolFalse, .List) ... </k>
-	        [internal]
+	rule  *toBoolean(false) => (ABoolFalse, .List)      [internal]
 			
-		rule 	[toBoolean-top]:    
-	        <k> *toBoolean(Top) => (ABoolTop, .List) ... </k>
-	        [internal]
+	rule *toBoolean(Top) => (ABoolTop, .List) 		    [internal]
 
 // Object case: we add it, even if the online docs says this behaviour is "PHP 4 only"
 // Since the expected behaviour for PHP 5 is not mentioned, I guess it is undefined..?
 
-    rule    [toBoolean-object]:    
-	        <k> *toBoolean(OID(L,_,_) => convertToLanguageValue(L)) ... </k>  
-	        [internal]
+    rule  *toBoolean(OID(L,_,_) => convertToLanguageValue(L))   [internal]
 
-    rule    [toBoolean-null]:        
-	        <k> *toBoolean(NULL) => (ABoolFalse, ListItem(NullTypeConversion)) ... </k>
-	        [internal]
+    rule  *toBoolean(NULL) => (ABoolFalse, ListItem(NullTypeConversion))  [internal]
 
     // to float
 
-    syntax  K ::= "*toFloat" "(" K ")"  [strict]
+    syntax  AFloat ::= "*toFloat" "(" K ")"  [function]
 
-    rule    [toFloat-false]:
-	        <k> *toFloat(BFalse) => 'DNumber("0.0") ... </k>
-	        [internal]
+    rule  *toFloat(BFalse) =>alpha("0.0") [internal]
 	
-    rule    [toFloat-true]:
-	        <k> *toFloat(BTrue) => 'DNumber("1.0") ... </k>
-	        [internal]
+    rule  *toFloat(BTrue) => alpha("1.0")  [internal]
 
-    rule    [toFloat-int]:
-	        <k> *toFloat(I:AInt) => (AFloatOfTuple(I), addErrFlag(ImplicitTypeConversion,FilterErrFlags(getErrFlags(I)))) ... </k>
-	        [internal]
-
-	rule *toFloat("ANum") => (AFloat, ListItem(ImplicitTypeConversion)) [internal]		
+    rule  *toFloat(I:AInt) => (AFloatOfTuple(I), addErrFlag(ImplicitTypeConversion,FilterErrFlags(getErrFlags(I)))) [internal]
 			
-    rule    [toFloat-float]:
-	        <k> *toFloat(F:AFloat) => F ... </k>
-	        [internal]
+    rule  *toFloat(F:AFloat) => F			 [internal]
 
-    rule    [toFloat-string]:
-	        <k> *toFloat(S:AString) => *toFloat(string2Number(S)) ... </k>
-	        [internal]
+    rule  *toFloat(S:AString) => *toFloat(string2Number(S)) [internal]
 	
-    rule    [toFloat-compound]:	
-	        <k> *toFloat(O:CompoundValue) => WARNING("conversion of compound types to integer is undefined (http://www.php.net/manual/en/language.types.integer.php)\n") ~> AFloat  ... </k>
-	        [internal, error]
+    rule  *toFloat(O:CompoundValue) => WARNING("conversion of compound types to integer is undefined (http://www.php.net/manual/en/language.types.integer.php)\n") ~> AFloat 	[internal, error]
 
+			
 	//to string		
 			
 	syntax AIntValue ::= "*valueToInteger" "(" Scalar ")" [function]
 	
-	rule *valueToInteger(Bot) => Bot
+	rule *valueToInteger(Bot) => AIntBot
+	rule *valueToInteger(Top) => AInt
 	
 	rule *valueToInteger(V) => AInt
 	when V =/=K Bot
 	
 	syntax AFloatValue ::= "*valueToFloat" "(" Scalar ")" [function]
 	
-	rule *valueToFloat(Bot) => Bot
+	rule *valueToFloat(Bot) => AFloatBot
+	rule *valueToFloat(Top) => AFloat
 	
 	rule *valueToFloat(V) => AFloat
 	when V =/=K Bot
 	
 	syntax ABoolValue ::= "*valueToBool" "(" Scalar ")" [function]
 	
-	rule *valueToBool(Bot) => Bot
+	rule *valueToBool(Bot) => ABoolBot
+	rule *valueToBool(Top) => ABoolTop
 	
 	rule *valueToBool(NULL) => ABoolFalse
 	
-	rule *valueToBool(V) => ABoolTop
-	when V =/=K Bot andBool V =/=K NULL
+	rule *valueToBool(B:ABoolValue) => B
+	rule *valueToBool(B:ANumValue) => ABoolTop
+	rule *valueToBool(AStringTop) => ABoolTop
+	rule *valueToBool("") => ABoolFalse
+	rule *valueToBool("0") => ABoolFalse
+	
+	rule *valueToBool(S:String) => ABoolTrue
+	when (S =/=String "") andBool (S =/=String "0")
+	
 	
 	syntax AStringValue ::= "*valueToString" "(" Scalar ")" [function]
 	
-	rule *valueToString(Bot) => Bot
+	rule *valueToString(Bot) => AStringBot
+	rule *valueToString(Top) => AStringTop
 	
 	rule *valueToString(I:AIntValue) => AStringTop
-	when I =/=K Bot
+	when I =/=K AIntBot
 	
 	rule *valueToString(F:AFloatValue) => AStringTop
-	when F =/=K Bot
+	when F =/=K AFloatBot
 	
 	rule *valueToString(S:AStringValue) => S
 	
 	rule *valueToString(B:ABoolValue) => AStringTop
-	when B =/=K Bot
+	when B =/=K ABoolBot
 	
 	rule *valueToString(NULL) => ""
 	
@@ -387,12 +363,11 @@ module OPS
 
 	rule *toString(NULL) => ("", ListItem(NullTypeConversion)) [internal]
 
-	syntax K ::= "string2Number" "(" AString ")" [strict]
+	syntax PlainLanguageValue ::= "string2Number" "(" AString ")" [function]
+
 	
-	rule [string2Number]:
-			<k> string2Number(S:AString) => (AInt, addErrFlag(ImplicitTypeConversion, FilterErrFlags(getErrFlags(S)))) ... </k> //RR-FIXME: should be Anum
-			<trace> Trace:List => Trace ListItem("string2Number") </trace>
-			[internal]
+	rule string2Number((S:AStringValue, E):AString) => (AInt, addErrFlag(ImplicitTypeConversion, FilterErrFlags(E))) //RR-FIXME: should be Anum
+
 	
 	// String concatenation operation
 	
@@ -404,19 +379,7 @@ module OPS
 	rule AStringValueConcat(AStringTop,_) => AStringTop [step]
 	
 	rule AStringValueConcat(_, AStringTop) => AStringTop [step]
-	
-	
-	/*
-	rule [concat-string-bot-1]:
-	<k> AStringValueConcat(Bot, S:AStringValue) => AStringBot ... </k>
-	<trace> Trace:List => Trace ListItem("concat-string-bot-1") </trace>
-	[step]
-	
-	rule [concat-string-bot-2]:
-	<k> AStringValueConcat(S:AStringValue, Bot) => AStringBot ... </k>
-	<trace> Trace:List => Trace ListItem("concat-string-bot-2") </trace>
-	[step]
-	*/
+
 	
 	rule 'Concat(S1:AString,, S2:AString) => specify(VE(AStringValueConcat(AStringOfTuple(S1), AStringOfTuple(S2)), mergeList(FilterErrFlags(getErrFlags(S1)), FilterErrFlags(getErrFlags(S2)))))
 	
@@ -496,6 +459,10 @@ module OPS
 	rule unsatisfiable_value(ABoolTop) => false
 	rule unsatisfiable_value(ABoolTrue) => false
 	rule unsatisfiable_value(ABoolFalse) => true
+	
+	//RR-FIXME : quick fix, should be removed when a proper array comparison algorithm is implemented (probably in lang)
+	rule comparison(_, Array(_,_), Array(_,_)) => (ABoolTop, .List)
+	
 	
 	//@ \section{Operations on reference counters}
 

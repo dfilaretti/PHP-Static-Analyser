@@ -3,19 +3,19 @@ module LATTICE
 	   
        syntax ErrFlag ::= "MayBeNull" | "VisibilityErr" | "ImplicitTypeConversion" | "NullTypeConversion"
 	   
-       syntax AStringValue ::= "AStringTop" | String | Bot
+       syntax AStringValue ::= "AStringTop" | String | "AStringBot"
        
        syntax AString ::= "(" AStringValue "," List ")"
 	   
-       syntax AIntValue ::= "AInt" | Bot
+       syntax AIntValue ::= "AInt" | "AIntBot"
 	   
        syntax AInt ::= "(" AIntValue "," List ")"
 	
-       syntax ABoolValue ::= "ABoolTop" | "ABoolTrue" | "ABoolFalse" | Bot
+       syntax ABoolValue ::= "ABoolTop" | "ABoolTrue" | "ABoolFalse" | "ABoolBot"
 
        syntax ABool ::= "(" ABoolValue "," List ")"	   
 	   
-       syntax AFloatValue ::= "AFloat" | Bot
+       syntax AFloatValue ::= "AFloat" | "AFloatBot"
 	   
 	   syntax AFloat ::= "(" AFloatValue "," List ")"
 	   
@@ -48,10 +48,10 @@ module LATTICE
 	  
 	   syntax VEPair ::= "generalize" "(" DomainValue ")" [function]
 	   
-	   rule generalize( (V,E):AInt) => VE(V,E)
-	   rule generalize( (V,E):AFloat) => VE(V,E)
-	   rule generalize( (V,E):AString) => VE(V,E)
-	   rule generalize( (V,E):ABool) => VE(V,E)
+	   rule generalize( (V:AIntValue,E):AInt) => VE(V,E)
+	   rule generalize( (V:AFloatValue,E):AFloat) => VE(V,E)
+	   rule generalize( (V:AStringValue,E):AString) => VE(V,E)
+	   rule generalize( (V:ABoolValue,E):ABool) => VE(V,E)
 	  
 	  
 	   rule specify(VE(V:AIntValue, E)) => specify_AInt(VE(V,E))	
@@ -100,6 +100,18 @@ module LATTICE
 	   rule lub_Domain( NULL, D1) => VE(getValue(D1), mergeList (ListItem(MayBeNull), getErrFlags(D1)))
 	   
        syntax Scalar ::= "lub_Value" "(" Scalar "," Scalar ")" [function]
+	   
+	   //RR-FIXME : do lub of two bots more precisely
+	   
+	   rule lub_Value(X, AIntBot)=> X
+	   rule lub_Value(AIntBot, X) => X
+	   rule lub_Value(X, AFloatBot)=> X
+	   rule lub_Value(AFloatBot, X) => X	   
+	   rule lub_Value(X, ABoolBot)=> X
+	   rule lub_Value(ABoolBot, X) => X
+	   rule lub_Value(X, AStringBot)=> X
+	   rule lub_Value(AStringBot, X) => X
+	   
        rule lub_Value(X:ABoolValue, ABoolTop)=>ABoolTop
 	   rule lub_Value(ABoolTop, X:ABoolValue) => ABoolTop
 	   rule lub_Value(ABoolFalse, ABoolFalse) => ABoolFalse
@@ -319,7 +331,7 @@ module LATTICE
 	   rule AisString(X:AFloat) => (ABoolFalse, .List)
 	   rule AisString(X:ABool) => (ABoolFalse, .List)
 	   rule AisString(X:AString) => (ABoolTrue, .List)
-	   rule AisString(Null) => (ABoolFalse, .List)
+	   rule AisString(NULL) => (ABoolFalse, .List)
 	   rule AisString(Top) => (ABoolTop, .List)
 	   rule AisString(Anum) => (ABoolFalse, .List)
 	   
@@ -329,7 +341,7 @@ module LATTICE
 	   rule AisBoolean(X:AFloat) => (ABoolFalse, .List)
 	   rule AisBoolean(X:ABool) => (ABoolTrue, .List)
 	   rule AisBoolean(X:AString) => (ABoolFalse, .List)
-	   rule AisBoolean(Null) => (ABoolFalse, .List)
+	   rule AisBoolean(NULL) => (ABoolFalse, .List)
 	   rule AisBoolean(Top) => (ABoolTop, .List)
 	   rule AisBoolean(ANum) => (ABoolFalse, .List)
 	   
@@ -339,7 +351,7 @@ module LATTICE
 	   rule AisObject(X:AFloat) => (ABoolFalse, .List)
 	   rule AisObject(X:ABool) => (ABoolFalse, .List)
 	   rule AisObject(X:AString) => (ABoolFalse, .List)
-	   rule AisObject(Null) => (ABoolFalse, .List)
+	   rule AisObject(NULL) => (ABoolFalse, .List)
 	   rule AisObject(Top) => (ABoolTop, .List)
 	   rule AisObject(ANum) => (ABoolFalse, .List)
 	   
@@ -349,7 +361,7 @@ module LATTICE
 	   rule AisArray(X:AFloat) => (ABoolFalse, .List)
 	   rule AisArray(X:ABool) => (ABoolFalse, .List)
 	   rule AisArray(X:AString) => (ABoolFalse, .List)
-	   rule AisArray(Null) => (ABoolFalse, .List)
+	   rule AisArray(NULL) => (ABoolFalse, .List)
 	   rule AisArray(Top) => (ABoolTop, .List)
 	   rule AisArray(ANum) => (ABoolFalse, .List)
 	   
@@ -359,7 +371,7 @@ module LATTICE
 	   rule AisNumber(X:AFloat) => (ABoolTrue, .List)
 	   rule AisNumber(X:ABool) => (ABoolFalse, .List)
 	   rule AisNumber(X:AString) => (ABoolFalse, .List)
-	   rule AisNumber(Null) => (ABoolFalse, .List)
+	   rule AisNumber(NULL) => (ABoolFalse, .List)
 	   rule AisNumber(Top) => (ABoolTop, .List)
 	   rule AisNumber(ANum) => (ABoolTrue, .List)
 	  

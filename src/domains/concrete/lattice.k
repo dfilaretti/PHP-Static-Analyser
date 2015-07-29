@@ -44,22 +44,24 @@ syntax ARefCount ::= "lub_ARefCount" "(" ARefCount "," ARefCount ")" [function]
 
 rule AisString(X) => isString(X)
 rule AisNull(X) => isNull(X)
-rule AisBoolean(X) => isBoolean(X)	   rule AisObject( Array(_,_)) =>ABoolFalse
-rule AisObject(OID(_,_,_)) =>ABoolTrue
-rule AisObject(X:AInt) =>ABoolFalse
-rule AisObject(X:AFloat) =>ABoolFalse
-rule AisObject(X:ABool) =>ABoolFalse
-rule AisObject(X:AString) =>ABoolFalse
-rule AisObject(Null) =>ABoolFalse
-rule AisObject(Top) =>ABoolTop
+rule AisBoolean(X) => isBool(X)	   
+
+rule AisObject( Array(_,_)) =>false
+rule AisObject(OID(_,_,_)) =>true
+rule AisObject(X:AInt) =>false
+rule AisObject(X:AFloat) =>false
+rule AisObject(X:ABool) =>false
+rule AisObject(X:AString) =>false
+rule AisObject(NULL) =>false
 	   
-rule AisArray( Array(_,_)) =>ABoolTrue
-rule AisArray(OID(_,_,_)) =>ABoolFalse
-rule AisArray(X:AInt) =>ABoolFalse
-rule AisArray(X:AFloat) =>ABoolFalse
-rule AisArray(X:ABool) =>ABoolFalse
-rule AisArray(X:AString) =>ABoolFalse
-rule AisArray(Null) =>ABoolFalse
-rule AisArray(Top) =>ABoolTop
+rule AisArray( Array(_,_)) =>true
+rule AisArray(OID(_,_,_)) =>false
+rule AisArray(X:AInt) =>false
+rule AisArray(X:AFloat) =>false
+rule AisArray(X:ABool) =>false
+rule AisArray(X:AString) =>false
+rule AisArray(NULL) =>false
+
+rule AisNumericString(X) => isNumericString(X)
 
 endmodule

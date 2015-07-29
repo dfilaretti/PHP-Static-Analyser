@@ -246,7 +246,7 @@ rule	lub_AString(S1:String,S2:String) => AStringTop when (S1 =/=String S2)
 	   rule AisString(X:AFloat) =>ABoolFalse
 	   rule AisString(X:ABool) =>ABoolFalse
 	   rule AisString(X:AString) =>ABoolTrue
-	   rule AisString(Null) =>ABoolFalse
+	   rule AisString(NULL) =>ABoolFalse
 	   rule AisString(Top) =>ABoolTop
 	   
 	   rule AisBoolean( Array(_,_)) =>ABoolFalse
@@ -255,7 +255,7 @@ rule	lub_AString(S1:String,S2:String) => AStringTop when (S1 =/=String S2)
 	   rule AisBoolean(X:AFloat) =>ABoolFalse
 	   rule AisBoolean(X:ABool) =>ABoolTrue
 	   rule AisBoolean(X:AString) =>ABoolFalse
-	   rule AisBoolean(Null) =>ABoolFalse
+	   rule AisBoolean(NULL) =>ABoolFalse
 	   rule AisBoolean(Top) =>ABoolTop
 	   
 	   rule AisObject( Array(_,_)) =>ABoolFalse
@@ -264,7 +264,7 @@ rule	lub_AString(S1:String,S2:String) => AStringTop when (S1 =/=String S2)
 	   rule AisObject(X:AFloat) =>ABoolFalse
 	   rule AisObject(X:ABool) =>ABoolFalse
 	   rule AisObject(X:AString) =>ABoolFalse
-	   rule AisObject(Null) =>ABoolFalse
+	   rule AisObject(NULL) =>ABoolFalse
 	   rule AisObject(Top) =>ABoolTop
 	   
 	   rule AisArray( Array(_,_)) =>ABoolTrue
@@ -273,7 +273,7 @@ rule	lub_AString(S1:String,S2:String) => AStringTop when (S1 =/=String S2)
 	   rule AisArray(X:AFloat) =>ABoolFalse
 	   rule AisArray(X:ABool) =>ABoolFalse
 	   rule AisArray(X:AString) =>ABoolFalse
-	   rule AisArray(Null) =>ABoolFalse
+	   rule AisArray(NULL) =>ABoolFalse
 	   rule AisArray(Top) =>ABoolTop
 	   
 	   rule AisNumber( Array(_,_)) =>ABoolFalse
@@ -282,7 +282,7 @@ rule	lub_AString(S1:String,S2:String) => AStringTop when (S1 =/=String S2)
 	   rule AisNumber(X:AFloat) =>ABoolTrue
 	   rule AisNumber(X:ABool) =>ABoolFalse
 	   rule AisNumber(X:AString) =>ABoolFalse
-	   rule AisNumber(Null) =>ABoolFalse
+	   rule AisNumber(NULL) =>ABoolFalse
 	   rule AisNumber(Top) =>ABoolTop
 	  
 	   rule AisNumericString((AStringTop,_)) =>ABoolTop
