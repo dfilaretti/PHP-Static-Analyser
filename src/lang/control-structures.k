@@ -494,7 +494,7 @@ rule [foreach]:
 			foreach(L', Pattern, Stmt) ~>
 			popLoopContext
 	</k>
-	<heap> ... L |-> zval(V:Value,_,_,true) ... </heap>
+	<heap> ... L |-> zval(V:PlainLanguageValue,_,_,true) ... </heap>
 	<thematrix> ...  L' |-> L  ... </thematrix>		
 	<currentForeachItem> _ => L' </currentForeachItem>
 	<trace> Trace:List => Trace ListItem("foreach") </trace>
@@ -553,7 +553,7 @@ rule [foreach-scalar-1]:
 	<k> 'ForEach(L':Loc,,_) => 
 		WARNING("Warning: Invalid argument supplied for foreach() in %s on line %d\n") ... </k>
 	<thematrix> ...  L' |-> L  ... </thematrix>		
-	<heap> ... L |-> zval(V:Value,_,_,_) ... </heap>
+	<heap> ... L |-> zval(V:PlainLanguageValue,_,_,_) ... </heap>
 	<trace> Trace:List => Trace ListItem("foreach-scalar-1") </trace>
 	when notBool (V isCompoundValue)
 	[step, error]
@@ -606,7 +606,7 @@ rule [foreach-spec]:
 					)
 				)	
 		) ... </k>
-		<heap> ... L2 |-> zval(V:Value,_,_,_) ... </heap>
+		<heap> ... L2 |-> zval(V:PlainLanguageValue,_,_,_) ... </heap>
 		<thematrix> ... L |-> L2 ... </thematrix>
 		<currentForeachItem> L1:Loc </currentForeachItem>
 	<trace> Trace:List => Trace ListItem("foreach-spec") </trace>
@@ -686,7 +686,7 @@ syntax K ::= "locHoldsCompoundValue" "(" Loc ")"
 rule [loc-holds-compound-value-true]:
 	<k> locHoldsCompoundValue(L') => true ... </k>
 	<thematrix> ...  L' |-> L  ... </thematrix>			
-	<heap> ... L |-> zval(V:Value,_,_,_) ... </heap>
+	<heap> ... L |-> zval(V:PlainLanguageValue,_,_,_) ... </heap>
 	<trace> Trace:List => Trace ListItem("loc-holds-compound-value-true") </trace>
 	when (isArrayType(V) orBool isObjectType(V))
 	[internal]
@@ -694,7 +694,7 @@ rule [loc-holds-compound-value-true]:
 rule [loc-holds-compound-value-false]:
 	<k> locHoldsCompoundValue(L') => false ... </k>
 	<thematrix> ...  L' |-> L  ... </thematrix>			
-	<heap> ... L |-> zval(V:Value,_,_,_) ... </heap>
+	<heap> ... L |-> zval(V:PlainLanguageValue,_,_,_) ... </heap>
 	<trace> Trace:List => Trace ListItem("loc-holds-compound-value-false") </trace>
 	when notBool (isArrayType(V) orBool isObjectType(V))
 	[internal]

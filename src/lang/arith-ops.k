@@ -297,7 +297,7 @@ rule [isEqual-RHS2Loc]:
 rule [isEqual-LHS2LangValue]:
 	<k> comparison(_,(L':Loc => V),_) ... </k>
 	<thematrix> ... L' |-> L ... </thematrix>	
-	<heap> ... L |-> zval(V:Value,_,_,_) ... </heap>
+	<heap> ... L |-> zval(V:PlainLanguageValue,_,_,_) ... </heap>
 	<trace> Trace:List => Trace ListItem("isEqual-LHS2LangValue") </trace>
 	when notBool(V isCompoundValue)
 	[intermediate]
@@ -305,7 +305,7 @@ rule [isEqual-LHS2LangValue]:
 rule [isEqual-RHS2LangValue]: 	
 	<k> comparison(_,_,(L':Loc => V)) ... </k>
 	<thematrix> ... L' |-> L ... </thematrix>	
-	<heap> ... L |-> zval(V:Value,_,_,_) ... </heap>
+	<heap> ... L |-> zval(V:PlainLanguageValue,_,_,_) ... </heap>
 	<trace> Trace:List => Trace ListItem("isEqual-RHS2LangValue") </trace>
 	when notBool(V isCompoundValue)
 	[intermediate]

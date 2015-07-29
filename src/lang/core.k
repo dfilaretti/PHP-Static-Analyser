@@ -833,7 +833,7 @@ rule [isset-null]:
 rule [isset-scalar]:    
 	<k> isset (ref(L':Loc, K:Key)) => false ... </k>
 	<thematrix> ... L' |-> L ... </thematrix>
-	<heap> ... L |-> zval(V:Value,_,_,_)  ... </heap> 
+	<heap> ... L |-> zval(V:PlainLanguageValue,_,_,_)  ... </heap> 
 	<trace> Trace:List => Trace ListItem("isset-scalar") </trace>
 	when notBool (V isCompoundValue)
 	[internal]
@@ -890,7 +890,7 @@ rule [unset-non-current]:
 	<heap> 
 	... 
 		L |-> zval(Array([Y,Vis1],_ (ListItem([X,Vis,L1']) => .) _),_,_,_)  
-		L1 |-> zval(V:Value,_,_,_) 
+		L1 |-> zval(V:PlainLanguageValue,_,_,_) 
 	... 
 	</heap>       
 	<trace> Trace:List => Trace ListItem("unset-non-current") </trace>
@@ -908,7 +908,7 @@ rule [unset-current-none]:
 	<heap> 
 	... 
 		L |-> zval(Array(none,_ (ListItem([X,Vis,L1']) => .) _),_,_,_)  
-		L1 |-> zval(V:Value,_,_,_) 
+		L1 |-> zval(V:PlainLanguageValue,_,_,_) 
 	... 
 	</heap>       
 	<trace> Trace:List => Trace ListItem("unset-current-none") </trace>
@@ -925,7 +925,7 @@ rule [unset-current-not-last]:
 	<heap> 
 	... 
 		L |-> zval(Array([X,Vis] => [X1,V1],_ ((ListItem([X,Vis,L1']) => .) ListItem([X1,V1,_])) _),_,_,_)  
-		L1 |-> zval(V:Value,_,_,_) 
+		L1 |-> zval(V:PlainLanguageValue,_,_,_) 
 	... 
 	</heap>       
 	<trace> Trace:List => Trace ListItem("unset-current-not-last") </trace>
@@ -942,7 +942,7 @@ rule [unset-current-last]:
 	<heap> 
 	... 
 		L |-> zval(Array([X,Visib] => none, E:List (ListItem([X,Visib,L1']) => .)),_,_,_)  
-		L1 |-> zval(V:Value,_,_,_) 
+		L1 |-> zval(V:PlainLanguageValue,_,_,_) 
 	... 
 	</heap>       
 	<trace> Trace:List => Trace ListItem("unset-current-last") </trace>

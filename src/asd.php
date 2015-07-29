@@ -13,18 +13,23 @@ while(true){$x = $x+1;} //loop detected, all good
 //SM simple may aliasing
 // both work like a charm
 /*
-$y = "y1";
-if (1){$x = 1;} else {$x =& $y;} 
+//$y = "y1";
+//if (1){$x = 1;} else {$x =& $y;} 
 $x["a"] = "a1";
+$x["b"] = "b1";
 if (1){$x["b"] =& $x["a"];} else {$x["b"] = 1;} 
-/*
-$x["a"] = "a1";
-if (1){$y =& $x["a"];} else {$y = 1;} 
 */
-// BROKEN!!!! (As below)
+
 
 $y = "y1";
-if (1){$x["b"] =& $y;} else {$x["b"] = 1;} 
+$x["a"] = "a1";
+//$y = "y1";
+
+//if (1){$y =& $x["a"];} else {$y = "y2";} // OK
+//if (1){$x["a"] =& $y;} // BROKEN! alias to y1 instead of stringtop 
+if (1){$y =& $x["a"];} // NOT BROKEN
+
+
 
 
 //SM testing array read/write

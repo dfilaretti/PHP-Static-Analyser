@@ -9,10 +9,12 @@ module SHARED
 // =/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
 // =/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
 
-
 // ---------------------------------------------------------------------------------------------
 /*@ \subsection{Helper constructs} */ 
 // ---------------------------------------------------------------------------------------------
+
+//syntax K ::= "stopDebug(" List ")" 
+syntax K ::= "stopDebug(" Map "," Map ")"
 
 syntax K ::= "*Cond" "(" K "," K "," K ")"			[strict(1)]
 
@@ -107,6 +109,16 @@ rule 	removeFromSet(SetItem(Y) S,X) => removeFromSet(S,X)
 	when X ==K Y
 rule 	removeFromSet(SetItem(Y) S, X) => SetItem(Y) removeFromSet(S,X) 
 	when X =/=K Y
+
+
+//SM rename to removeSetDuplicates
+syntax Set ::= "makeSet" "(" Set ")" [function]
+
+rule makeSet(.Set) => .Set
+rule makeSet(SetItem(I) S:Set) => SetItem(I) makeSet(S) 
+	when notBool (I in S) 
+rule makeSet(SetItem(I) S:Set) => makeSet(S) 
+	when I in S
 
 
 // ---------------------------------------------------------------------------------------------

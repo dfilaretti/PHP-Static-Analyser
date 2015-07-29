@@ -5,9 +5,6 @@ module OPS
 	   imports ARITH-OPS
 	   imports INIT
 	   
-	   
-	   syntax K ::= "stopDebug"
-	   
 	   // Domain value manipulation
 	   
 	   syntax AIntValue ::= "AIntOfErr" "(" ErrFlag ")" [function]

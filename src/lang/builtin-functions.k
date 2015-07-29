@@ -160,7 +160,7 @@ rule [current-some]:
 rule [current-null]:    
 	<k> myCurrent(L':Loc) => NULL ... </k>
 	<thematrix> ... L' |-> L ... </thematrix>	
-	<heap> ... L |-> zval(V:Value,_,_,_) ... </heap>
+	<heap> ... L |-> zval(V:PlainLanguageValue,_,_,_) ... </heap>
 	<trace> Trace:List => Trace ListItem("current-null") </trace>
 	when notBool (isArrayType(V) orBool isObjectType(V)) 
     [internal]
@@ -204,7 +204,7 @@ rule [key-some]:
 rule [key-scalar]:    
 	<k> key(L':Loc) => NULL ... </k>
 	<thematrix> ... L' |-> L ... </thematrix>
-	<heap> ... L |-> zval(V:Value,_,_,_) ... </heap>
+	<heap> ... L |-> zval(V:PlainLanguageValue,_,_,_) ... </heap>
 	<trace> Trace:List => Trace ListItem("key-scalar") </trace>
 	when notBool (isArrayType(V) orBool isObjectType(V)) 
 	[internal]
@@ -292,7 +292,7 @@ rule [my-next-none]:
 rule [next-scalar]:    
 	<k> myNext(L':Loc) => NULL ... </k>
 	<thematrix> ... L' |-> L ... </thematrix>	
-	<heap>... L |-> zval(V:Value, _, _, _) ...</heap>
+	<heap>... L |-> zval(V:PlainLanguageValue, _, _, _) ...</heap>
 	<trace> Trace:List => Trace ListItem("next-scalar") </trace>
 	when notBool (isArrayType(V) orBool isObjectType(V))
 
@@ -355,7 +355,7 @@ rule [each-obj]:
 rule [each-scalar]:
 	<k> each(L':Loc) => NULL ... </k>
 	<thematrix> ... L' |-> L ... </thematrix>	
-	<heap> ... L |-> zval(V:Value,_,_,_) ... </heap>
+	<heap> ... L |-> zval(V:PlainLanguageValue,_,_,_) ... </heap>
 	<trace> Trace:List => Trace ListItem("each-scalar") </trace>
 	when notBool (V isCompoundValue)
 	[internal]
@@ -509,12 +509,12 @@ rule [vardump-bool]:
 	<k> var_dump (L':Loc) => 
             *Cond(IsRef, print("&"), .) ~>
             print("bool") ~> 
-            print("(") ~>
-            *Cond(B ==Bool true, print("true"), print("false")) ~>
+            print("(") ~> print("ABoolTop")~> //SM FIXME, see line below
+//            *Cond(B ==Bool true, print("true"), print("false")) ~>
             print(")\n") 
         ... </k>
 	<thematrix> ... L' |-> L ... </thematrix>	
-	<heap> ... L |-> zval(B:Bool,_,_,IsRef) ... </heap>
+	<heap> ... L |-> zval(B:ABool,_,_,IsRef) ... </heap>
 	<trace> Trace:List => Trace ListItem("vardump-bool") </trace>
 	[internal]
 
@@ -769,7 +769,7 @@ rule [printr-other]:
             'Echo( 'ListWrap("\n") ) ...
         </k>
 	<thematrix> ... L' |-> L ... </thematrix>	
-        <heap> ... L |-> zval(V:Value,_,_,IsRef:Bool) ... </heap>
+        <heap> ... L |-> zval(V:PlainLanguageValue,_,_,IsRef:Bool) ... </heap>
 	<trace> Trace:List => Trace ListItem("printr-other") </trace>
 	when (notBool (isArrayType(V))) andBool (notBool (isStringType(V))) andBool (notBool (isObjectType(V)))
 	[internal]

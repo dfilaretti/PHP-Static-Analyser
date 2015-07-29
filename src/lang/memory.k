@@ -281,10 +281,10 @@ rule isLiteral(V) => false
 	when (getKLabel(V) =/=KLabel 'lit)
 
 syntax Bool ::= "locHoldsArray" "(" Map "," Loc ")" [function]
-rule locHoldsArray(Mem:Map(L |-> zval(V:Value,_,_,_)), L) => isArrayType(V)
+rule locHoldsArray(Mem:Map(L |-> zval(V:PlainLanguageValue,_,_,_)), L) => isArrayType(V)
 
 syntax Bool ::= "locHoldsObject" "(" Map "," Loc ")" [function]
-rule locHoldsObject(Mem:Map(L |-> zval(V:Value,_,_,_)), L) => isObjectType(V)
+rule locHoldsObject(Mem:Map(L |-> zval(V:PlainLanguageValue,_,_,_)), L) => isObjectType(V)
 
 syntax Bool ::= "locsHoldSameCompound" "(" Map "," Loc "," Loc ")" [function]
 rule locsHoldSameCompound(M, V1, V2) => 
@@ -301,7 +301,7 @@ rule locsHoldSameCompound(M, V1, V2) =>
 		which is called ZValue, which we define as follows:	 */
 // ---------------------------------------------------------------------------------------------
 
-syntax Zval ::= "zval" "(" Value "," Type "," ARefCount "," Bool ")"
+syntax Zval ::= "zval" "(" PlainLanguageValue "," Type "," ARefCount "," Bool ")"
 	                               
 /*@ We also define a number of low-level rules for reading and writing a given field of a 
 	ZValue, as well as for creating or destroying them. Those operations will be used as 
@@ -363,7 +363,7 @@ rule [zval-write-bot]:
 	[internal]
  
 rule [zval-write-value]:
-	<k> zvalWrite(L',@Value,V:LanguageValue) => . ... </k>	
+	<k> zvalWrite(L',@Value,V:PlainLanguageValue) => . ... </k>	
 	<thematrix> ... L' |-> L ... </thematrix> 
 	<heap> ... L |-> zval(_=> V,_,_,_) ... </heap>
 	<trace> Trace:List => Trace ListItem("zval-write-value") </trace>
@@ -1044,7 +1044,7 @@ rule [copyArrayMembers-cons-no-aliasing]:
 		ArrayCreateElem(L1,Key,Visib,allocValue(V)) ~> 
 		copyArrayMembers(L1, Elems) ... </k>
 	<thematrix> ... L' |-> L ... </thematrix>	
-	<heap> ...  L |-> zval(V:Value,_,_,false) ... </heap>
+	<heap> ...  L |-> zval(V:PlainLanguageValue,_,_,false) ... </heap>
 	<trace> Trace:List => Trace ListItem("copyArrayMembers-cons-no-aliasing") </trace>
 	[intermediate]
 
@@ -1053,7 +1053,7 @@ rule [copyArrayMembers-cons-aliasing]:
 		ArrayCreateElem(L1,Key,Visib,L') ~> 
 		copyArrayMembers(L1, Elems) ... </k>
 	<thematrix> ... L' |-> L ... </thematrix>
-	<heap> ...  L |-> zval(V:Value,_,_,true) ... </heap>
+	<heap> ...  L |-> zval(V:PlainLanguageValue,_,_,true) ... </heap>
 	<trace> Trace:List => Trace ListItem("copyArrayMembers-cons-aliasing") </trace>
 	[intermediate]
     
@@ -1432,7 +1432,7 @@ rule [rget1-array-prop-bigger]:
 rule [rget-obj-scalar]:
 	<k> RgetRef(ref(L':Loc,_),_) =>  locNull ... </k>
 	<thematrix> ... L' |-> L ... </thematrix>	
-	<heap> ... L |-> zval(V:Value,_,_,_) ... </heap>
+	<heap> ... L |-> zval(V:PlainLanguageValue,_,_,_) ... </heap>
 	<trace> Trace:List => Trace ListItem("rget-obj-scalar") </trace>
 	when (notBool (isArrayType(V))) andBool (notBool (isStringType(V))) andBool (notBool (isObjectType(V)))
 	[internal]
@@ -1542,7 +1542,7 @@ rule [lget-error-1]:
 		locNull ... 
 	</k>
 	<thematrix> ... L' |-> L ... </thematrix>  
-	<heap>... L |-> zval(V:Value,_,_,_)  ...</heap>
+	<heap>... L |-> zval(V:PlainLanguageValue,_,_,_)  ...</heap>
 	<trace> Trace:List => Trace ListItem("lget-error-1") </trace>
 	when (notBool (isArrayType(V))) andBool (notBool (isObjectType(V)))
 	[internal, error]
