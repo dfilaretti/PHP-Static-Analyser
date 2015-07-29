@@ -142,93 +142,44 @@ module OPS
 	   rule negative_AFloat((V1:AFloatValue, E1)) => (negative_AFloatValue(AFloatOfTuple((V1, E1))), FilterErrFlags(E1))
 	   
 	   
-	   rule [greater-aint]:
-	   <k> greater(I1:AInt, I2:AInt) => (ABoolTop, mergeList(FilterErrFlags(getErrFlags(I1)), FilterErrFlags(getErrFlags(I2)))) ... </k>
-	   <trace> Trace:List => Trace ListItem("greater-aint") </trace>
-	   [internal]
+	  
+	rule greater(I1:AInt, I2:AInt) => (ABoolTop, mergeList(FilterErrFlags(getErrFlags(I1)), FilterErrFlags(getErrFlags(I2)))) [internal]
 		
-	   rule [greater-afloat]:
-	   <k> greater(F1:AFloat, F2:AFloat) => (ABoolTop, mergeList(FilterErrFlags(getErrFlags(F1)), FilterErrFlags(getErrFlags(F2)))) ... </k>
-	   <trace> Trace:List => Trace ListItem("greater-afloat") </trace>
-	   [internal]
+	rule greater(F1:AFloat, F2:AFloat) => (ABoolTop, mergeList(FilterErrFlags(getErrFlags(F1)), FilterErrFlags(getErrFlags(F2)))) [internal]
 	
-	   //RR-FIXME : True > False, same for other comparisons
-	   rule [greater-abool]:
-	   <k> greater(B1:ABool, B2:ABool) => (ABoolTop, mergeList(FilterErrFlags(getErrFlags(B1)), FilterErrFlags(getErrFlags(B2)))) ... </k>
-	   <trace> Trace:List => Trace ListItem("greater-abool") </trace>
-	   [internal]
+	//RR-FIXME : True > False, same for other comparisons
+	rule greater(B1:ABool, B2:ABool) => (ABoolTop, mergeList(FilterErrFlags(getErrFlags(B1)), FilterErrFlags(getErrFlags(B2)))) [internal]
 	   
-	   rule [greater-astring]:
-	   <k> greater(S1:AString, S2:AString) => (ABoolTop, mergeList(FilterErrFlags(getErrFlags(S1)), FilterErrFlags(getErrFlags(S2)))) ... </k>
-	   <trace> Trace:List => Trace ListItem("greater-astring") </trace>
-	   [internal]
+	rule greater(S1:AString, S2:AString) => (ABoolTop, mergeList(FilterErrFlags(getErrFlags(S1)), FilterErrFlags(getErrFlags(S2))))  [internal]
 	   
-	   rule [less-aint]:
-	   <k> less(I1:AInt, I2:AInt) => (ABoolTop, mergeList(FilterErrFlags(getErrFlags(I1)), FilterErrFlags(getErrFlags(I2)))) ... </k>
-	   <trace> Trace:List => Trace ListItem("less-aint") </trace>
-	   [internal]
+	rule less(I1:AInt, I2:AInt) => (ABoolTop, mergeList(FilterErrFlags(getErrFlags(I1)), FilterErrFlags(getErrFlags(I2)))) [internal]
 		
-	   rule [less-afloat]:
-	   <k> less(F1:AFloat, F2:AFloat) => (ABoolTop, mergeList(FilterErrFlags(getErrFlags(F1)), FilterErrFlags(getErrFlags(F2)))) ... </k>
-	   <trace> Trace:List => Trace ListItem("less-afloat") </trace>
-	   [internal]
+	rule less(F1:AFloat, F2:AFloat) => (ABoolTop, mergeList(FilterErrFlags(getErrFlags(F1)), FilterErrFlags(getErrFlags(F2)))) [internal]
 	
-	   rule [less-abool]:
-	   <k> less(B1:ABool, B2:ABool) => (ABoolTop, mergeList(FilterErrFlags(getErrFlags(B1)), FilterErrFlags(getErrFlags(B2)))) ... </k>
-	   <trace> Trace:List => Trace ListItem("less-abool") </trace>
-	   [internal]
+	rule less(B1:ABool, B2:ABool) => (ABoolTop, mergeList(FilterErrFlags(getErrFlags(B1)), FilterErrFlags(getErrFlags(B2)))) [internal]
 	   
-	   rule [less-astring]:
-	   <k> less(S1:AString, S2:AString) => (ABoolTop, mergeList(FilterErrFlags(getErrFlags(S1)), FilterErrFlags(getErrFlags(S2)))) ... </k>
-	   <trace> Trace:List => Trace ListItem("less-astring") </trace>
-	   [internal]
+	rule less(S1:AString, S2:AString) => (ABoolTop, mergeList(FilterErrFlags(getErrFlags(S1)), FilterErrFlags(getErrFlags(S2)))) [internal]
+
+
+	rule greaterEqual(I1:AInt, I2:AInt) => (ABoolTop, mergeList(FilterErrFlags(getErrFlags(I1)), FilterErrFlags(getErrFlags(I2)))) [internal]
+
+	rule greaterEqual(F1:AFloat, F2:AFloat) => (ABoolTop, mergeList(FilterErrFlags(getErrFlags(F1)), FilterErrFlags(getErrFlags(F2)))) [internal]
+
+	rule greaterEqual(B1:ABool, B2:ABool) => (ABoolTop, mergeList(FilterErrFlags(getErrFlags(B1)), FilterErrFlags(getErrFlags(B2))))[internal]
 	   
-	   syntax K ::= "greaterEqual" "(" K "," K ")"
+	rule greaterEqual(S1:AString, S2:AString) => (ABoolTop, mergeList(FilterErrFlags(getErrFlags(S1)), FilterErrFlags(getErrFlags(S2)))) [internal]
 
-	   rule [greaterEqual-aint]:
-	   <k> greaterEqual(I1:AInt, I2:AInt) => (ABoolTop, mergeList(FilterErrFlags(getErrFlags(I1)), FilterErrFlags(getErrFlags(I2)))) ... </k>
-	   <trace> Trace:List => Trace ListItem("greaterEqual-aint") </trace>
-	   [internal]
+	rule lessEqual(I1:AInt, I2:AInt) => (ABoolTop, mergeList(FilterErrFlags(getErrFlags(I1)), FilterErrFlags(getErrFlags(I2))))[internal]
 
-	   rule [greaterEqual-afloat]:
-	   <k> greaterEqual(F1:AFloat, F2:AFloat) => (ABoolTop, mergeList(FilterErrFlags(getErrFlags(F1)), FilterErrFlags(getErrFlags(F2)))) ... </k>
-	   <trace> Trace:List => Trace ListItem("greaterEqual-afloat") </trace>
-	   [internal]
+	rule lessEqual(F1:AFloat, F2:AFloat) => (ABoolTop, mergeList(FilterErrFlags(getErrFlags(F1)), FilterErrFlags(getErrFlags(F2)))) [internal]
 
-	   rule [greaterEqual-abool]:
-	   <k> greaterEqual(B1:ABool, B2:ABool) => (ABoolTop, mergeList(FilterErrFlags(getErrFlags(B1)), FilterErrFlags(getErrFlags(B2))))... </k>
-	   <trace> Trace:List => Trace ListItem("greaterEqual-abool") </trace>
-	   [internal]
+	rule lessEqual(B1:ABool, B2:ABool) =>(ABoolTop, mergeList(FilterErrFlags(getErrFlags(B1)), FilterErrFlags(getErrFlags(B2)))) [internal]
 	   
-	   rule [greaterEqual-astring]:
-	   <k> greaterEqual(S1:AString, S2:AString) => (ABoolTop, mergeList(FilterErrFlags(getErrFlags(S1)), FilterErrFlags(getErrFlags(S2)))) ... </k>
-	   <trace> Trace:List => Trace ListItem("greaterEqual-astring") </trace>
-	   [internal]
- 
-	   syntax K ::= "lessEqual" "(" K "," K ")"
-
-	   rule [lessEqual-aint]:
-	   <k> lessEqual(I1:AInt, I2:AInt) => (ABoolTop, mergeList(FilterErrFlags(getErrFlags(I1)), FilterErrFlags(getErrFlags(I2))))... </k>
-	   <trace> Trace:List => Trace ListItem("lessEqual-aint") </trace>
-	   [internal]
-
-	   rule [lessEqual-afloat]:
-	   <k> lessEqual(F1:AFloat, F2:AFloat) => (ABoolTop, mergeList(FilterErrFlags(getErrFlags(F1)), FilterErrFlags(getErrFlags(F2)))) ... </k>
-	   <trace> Trace:List => Trace ListItem("lessEqual-afloat") </trace>
-	   [internal]
-
-	   rule [lessEqual-abool]:
-	   <k> lessEqual(B1:ABool, B2:ABool) =>(ABoolTop, mergeList(FilterErrFlags(getErrFlags(B1)), FilterErrFlags(getErrFlags(B2))))... </k>
-	   <trace> Trace:List => Trace ListItem("lessEqual-abool") </trace>
-	   [internal]
-	   
-	   rule [lessEqual-astring]:
-	   <k> lessEqual(S1:AString, S2:AString) => (ABoolTop, mergeList(FilterErrFlags(getErrFlags(S1)), FilterErrFlags(getErrFlags(S2)))) ... </k>
-	   <trace> Trace:List => Trace ListItem("lessEqual-astring") </trace>
-	   [internal]
+	rule lessEqual(S1:AString, S2:AString) => (ABoolTop, mergeList(FilterErrFlags(getErrFlags(S1)), FilterErrFlags(getErrFlags(S2))))   [internal]
  
 
 	rule *toInteger(I:AInt) => I [internal]
+	rule *toInteger(Top) =>(AInt,  ListItem(ImplicitTypeConversion)) [internal]
 	
 	rule *toInteger(F:AFloat) => (AIntOfTuple(F), addErrFlag(ImplicitTypeConversion, FilterErrFlags(getErrFlags(F))))	[internal]
 	
@@ -260,7 +211,7 @@ module OPS
 	
 	rule  *toBoolean(false) => (ABoolFalse, .List)      [internal]
 			
-	rule *toBoolean(Top) => (ABoolTop, .List) 		    [internal]
+	rule *toBoolean(Top) => (ABoolTop,  ListItem(ImplicitTypeConversion)) 		    [internal]
 
 // Object case: we add it, even if the online docs says this behaviour is "PHP 4 only"
 // Since the expected behaviour for PHP 5 is not mentioned, I guess it is undefined..?
@@ -271,13 +222,13 @@ module OPS
 
     // to float
 
-    syntax  AFloat ::= "*toFloat" "(" K ")"  [function]
-
-    rule  *toFloat(BFalse) =>alpha("0.0") [internal]
 	
-    rule  *toFloat(BTrue) => alpha("1.0")  [internal]
-
+    syntax  AFloat ::= "*toFloat" "(" K ")"  [function]
+	
     rule  *toFloat(I:AInt) => (AFloatOfTuple(I), addErrFlag(ImplicitTypeConversion,FilterErrFlags(getErrFlags(I)))) [internal]
+    rule  *toFloat(Top) => (AFloat,  ListItem(ImplicitTypeConversion)) [internal]
+    
+	rule  *toFloat(B:ABool) => (AFloatOfTuple(B), addErrFlag(ImplicitTypeConversion,FilterErrFlags(getErrFlags(B)))) [internal]
 			
     rule  *toFloat(F:AFloat) => F			 [internal]
 
@@ -285,7 +236,7 @@ module OPS
 	
     rule  *toFloat(O:CompoundValue) => WARNING("conversion of compound types to integer is undefined (http://www.php.net/manual/en/language.types.integer.php)\n") ~> AFloat 	[internal, error]
 
-			
+	
 	//to string		
 			
 	syntax AIntValue ::= "*valueToInteger" "(" Scalar ")" [function]
@@ -334,8 +285,9 @@ module OPS
 	
 	rule *valueToString(S:AStringValue) => S
 	
-	rule *valueToString(B:ABoolValue) => AStringTop
-	when B =/=K ABoolBot
+	rule *valueToString(ABoolTrue) => "1"
+	rule *valueToString(ABoolFalse) => ""
+	rule *valueToString(ABoolTop) => AStringTop
 	
 	rule *valueToString(NULL) => ""
 	
@@ -344,9 +296,9 @@ module OPS
 	//TODO : change this when numeric strings get added
 	//TODO : find a way to add traces ?
 	
-	rule  *toString(I:AInt) => (*valueToString(lub_Value(*valueToString(AInt), Bot)), addErrFlag(ImplicitTypeConversion, FilterErrFlags(getErrFlags(I)))) [internal]
+	rule  *toString(I:AInt) => (*valueToString(AIntOfTuple(I)), addErrFlag(ImplicitTypeConversion, FilterErrFlags(getErrFlags(I)))) [internal]
 
-	rule *toString(B:ABool) => (AStringOfTuple(B), addErrFlag(ImplicitTypeConversion, FilterErrFlags(getErrFlags(B))))	[internal]
+	rule *toString(B:ABool) => (*valueToString(ABoolOfTuple(B)), addErrFlag(ImplicitTypeConversion, FilterErrFlags(getErrFlags(B))))	[internal]
 			
 	rule  *toString(F:AFloat) => (AStringOfTuple(F), addErrFlag(ImplicitTypeConversion, FilterErrFlags(getErrFlags(F)))) [internal]
 	
@@ -365,6 +317,9 @@ module OPS
 
 	syntax PlainLanguageValue ::= "string2Number" "(" AString ")" [function]
 
+	
+	rule *toObject(Top) => Top
+	rule *toArray(Top) => Top
 	
 	rule string2Number((S:AStringValue, E):AString) => (AInt, addErrFlag(ImplicitTypeConversion, FilterErrFlags(E))) //RR-FIXME: should be Anum
 
@@ -399,12 +354,43 @@ module OPS
     
     syntax  ABool ::= ABool "==ABool" ABool [function]
     
-    rule B1 ==ABool B2 => (ABoolTop, mergeList(FilterErrFlags(getErrFlags(B1)), FilterErrFlags(getErrFlags(B2))))    
+    rule B1 ==ABool B2 => (ABoolOfTuple(B1) ==ABoolValue ABoolOfTuple(B2), mergeList(FilterErrFlags(getErrFlags(B1)), FilterErrFlags(getErrFlags(B2))))    
     
+	syntax ABoolValue ::= ABoolValue "==ABoolValue" ABoolValue [function]
+	
+	rule ABoolBot ==ABoolValue _ => ABoolBot
+	rule _ ==ABoolValue ABoolBot => ABoolBot
+	
+	rule ABoolTop ==ABoolValue X => ABoolTop
+	when X =/=K ABoolBot
+	
+	rule X ==ABoolValue ABoolTop => ABoolTop
+	when X =/=K ABoolBot
+	
+	rule ABoolTrue ==ABoolValue ABoolTrue => ABoolTrue
+	rule ABoolTrue ==ABoolValue ABoolFalse => ABoolFalse
+	rule ABoolFalse ==ABoolValue ABoolTrue => ABoolFalse
+	rule ABoolFalse ==ABoolValue ABoolFalse => ABoolTrue
+	
+	
     syntax  ABool ::= AString "==AString" AString [function]
     
-    rule S1 ==AString S2 => (ABoolTop, mergeList(FilterErrFlags(getErrFlags(S1)), FilterErrFlags(getErrFlags(S2))))
+    rule S1 ==AString S2 => (AStringOfTuple(S1) ==AStringValue AStringOfTuple(S2), mergeList(FilterErrFlags(getErrFlags(S1)), FilterErrFlags(getErrFlags(S2))))
     
+	syntax ABoolValue ::= AStringValue "==AStringValue" AStringValue [function]
+	
+	rule AStringBot ==AStringValue _ => ABoolBot
+	rule _ ==AStringValue AStringBot => ABoolBot
+	
+	rule AStringTop ==AStringValue AStringTop => ABoolTop
+	rule S:String ==AStringValue AStringTop => ABoolTop
+	rule AStringTop ==AStringValue S:String => ABoolTop
+	rule S1:String ==AStringValue S2:String => ABoolTrue
+	when S1 ==String S2
+	
+	rule S1:String ==AStringValue S2:String => ABoolFalse
+	when notBool(S1 ==String S2)
+	
     rule    [internal-print]:
             <k> print (V:AString)  => . ... </k>
             <out> ... . => ListItem(V) </out>
@@ -461,7 +447,15 @@ module OPS
 	rule unsatisfiable_value(ABoolFalse) => true
 	
 	//RR-FIXME : quick fix, should be removed when a proper array comparison algorithm is implemented (probably in lang)
-	rule comparison(_, Array(_,_), Array(_,_)) => (ABoolTop, .List)
+	rule greater(Array(_,_), Array(_,_)) => (ABoolTop, .List)
+	rule greaterEqual(Array(_,_), Array(_,_)) => (ABoolTop, .List)
+	rule less(Array(_,_), Array(_,_)) => (ABoolTop, .List)
+	rule lessEqual(Array(_,_), Array(_,_)) => (ABoolTop, .List)
+	
+	rule greater(OID(_,_,_), OID(_,_,_)) => (ABoolTop, .List)
+	rule greaterEqual(OID(_,_,_), OID(_,_,_)) => (ABoolTop, .List)
+	rule less(OID(_,_,_), OID(_,_,_)) => (ABoolTop, .List)
+	rule lessEqual(OID(_,_,_), OID(_,_,_)) => (ABoolTop, .List)
 	
 	
 	//@ \section{Operations on reference counters}

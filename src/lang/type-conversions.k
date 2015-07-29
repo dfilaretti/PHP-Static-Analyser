@@ -422,7 +422,7 @@ rule [toString-null]:
 /*@ \subsection{To Object} */
 // ---------------------------------------------------------------------------------------------
 
-syntax K ::= "*toObject" "(" LanguageValue ")" [strict]
+syntax K ::= "*toObject" "(" LanguageValue ")" [function]
 
 // cast to object for scalar values
 
@@ -477,7 +477,7 @@ rule arrayCurrentOverflow(Array(ArrayItem, _)) => false
 /*@ \subsection{To Array} */
 // ---------------------------------------------------------------------------------------------
 
-syntax K ::= "*toArray" "(" LanguageValue ")" [strict]
+syntax K ::= "*toArray" "(" LanguageValue ")" [function]
 
 // cast to array for scalar values
 

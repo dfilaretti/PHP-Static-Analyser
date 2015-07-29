@@ -338,66 +338,46 @@ when isStrictComparison(Op)
 
 rule comparisonPreprocess(Op, L:LanguageValue, R:LanguageValue) => comparisonTypeJuggling0(Op, L, R)
 when notBool(isStrictComparison(Op))
-
 //if both args are string or NULL, NULL => "" and compare as strings (or nums if both numeric)
-
-rule [type-juggling-0-true]:
-	<k> comparisonTypeJuggling0(Op, L, R) => comparisonTypeJuggling0IsNumeric(Op, *toString(L), *toString(R)) ... </k>
-	<trace> Trace:List => Trace ListItem("type-juggling-0-true") </trace>
+ 
+rule comparisonTypeJuggling0(Op, L, R) => comparisonTypeJuggling0IsNumeric(Op, *toString(L), *toString(R)) 	
 when ((valid(AisString(L)) orBool valid(AisNull(L))) andBool (valid(AisString(R)) orBool valid(AisNull(R))))
 
 //if they aren't, go to next step of type juggling
 
-rule [type-juggling-0-false]:
-	<k> comparisonTypeJuggling0(Op, L, R) => comparisonTypeJuggling1(Op, L, R) ... </k>
-	<trace> Trace:List => Trace ListItem("type-juggling-0-false") </trace>
+rule comparisonTypeJuggling0(Op, L, R) => comparisonTypeJuggling1(Op, L, R) 	
 when ((unsatisfiable(AisString(L)) andBool unsatisfiable(AisNull(L))) orBool (unsatisfiable(AisString(R)) andBool unsatisfiable(AisNull(R))))
 
 //if we don't know, merge
- 
-rule [type-juggling-0-merge]:
-	<k> comparisonTypeJuggling0(Op, L, R) => lub(comparisonTypeJuggling1(Op, L, R), comparisonTypeJuggling0IsNumeric(Op, *toString(L), *toString(R))) ... </k>
-	<trace> Trace:List => Trace ListItem("type-juggling-0-merge") </trace>
+
+rule comparisonTypeJuggling0(Op, L, R) => lub(comparisonTypeJuggling1(Op, L, R), comparisonTypeJuggling0IsNumeric(Op, *toString(L), *toString(R))) 	
 when notBool (	((unsatisfiable(AisString(L)) andBool unsatisfiable(AisNull(L))) orBool (unsatisfiable(AisString(R)) andBool unsatisfiable(AisNull(R)))) 
 			orBool 
 				((valid(AisString(L)) orBool valid(AisNull(L))) andBool (valid(AisString(R)) orBool valid(AisNull(R))))
 			)
  
  
-
 //if both strings are numeric, compare as numbers, else keep them as strings
 
-rule [type-juggling-0-isNumeric-true]:
-	<k> comparisonTypeJuggling0IsNumeric(Op, L:AString, R:AString) => comparison(Op, string2Number(L), string2Number(R)) ... </k>
-	<trace> Trace:List => Trace ListItem("type-juggling-0-isNumeric-true") </trace>
+rule comparisonTypeJuggling0IsNumeric(Op, L:AString, R:AString) => comparison(Op, string2Number(L), string2Number(R)) 	
 when valid(AisNumericString(L)) andBool valid(AisNumericString(R))
 
-rule [type-juggling-0-isNumeric-false]:
-	<k> comparisonTypeJuggling0IsNumeric(Op, L:AString, R:AString) => comparison(Op, L, R) ... </k>
-	<trace> Trace:List => Trace ListItem("type-juggling-0-isNumeric-false") </trace>
+rule comparisonTypeJuggling0IsNumeric(Op, L:AString, R:AString) => comparison(Op, L, R) 	
 when unsatisfiable(AisNumericString(L)) orBool unsatisfiable(AisNumericString(R))
 
-rule [type-juggling-0-isNumeric-merge]:
-	<k> comparisonTypeJuggling0IsNumeric(Op, L:AString, R:AString) => lub(comparison(Op, string2Number(L), string2Number(R)), comparison(Op, L, R)) ... </k>
-	<trace> Trace:List => Trace ListItem("type-juggling-0-isNumeric-merge") </trace>
+rule comparisonTypeJuggling0IsNumeric(Op, L:AString, R:AString) => lub(comparison(Op, string2Number(L), string2Number(R)), comparison(Op, L, R)) 
 when notBool ((valid(AisNumericString(L)) andBool valid(AisNumericString(R))) orBool (unsatisfiable(AisNumericString(L)) orBool unsatisfiable(AisNumericString(R))))
 
 
 //if one arg is bool or NULL, compare as booleans, else go to next step
 
-rule [type-juggling-1-true]:
-	<k> comparisonTypeJuggling1(Op, L, R) => comparison(Op, *toBoolean(L), *toBoolean(R)) ... </k>
-	<trace> Trace:List => Trace ListItem("type-juggling-1-true") </trace>
+rule comparisonTypeJuggling1(Op, L, R) => comparison(Op, *toBoolean(L), *toBoolean(R)) 	
 when ((valid(AisBoolean(L)) orBool valid(AisNull(L))) orBool (valid(AisBoolean(R)) orBool valid(AisNull(R))))
 
-rule [type-juggling-1-false]:
-	<k> comparisonTypeJuggling1(Op, L, R) => comparisonTypeJuggling2(Op, L, R) ... </k>
-	<trace> Trace:List => Trace ListItem("type-juggling-1-false") </trace>
+rule comparisonTypeJuggling1(Op, L, R) => comparisonTypeJuggling2(Op, L, R) 
 when ((unsatisfiable(AisBoolean(L)) andBool unsatisfiable(AisNull(L))) andBool (unsatisfiable(AisBoolean(R)) andBool unsatisfiable(AisNull(R))))
  
-rule [type-juggling-1-merge]:
-	<k> comparisonTypeJuggling1(Op, L, R) => lub(comparison(Op, *toBoolean(L), *toBoolean(R)), comparisonTypeJuggling2(Op, L, R))  ... </k>
-	<trace> Trace:List => Trace ListItem("type-juggling-1-merge") </trace>
+rule comparisonTypeJuggling1(Op, L, R) => lub(comparison(Op, *toBoolean(L), *toBoolean(R)), comparisonTypeJuggling2(Op, L, R))  
 when notBool(	((valid(AisBoolean(L)) orBool valid(AisNull(L))) orBool (valid(AisBoolean(R)) orBool valid(AisNull(R)))) 
 			orBool 
 		    	((unsatisfiable(AisBoolean(L)) andBool unsatisfiable(AisNull(L))) andBool (unsatisfiable(AisBoolean(R)) andBool unsatisfiable(AisNull(R))))
@@ -406,123 +386,120 @@ when notBool(	((valid(AisBoolean(L)) orBool valid(AisNull(L))) orBool (valid(Ais
 //if both args are objects, compare them, else go to next step
 //this should be changed to allow classes to implement their own comparison methods
 
-rule [type-juggling-2-true]:
-	<k> comparisonTypeJuggling2(Op, L, R) => comparison(Op, L, R) ... </k>
-	<trace> Trace:List => Trace ListItem("type-juggling-2-true") </trace>
+rule comparisonTypeJuggling2(Op, L, R) => comparison(Op, L, R) 
 when (valid(AisObject(L)) andBool valid(AisObject(R)))
 
-rule [type-juggling-2-false]:
-	<k> comparisonTypeJuggling2(Op, L, R) => comparisonTypeJuggling3(Op, L, R) ... </k>
-	<trace> Trace:List => Trace ListItem("type-juggling-2-false") </trace>
-	when (unsatisfiable(AisObject(L)) orBool unsatisfiable(AisObject(R)))
+rule comparisonTypeJuggling2(Op, L, R) => comparisonTypeJuggling3(Op, L, R) 
+when (unsatisfiable(AisObject(L)) orBool unsatisfiable(AisObject(R)))
 
 //if we merge, convert may-objects to objects to have only concrete-relevant comparison rules
 
-rule [type-juggling-2-merge]:
-	<k> comparisonTypeJuggling2(Op, L, R) => lub(comparison(Op, *toObject(L), *toObject(R)) , comparisonTypeJuggling3(Op, L, R)) ... </k>
-	<trace> Trace:List => Trace ListItem("type-juggling-2-merge") </trace>
-	when notBool ((valid(AisObject(L)) andBool valid(AisObject(R))) orBool (unsatisfiable(AisObject(L)) orBool unsatisfiable(AisObject(R))))
+rule comparisonTypeJuggling2(Op, L, R) => lub(comparison(Op, *toObject(L), *toObject(R)) , comparisonTypeJuggling3(Op, L, R)) 
+when notBool ((valid(AisObject(L)) andBool valid(AisObject(R))) orBool (unsatisfiable(AisObject(L)) orBool unsatisfiable(AisObject(R))))
 
 //if both args are string or numbers, compare as numbers (the case where they are both strings is handled in step 0)
 //"resource" types should be handled here and converted to numbers as well
 
-rule [type-juggling-3-true]:
-	<k> comparisonTypeJuggling3(Op, L, R) => comparison(Op, *toFloat(L), *toFloat(R)) ... </k>
-	<trace> Trace:List => Trace ListItem("type-juggling-3-true") </trace>
+rule comparisonTypeJuggling3(Op, L, R) => comparison(Op, *toFloat(L), *toFloat(R)) 	
 when ((valid(AisString(L)) orBool valid(AisNumber(L))) andBool (valid(AisString(R)) orBool valid(AisNumber(R))))
 
-rule [type-juggling-3-false]:
-	<k> comparisonTypeJuggling3(Op, L, R) => comparisonTypeJuggling4(Op, L, R) ... </k>
-	<trace> Trace:List => Trace ListItem("type-juggling-3-false") </trace>
+rule comparisonTypeJuggling3(Op, L, R) => comparisonTypeJuggling4(Op, L, R) 	
 when ((unsatisfiable(AisString(L)) andBool unsatisfiable(AisNumber(L))) orBool (unsatisfiable(AisString(R)) andBool unsatisfiable(AisNumber(R))))
 
-rule [type-juggling-3-merge]:
-	<k> comparisonTypeJuggling3(Op, L, R) => lub(comparison(Op, *toFloat(L), *toFloat(R)), comparisonTypeJuggling4(Op, L, R)) ... </k>
-	<trace> Trace:List => Trace ListItem("type-juggling-3-merge") </trace>
+rule comparisonTypeJuggling3(Op, L, R) => lub(comparison(Op, *toFloat(L), *toFloat(R)), comparisonTypeJuggling4(Op, L, R)) 
 when notBool (	((valid(AisString(L)) orBool valid(AisNumber(L))) andBool (valid(AisString(R)) orBool valid(AisNumber(R))))
 			orBool
 				((unsatisfiable(AisString(L)) andBool unsatisfiable(AisNumber(L))) orBool (unsatisfiable(AisString(R)) andBool unsatisfiable(AisNumber(R))))
 			)
-			
+		
 //if both args are arrays, compare them, else go to next step
 
-rule [type-juggling-4-true]:
-	<k> comparisonTypeJuggling4(Op, L, R) => comparison(Op, L, R) ... </k>
-	<trace> Trace:List => Trace ListItem("type-juggling-4-true") </trace>
-when (valid(AisArray(L)) andBool valid(AisArray(R)))					//RR-FIXME need another name to distinguish from builtin ?
+rule comparisonTypeJuggling4(Op, L, R) => comparison(Op, L, R) 
+when (valid(AisArray(L)) andBool valid(AisArray(R)))				
 
 
-rule [type-juggling-4-false]:
-	<k> comparisonTypeJuggling4(Op, L, R) => comparisonTypeJuggling5(Op, L, R) ... </k>
-	<trace> Trace:List => Trace ListItem("type-juggling-4-false") </trace>
-	when (unsatisfiable(AisArray(L)) orBool unsatisfiable(AisArray(R)))
+rule comparisonTypeJuggling4(Op, L, R) => comparisonTypeJuggling5(Op, L, R) 
+when (unsatisfiable(AisArray(L)) orBool unsatisfiable(AisArray(R)))
 	
 //in the merge case, convert to arrays like in 2 for objects
-rule [type-juggling-4-merge]:
-	<k> comparisonTypeJuggling4(Op, L, R) => lub(comparison(Op, *toArray(L), *toArray(R)), comparisonTypeJuggling5(Op, L, R)) ... </k>
-	<trace> Trace:List => Trace ListItem("type-juggling-4-false") </trace>
-	when notBool(	(valid(AisArray(L)) andBool valid(AisArray(R)))
+
+rule comparisonTypeJuggling4(Op, L, R) => lub(comparison(Op, *toArray(L), *toArray(R)), comparisonTypeJuggling5(Op, L, R)) 
+when notBool(	(valid(AisArray(L)) andBool valid(AisArray(R)))
 				orBool
 					(unsatisfiable(AisArray(L)) orBool unsatisfiable(AisArray(R)))
-				)
+			)
 				
 //Default case : if one of the args is an object, it's greater. If both may be objects (impossible in concrete because of step 2), time to return Top...
 
-rule [type-juggling-5-LHS]:
-	<k> comparisonTypeJuggling5(Op, L, R) => comparisonLIsGreater(Op) ... </k>
-	<trace> Trace:List => Trace ListItem("type-juggling-5-LHS") </trace>
-	when (valid(AisObject(L)))
+rule comparisonTypeJuggling5(Op, L, R) => comparisonLIsGreater(Op) 
+when (valid(AisObject(L)))
 	
 //this can't happen at the same time as the one above in any domain
-rule [type-juggling-5-RHS]:
-	<k> comparisonTypeJuggling5(Op, L, R) => comparisonRIsGreater(Op) ... </k>
-	<trace> Trace:List => Trace ListItem("type-juggling-5-RHS") </trace>
-	when (valid(AisObject(R)))
+rule  comparisonTypeJuggling5(Op, L, R) => comparisonRIsGreater(Op) 
+when (valid(AisObject(R)))
 
-rule [type-juggling-5-none]:
-	<k> comparisonTypeJuggling5(Op, L, R) => comparisonTypeJuggling6(Op, L, R) ... </k>
-	<trace> Trace:List => Trace ListItem("type-juggling-5-none") </trace>
-	when (unsatisfiable(AisObject(L)) andBool unsatisfiable(AisObject(R)))
+rule comparisonTypeJuggling5(Op, L, R) => comparisonTypeJuggling6(Op, L, R) 
+when (unsatisfiable(AisObject(L)) andBool unsatisfiable(AisObject(R)))
 
-rule [type-juggling-5-not-LHS]:
-	<k> comparisonTypeJuggling5(Op, L, R) => lub(comparisonTypeJuggling6(Op, L, R), comparisonRIsGreater(Op)) ... </k>
-	<trace> Trace:List => Trace ListItem("type-juggling-5-not-LHS") </trace>
-	when (unsatisfiable(AisObject(L)) andBool notBool(unsatisfiable(AisObject(R))))
+rule comparisonTypeJuggling5(Op, L, R) => lub(comparisonTypeJuggling6(Op, L, R), comparisonRIsGreater(Op)) 
+when (unsatisfiable(AisObject(L)) andBool notBool(unsatisfiable(AisObject(R))))
 
-rule [type-juggling-5-not-RHS]:
-	<k> comparisonTypeJuggling5(Op, L, R) => lub(comparisonTypeJuggling6(Op, L, R), comparisonLIsGreater(Op)) ... </k>
-	<trace> Trace:List => Trace ListItem("type-juggling-5-not-RHS") </trace>
-	when (unsatisfiable(AisObject(R)) andBool notBool(unsatisfiable(AisObject(L))))
+rule comparisonTypeJuggling5(Op, L, R) => lub(comparisonTypeJuggling6(Op, L, R), comparisonLIsGreater(Op)) 
+when (unsatisfiable(AisObject(R)) andBool notBool(unsatisfiable(AisObject(L))))
 
-rule [type-juggling-5-top]:
-	<k> comparisonTypeJuggling5(Op, L, R) => *toBoolean(Top) ... </k>		//this should be a lub of many things, but by construction it always evaluates to the top Boolean
-	<trace> Trace:List => Trace ListItem("type-juggling-5-top") </trace>
-	when (notBool(unsatisfiable(AisObject(R))) andBool notBool(unsatisfiable(AisObject(L))) andBool notBool(valid(AisObject(L))) andBool notBool(valid(AisObject(R))))
+rule comparisonTypeJuggling5(Op, L, R) => *toBoolean(Top) 		//this should be a lub of many things, but by construction it always evaluates to the top Boolean
+when (notBool(unsatisfiable(AisObject(R))) andBool notBool(unsatisfiable(AisObject(L))) andBool notBool(valid(AisObject(L))) andBool notBool(valid(AisObject(R))))
 	
 //finally, if only one of the args is an array it's greater, else Top (impossible that both/none are arrays in concrete)
 
-rule [type-juggling-6-LHS]:
-	<k> comparisonTypeJuggling6(Op, L, R) => comparisonLIsGreater(Op) ... </k>
-	<trace> Trace:List => Trace ListItem("type-juggling-6-LHS") </trace>
-	when (valid(AisArray(L)))
+rule comparisonTypeJuggling6(Op, L, R) => comparisonLIsGreater(Op) 
+when (valid(AisArray(L)))
 
 //this can't happen at the same time as the one above in any domain
-rule [type-juggling-6-RHS]:
-	<k> comparisonTypeJuggling6(Op, L, R) => comparisonRIsGreater(Op) ... </k>
-	<trace> Trace:List => Trace ListItem("type-juggling-6-RHS") </trace>
-	when (valid(AisArray(R)))
+rule comparisonTypeJuggling6(Op, L, R) => comparisonRIsGreater(Op) 
+when (valid(AisArray(R)))
 
 //if none of them is certainly an array, return Top
 
-rule [type-juggling-6-top]:
-	<k> comparisonTypeJuggling6(Op, L, R) => *toBoolean(Top)	... </k>
-	<trace> Trace:List => Trace ListItem("type-juggling-6-top") </trace>
-	when notBool ((valid(AisArray(L))) orBool valid(AisArray(R)))
+rule comparisonTypeJuggling6(Op, L, R) => *toBoolean(Top)	
+when notBool ((valid(AisArray(L))) orBool valid(AisArray(R)))
+
+//isEqual
+rule comparison(equal, V1:LanguageValue, V2:LanguageValue) => isEqual(V1, V2) [intermediate]
+
+
+// isIdentical
+//RR-FIXME : this needs an overhaul
+
+rule comparison(identical, V1:LanguageValue, V2:LanguageValue) => V1 ==K V2  //RR : TODO debug this, unsound. Move to domains ?
+when notBool ((V1 isCompoundValue andBool V2 isCompoundValue) andBool hasSameType(V1, V2)) 
+	[intermediate]
+
+
+// less
+
+rule comparison(less, V1:LanguageValue, V2:LanguageValue) => less(V1, V2) 
+when (V1 isScalar) andBool (hasSameType(V1, V2)) //RR-FIXME : shouldn't check that after type juggling ?
+[intermediate]
+
+// lessEqual
+
+rule comparison(lessEqual, V1:LanguageValue, V2:LanguageValue) => lessEqual(V1, V2) 
+when (V1 isScalar) andBool (hasSameType(V1, V2)) //RR-FIXME : shouldn't check that after type juggling ?
+[intermediate]
+
+// greater
+
+rule comparison(greater, V1:LanguageValue, V2:LanguageValue) => greater(V1, V2) [intermediate]
+
+// greaterEqual
+
+rule  comparison(greaterEqual, V1:LanguageValue, V2:LanguageValue) => greaterEqual(V1, V2) [intermediate]
 
 
 
-
-
+//RR:out of date, keeping this around for the array comparison template
+/*
 // isEqual
 
 rule [comparison-equal-scalar]: 
@@ -532,7 +509,7 @@ rule [comparison-equal-scalar]:
 	[intermediate]
 
 //RR-FIXME : should be looking at number of keys
-/*
+
 rule [comparison-equal-array]: 
 	<k> comparison(equal, V1':Loc, V2':Loc) => isEqual(V1', V2') ... </k>
 	<thematrix> 
@@ -545,7 +522,7 @@ rule [comparison-equal-array]:
 	<trace> Trace:List => Trace ListItem("comparison-equal-array") </trace>
 	when locsHoldSameCompound(M, V1, V2) 
 	[intermediate]
-*/
+
 // isIdentical
 //RR-FIXME : this needs an overhaul
 
@@ -555,7 +532,7 @@ rule [comparison-identical-scalar]:
 	when notBool ((V1 isCompoundValue andBool V2 isCompoundValue) andBool hasSameType(V1, V2)) 
 	[intermediate]
 
-/*
+
 rule [comparison-identical-array]: 
 	<k> comparison(identical, V1':Loc, V2':Loc) => isEqual(V1', V2') ... </k>
 	<thematrix> 
@@ -568,7 +545,7 @@ rule [comparison-identical-array]:
 	<trace> Trace:List => Trace ListItem("comparison-identical-array") </trace>
 	when locsHoldSameCompound(M, V1, V2) 
 	[intermediate]
-*/
+
 // less
 
 rule [comparison-less-scalar]: 
@@ -577,7 +554,7 @@ rule [comparison-less-scalar]:
 	when (V1 isScalar) andBool (hasSameType(V1, V2)) //RR-FIXME : shouldn't check that after type juggling ?
 	[intermediate]
 //RR-FIXME : should be looking at number of keys
-/*
+
 rule [comparison-less-array]: 
 	<k> comparison(less, V1':Loc, V2':Loc) => less(V1', V2') ... </k>
 	<thematrix> 
@@ -590,7 +567,7 @@ rule [comparison-less-array]:
 	<trace> Trace:List => Trace ListItem("comparison-less-array") </trace>
 	when locsHoldSameCompound(M, V1, V2)
 	[intermediate]	
-*/
+
 // lessEqual
 
 rule [comparison-lessequal-scalar]: 
@@ -600,7 +577,7 @@ rule [comparison-lessequal-scalar]:
 	[intermediate]
 
 //RR-FIXME	
-/*
+
 rule [comparison-lessEqual-array]: 
 	<k> comparison(lessEqual, V1':Loc, V2':Loc) => lessEqual(V1', V2') ... </k>
 	<thematrix> 
@@ -613,7 +590,7 @@ rule [comparison-lessEqual-array]:
 	<trace> Trace:List => Trace ListItem("comparison-lessEqual-array") </trace>
 	when locsHoldSameCompound(M, V1, V2)
 	[intermediate]	
-*/
+
 
 // greater
 
@@ -624,7 +601,7 @@ rule [comparison-greater-scalar]:
 	[intermediate]
 
 //RR-FIXME : should be looking at number of keys
-/*
+
 rule [comparison-greater-array]: 
 	<k> comparison(greater, V1':Loc, V2':Loc) => greater(V1', V2') ... </k>
 	<thematrix> 
@@ -637,7 +614,7 @@ rule [comparison-greater-array]:
 	<trace> Trace:List => Trace ListItem("comparison-greater-array") </trace>
 	when locsHoldSameCompound(M, V1, V2)
 	[intermediate]	
-*/
+
 // greaterEqual
 
 rule [comparison-greaterEqual-scalar]: 
@@ -647,7 +624,7 @@ rule [comparison-greaterEqual-scalar]:
 	[intermediate]
 
 //RR-FIXME : should be looking at number of keys
-/*
+
 rule [comparison-greaterEqual-array]: 
 	<k> comparison(greaterEqual, V1':Loc, V2':Loc) => greaterEqual(V1', V2') ... </k>
 	<thematrix> 
@@ -660,6 +637,7 @@ rule [comparison-greaterEqual-array]:
 	<trace> Trace:List => Trace ListItem("comparison-greaterEqual-array") </trace>
 	when locsHoldSameCompound(M, V1, V2)
 	[intermediate]	
+
 */
 
 //RR: quick fix for default cases, maybe should be moved to domains and take value params
@@ -683,33 +661,32 @@ rule comparisonRIsGreater(equal) => alpha(false)
 		$a == $b Equal TRUE if $a is equal to $b after type juggling. */
 // ---------------------------------------------------------------------------------------------
 
-syntax K ::= "isEqual" "(" Value "," Value ")"
+syntax ABool ::= "isEqual" "(" Value "," Value ")" [function]
 
 // Equality of scalar types. We inherit K/Maude builtin stuff.
 
-rule    [isEqual-int]:    
-	    <k> isEqual(I1:AInt,I2:AInt) => I1 ==AInt I2 ... </k>
-	    [internal]
+rule isEqual(Top, X) => *toBoolean(Top)
+when X =/=K Bot
 
-rule    [isEqual-float]:    
-	    <k> isEqual(F1:AFloat,F2:AFloat) => F1 ==AFloat F2 ... </k>
-    	[internal]
+rule isEqual(X, Top) => *toBoolean(Top)
+when X =/=K Bot
 
-rule    [isEqual-bool]: 
-	    <k> isEqual(B1:ABool,B2:ABool) => B1 ==ABool B2 ... </k>
-	    [internal]
+rule  isEqual(I1:AInt,I2:AInt) => I1 ==AInt I2 [internal]
 
-rule    [isEqual-string]:    
-	    <k> isEqual(S1:AString,S2:AString) => S1 ==AString S2 ... </k>
-	    [internal]
+rule  isEqual(F1:AFloat,F2:AFloat) => F1 ==AFloat F2 [internal]
 
+rule  isEqual(B1:ABool,B2:ABool) => B1 ==ABool B2 [internal]
+
+rule  isEqual(S1:AString,S2:AString) => S1 ==AString S2  [internal]
+
+/* TODO: adapt
 // Array comparison: calls comparison routine "isEqualArray" (taken from PHP docs)
 
 rule    [isEqual-array-same]:
 	    <k> isEqual(L:Loc,L) => alpha(true) ... </k>
 	    [internal]
 
-/* TODO: adapt
+
 rule    [isEqual-array]: 	
 	    <k> isEqual(L1:Loc, L2:Loc) => 
 		    *Cond(
@@ -779,18 +756,24 @@ rule //[isEqual-object-same-loc]:
 /*@ \subsection{Strict Equality} 
 		$a === $b Equal TRUE if $a is equal to $b  */
 // ---------------------------------------------------------------------------------------------
-
-syntax K ::= "isIdentical" "(" Value "," Value ")"
+/*
+syntax K ::= "isIdentical" "(" Value "," Value ")"		
 
 rule [is-identical]: 
 	<k> isIdentical(L:Value, R:Value) => L ==K R ... </k>
 	<trace> Trace:List => Trace ListItem("isIdentical") </trace>
-
+*/
 // ---------------------------------------------------------------------------------------------
 /*@ \subsection{Less Than} */
 // ---------------------------------------------------------------------------------------------
 
-syntax K ::= "less" "(" K "," K ")"
+syntax ABool ::= "less" "(" K "," K ")"	[function]
+
+rule less(Top, X) => *toBoolean(Top)
+when X =/=K Bot
+
+rule less(X, Top) => *toBoolean(Top)
+when X =/=K Bot
 
 // Scalars
 
@@ -898,7 +881,13 @@ rule [less-object-diff-class]:
 /*@ \subsection{Greater Than} */
 // ---------------------------------------------------------------------------------------------
 
-syntax K ::= "greater" "(" K "," K ")"
+syntax ABool ::= "greater" "(" K "," K ")"		[function]
+
+rule greater(Top, X) => *toBoolean(Top)
+when X =/=K Bot
+
+rule greater(X, Top) => *toBoolean(Top)
+when X =/=K Bot
 
 rule [greater-int]:
 	<k> greater(I1:Int, I2:Int) => I1 >Int I2 ... </k>
@@ -1003,7 +992,13 @@ rule [greater-obj-diff-class]:
 /*@ \subsection{Less than or equal} */
 // ---------------------------------------------------------------------------------------------
 
-syntax K ::= "lessEqual" "(" K "," K ")"
+syntax ABool ::= "lessEqual" "(" K "," K ")"  [function]
+
+rule lessEqual(Top, X) => *toBoolean(Top)
+when X =/=K Bot
+
+rule lessEqual(X, Top) => *toBoolean(Top)
+when X =/=K Bot
 
 // Equality of scalar types. We inherit K/Maude builtin stuff.
 
@@ -1106,7 +1101,13 @@ rule [lessEqual-obj-diff-class]:
 /*@ \subsection{Greater then or equal} */
 // ---------------------------------------------------------------------------------------------
 
-syntax K ::= "greaterEqual" "(" K "," K ")"
+syntax ABool ::= "greaterEqual" "(" K "," K ")" [function]
+
+rule greaterEqual(Top, X) => *toBoolean(Top)
+when X =/=K Bot
+
+rule greaterEqual(X, Top) => *toBoolean(Top)
+when X =/=K Bot
 
 rule [greaterEqual-int]:
 	<k> greaterEqual(I1:Int, I2:Int) => I1 >=Int I2 ... </k>
