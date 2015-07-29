@@ -52,7 +52,8 @@ Notes about the examples
 			echo $k["bar"];
 		}
 
-		
+- Superglobals cannot be used as variable variables: weverca reports a false alarm
+  (Pixy and RIPS doesn't issue any error, but they don't even support variable variables I guess)		
 
 			
 
