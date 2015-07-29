@@ -33,11 +33,15 @@ module ALPHA
 		    #fi
 
     	// anstraction of strings
-    	rule    alpha(S:String) => S
+    rule    alpha(S:String) => S
     
     	// abstraction of booleans
-    	rule    alpha(true) => ABoolTrue
-    	rule    alpha(false) => ABoolFalse
+    rule    alpha(true) => ABoolTrue
+    rule    alpha(false) => ABoolFalse
+		
+	//Null
+	
+	rule alpha(NULL) => NULL
 
 	// abstraction of reference counters
 	syntax K ::= "alphaRC" "(" K ")" [function]

@@ -36,7 +36,7 @@ rule lub(V1:AFloat,V2:AFloat) => lub_AFloat(V1,V2)
 rule lub(V1:ABool,V2:ABool) => lub_ABool(V1,V2)
 rule lub(V1:AString,V2:AString) => lub_AString(V1,V2)
 rule lub(V1,V2) => Top
-     when (V1 =/=K Bot) andBool (V2 =/=K Bot) andBool (getKLabel(V1) =/=KLabel getKLabel(V2)) andBool notBool (isBoolType(V1) andBool isBoolType(V2))
+when (V1 =/=K Bot) andBool (V2 =/=K Bot) andBool (getKLabel(V1) =/=KLabel getKLabel(V2)) andBool notBool (isBoolType(V1) andBool isBoolType(V2))
 
 
 syntax 	Bool ::= K "<Lattice" K		[function]
@@ -184,9 +184,9 @@ syntax  ABool ::= "lub_ABool" "(" ABool "," ABool ")" [function]
 
 
 rule 	lub_ABool(ABoolBot,ABoolBot) 		=> ABoolBot
-rule 	lub_ABool(ABoolBot,ABoolTrue) 		=> ABoolBot
-rule 	lub_ABool(ABoolBot,ABoolFalse) 		=> ABoolBot
-rule 	lub_ABool(ABoolBot,ABoolTop) 		=> ABoolBot
+rule 	lub_ABool(ABoolBot,ABoolTrue) 		=> ABoolTrue
+rule 	lub_ABool(ABoolBot,ABoolFalse) 		=> ABoolFalse
+rule 	lub_ABool(ABoolBot,ABoolTop) 		=> ABoolTop
 
 rule 	lub_ABool(ABoolTrue,ABoolBot) 		=> ABoolBot
 rule 	lub_ABool(ABoolTrue,ABoolTrue) 		=> ABoolTrue
@@ -230,15 +230,11 @@ rule	lub_AString(S1:String,S2:String) => AStringTop when (S1 =/=String S2)
 	   rule AisNull(OID(_,_,_)) =>ABoolFalse
 	   rule AisNull(NULL) =>ABoolTrue
 	   rule AisNull(Top) =>ABoolTop
+	   rule AisNull(X:AInt) => ABoolFalse
+	   rule AisNull(X:AFloat) => ABoolFalse
+	   rule AisNull(X:AString) => ABoolFalse
+	   rule AisNull(X:ABool) => ABoolFalse
 	   
-	   rule AisNull(D:DomainValue) => AisNull(generalize(D))
-	   when D =/=K NULL andBool D =/=K Top
-	   
-	   rule AisNull( VE(V,E)) =>ABoolTop
-	   when MayBeNull inList E
-	   
-	   rule AisNull( VE(V,E)) =>ABoolFalse
-	   when notBool(MayBeNull inList E)
 	   
 	   rule AisString( Array(_,_)) =>ABoolFalse
 	   rule AisString(OID(_,_,_)) =>ABoolFalse
@@ -284,9 +280,8 @@ rule	lub_AString(S1:String,S2:String) => AStringTop when (S1 =/=String S2)
 	   rule AisNumber(X:AString) =>ABoolFalse
 	   rule AisNumber(NULL) =>ABoolFalse
 	   rule AisNumber(Top) =>ABoolTop
-	  
-	   rule AisNumericString((AStringTop,_)) =>ABoolTop
-	   rule AisNumericString((S:String, L)) =>ABoolTop //RR : we may be able to get some precision here, leaving it as is since our current isNumeric is untrusted
+	 
+	   rule AisNumericString(_) => ABoolTop //RR : we may be able to get some precision here, leaving it as is since our current isNumeric is untrusted
 
 
 rule hasInfinitelyManyChildren(X:AString) => false

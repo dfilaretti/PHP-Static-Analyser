@@ -241,143 +241,90 @@ module FORWARD-OPS
 //@ \section{Type conversion primitives}
 
 
-syntax K ::= "*toString" "(" LanguageValue ")"  
+syntax AString ::= "*toString" "(" LanguageValue ")"   [function]
 
-rule	*toString(_) => AStringTop
+
+rule 	*toString(I:AInt) => AStringTop
+rule 	*toString(F:AFloat) => AStringTop
+rule 	*toString(S:AString) => S
+rule 	*toString(ABoolTop) => AStringTop
+rule 	*toString(Top) => AStringTop
+rule	*toString(ABoolTrue) => "1"
+rule	*toString(ABoolFalse) => ""
+
 // TODO: define!!!
 
-/*
-rule [toString-true]:
-	<k> *toString(true) => "1" ... </k>
-	<trace> Trace:List => Trace ListItem("toString-true") </trace>
-	[internal]
+rule	*toString(_:CompoundValue) => AStringTop
 
-rule [toString-false]:
-	<k> *toString(false) => "" ... </k>
-	<trace> Trace:List => Trace ListItem("toString-false") </trace>
-	[internal]
-
-rule [toString-int]:   
-	<k> *toString(I:Int) => Int2String(I) ... </k>
-	<trace> Trace:List => Trace ListItem("toString-int") </trace>
-	[internal]
-
-rule [toString-float]:   
-	<k> *toString(F:Float) => Float2String(F) ... </k>
-	<trace> Trace:List => Trace ListItem("toString-float") </trace>
-	[internal]
-
-rule [toString-string]:   
-	<k> *toString(S:String) => S ... </k>
-	<trace> Trace:List => Trace ListItem("toString-string") </trace>
-	[internal]
-
-rule [toString-array]:   
-	<k> *toString(Arr:Array) => "Array" ... </k>
-	<trace> Trace:List => Trace ListItem("toString-array") </trace>
-	[internal]
-	
-rule [toString-object]:   
-	<k> *toString(Obj:Object) => ERROR("Object of class %s could not be converted to string in %s on line %d") ... </k>
-	<trace> Trace:List => Trace ListItem("toString-array") </trace>
-	[internal, error]
-
-rule [toString-null]:   
-	<k> *toString(NULL) => "" ... </k>
-	<trace> Trace:List => Trace ListItem("toString-null") </trace>
-	[internal]
-*/
 
 
     // to boolean
-    syntax  K ::= "*toBoolean" "(" LanguageValue ")" [strict]
+    syntax ABool ::= "*toBoolean" "(" LanguageValue ")" [function]
 
-    rule    [toBoolean-bool]:    
-	        <k> *toBoolean(B:ABool) => B ... </k>
+    rule *toBoolean(B:ABool) => B 
 	        [internal]
 	
-    rule    [toBoolean-int-zero]:
-	        <k> *toBoolean(AIntZero) => ABoolFalse ... </k>
+    rule *toBoolean(AIntZero) => ABoolFalse 
 	        [internal]
 
-    rule    [toBoolean-int]:
-	        <k> *toBoolean(N:AInt) => ABoolTrue ... </k>
+    rule  *toBoolean(N:AInt) => ABoolTrue 
 	        when (N =/=K AIntZero)
 	        [internal]
 
-    rule    [toBoolean-float-zero]:
-	        <k> *toBoolean(AFloatZero) => ABoolFalse ... </k>
+    rule *toBoolean(AFloatZero) => ABoolFalse 
 	        [internal]
 
-    rule    [toBoolean-float]:    
-	        <k> *toBoolean(F:AFloat) => ABoolTrue ... </k>
+    rule *toBoolean(F:AFloat) => ABoolTrue 
 	        when (F =/=K AFloatZero)
 	        [internal]
 
-    rule    [toBoolean-empty-string]:    
-	        <k> *toBoolean("") => ABoolFalse ... </k>
+    rule *toBoolean("") => ABoolFalse 
 	        [internal]
 
-    rule    [toBoolean-string-zero]:    
-	        <k> *toBoolean("0") => ABoolFalse ... </k>
+    rule *toBoolean("0") => ABoolFalse 
 	        [internal]
 
-    rule    [toBoolean-string]:    
-	        <k> *toBoolean(S:String) => ABoolTrue ... </k>
+    rule  *toBoolean(S:String) => ABoolTrue 
 	        when notBool ((S ==String "") orBool (S ==String "0"))
 	        [internal]
 
-    rule    [toBoolean-string]:    
-	        <k> *toBoolean(AStringTop) => ABoolTop ... </k>
-	        [internal]
+    rule  *toBoolean(AStringTop) => ABoolTop [internal]
+    rule  *toBoolean(Top) => ABoolTop [internal]
 
-    rule    [toBoolean-empty-array]:    
-	        <k> *toBoolean(Array(_,Elems)) => ABoolFalse ... </k>
+    rule *toBoolean(Array(_,Elems)) => ABoolFalse 
 	        when (Elems ==List .List)
 	        [internal]
 
-    rule    [toBoolean-non-empty-array]:    
-	        <k> *toBoolean(Array(_,Elems)) => ABoolTrue ... </k>  
+    rule *toBoolean(Array(_,Elems)) => ABoolTrue   
 	        when (notBool (Elems ==List .List))
 	        [internal]
 
 // Object case: we add it, even if the online docs says this behaviour is "PHP 4 only"
 // Since the expected behaviour for PHP 5 is not mentioned, I guess it is undefined..?
 
-    rule    [toBoolean-object]:    
-	        <k> *toBoolean(OID(L,_,_) => convertToLanguageValue(L)) ... </k>  
+    rule  *toBoolean(OID(L,_,_) => convertToLanguageValue(L))   
 	        [internal]
 
-    rule    [toBoolean-null]:        
-	        <k> *toBoolean(NULL) => ABoolFalse ... </k>
-	        [internal]
+    rule   *toBoolean(NULL) => ABoolFalse   [internal]
 
     // to float
-    syntax  K ::= "*toFloat" "(" LanguageValue ")"  [strict]
-
-    rule    [toFloat-false]:
-	        <k> *toFloat(BFalse) => 'DNumber("0.0") ... </k>
-	        [internal]
+	syntax  AFloat ::= "*toFloat" "(" K ")"  [function]
+    rule   *toFloat(ABoolFalse) => AFloatZero  [internal]
 	
-    rule    [toFloat-true]:
-	        <k> *toFloat(BTrue) => 'DNumber("1.0") ... </k>
-	        [internal]
+    rule  *toFloat(ABoolTrue) =>   AFloatPos  [internal]
 
-    rule    [toFloat-int]:
-	        <k> *toFloat(I:AInt) => AFloatTop ... </k> // TODO: fix!
-	        [internal]
+    rule  *toFloat(AIntPos) => AFloatPos    [internal]
+	rule  *toFloat(AIntNeg) => AFloatNeg    [internal]
+	rule  *toFloat(AIntZero) => AFloatZero   [internal]
+		
+	rule  *toFloat(AIntTop) => AFloatTop  [internal]
+	rule  *toFloat(Top) => AFloatTop  [internal]
 
-    rule    [toFloat-float]:
-	        <k> *toFloat(F:AFloat) => F ... </k>
-	        [internal]
+    rule  *toFloat(F:AFloat) => F [internal]
 
-    rule    [toFloat-string]:
-	        <k> *toFloat(S:String) => *toFloat(string2Number(S)) ... </k>
-	        [internal]
+    rule *toFloat(S:String) => *toFloat(string2Number(S)) [internal]
 	
-    rule    [toFloat-compound]:	
-	        <k> *toFloat(O:CompoundValue) => WARNING("conversion of compound types to integer is undefined (http://www.php.net/manual/en/language.types.integer.php)\n") ~> 1.0 ... </k>
-	        [internal, error]
+    rule  *toFloat(O:CompoundValue) => WARNING("conversion of compound types to integer is undefined (http://www.php.net/manual/en/language.types.integer.php)\n") ~> 1.0   [internal, error]
 
 //@ \section{Logical ops}
 
@@ -393,7 +340,7 @@ rule [toString-null]:
 
 
 
-    syntax  ABool ::= AInt "==AInt" AInt
+    syntax  ABool ::= AInt "==AInt" AInt [function]
 
     rule    AIntBot ==AInt AIntBot         => ABoolBot
     rule    AIntBot ==AInt  AIntNeg        => ABoolBot
@@ -426,7 +373,7 @@ rule [toString-null]:
     rule    AIntTop ==AInt  AIntTop        => ABoolTop
 
 
-    syntax  ABool ::= AFloat "==AFloat" AFloat
+    syntax  ABool ::= AFloat "==AFloat" AFloat [function]
     
 	rule    AFloatBot ==AFloat AFloatBot         => ABoolBot
     rule    AFloatBot ==AFloat  AFloatNeg        => ABoolBot
@@ -458,7 +405,7 @@ rule [toString-null]:
     rule    AFloatTop ==AFloat  AFloatPos        => ABoolTop
     rule    AFloatTop ==AFloat  AFloatTop        => ABoolTop
 	
-    syntax  ABool ::= ABool "==ABool" ABool
+    syntax  ABool ::= ABool "==ABool" ABool [function]
     
 	rule ABoolBot ==ABool _ => ABoolBot
 	rule _ ==ABool ABoolBot => ABoolBot
@@ -477,10 +424,20 @@ rule [toString-null]:
 	
 	rule ABoolFalse ==ABool ABoolTrue => ABoolFalse
 	
-    syntax  ABool ::= AString "==AString" AString
+    syntax  ABool ::= AString "==AString" AString [function]
     
-	rule S1 ==AString S2 => S1 ==String S2
-
+	
+	rule S1:String ==AString S2:String => ABoolTrue
+	when S1 ==String S2
+	
+	rule S1:String ==AString S2:String => ABoolFalse
+	when notBool(S1 ==String S2)
+	
+	rule AStringTop ==AString S => ABoolTop
+	when S =/=K AStringBot
+	
+	rule S ==AString AStringTop => ABoolTop
+	when S =/=K AStringBot
 	
 	
 	rule greater(AIntZero, AIntZero) => ABoolFalse
@@ -660,19 +617,21 @@ rule [internal-print]:
 	rule strlen(AStringBot) => AIntBot
 
 	syntax Bool ::= "isNumericString" "(" AString ")" [function]
-
+	
+	//RR-FIXME : Not trustworthy, relies on K behaviour
 	rule isNumericString(S:String) => S isNumeric
 		
-	rule S1:String ==AString S2:String => S1 ==String S2
 
 //string2Number
 
-	syntax K ::= "string2Number" "(" AString ")"
+	rule string2Number(_) => AIntTop	//RR-FIXME : quick fix, maybe should say Top because it could be a float ?
 
-	rule [string2Number-empty]:
-	<k> string2Number("") => 0 ... </k>
-	<trace> Trace:List => Trace ListItem("string2Number-empty") </trace>
-	[internal]
+
+	syntax PlainLanguageValue ::= "string2Number" "(" AString ")"	[function]
+//RR-FIXME : concrete case (relies on K behaviour, not very trustworthy)
+
+	/*
+	rule string2Number("") => AIntZero ... [internal]
 
 	// one character string
 
@@ -728,6 +687,6 @@ rule [internal-print]:
 	#isDigit(substrString(S, 0, 1))) orBool
 	((substrString(S, 0, 2) ==String "-.") andBool (#isDigit(substrString(S, 2, 3))))
 	[internal]
-		
+*/	
 	
 endmodule
