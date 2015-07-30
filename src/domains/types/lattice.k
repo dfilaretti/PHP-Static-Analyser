@@ -60,7 +60,7 @@ module LATTICE
 	   rule specify(VE(V:ABoolValue, E)) => specify_ABool(VE(V,E))
 	   rule specify(VE(NULL, _) ) => NULL
 //SM missing case?
-	   rule specify(VE(Top, _) ) => Top
+//	   rule specify(VE(Top, _) ) => Top
 	  
 	   rule specify_AInt ( VE(I:AIntValue, E) ) => (I,E)
 	   rule specify_AFloat ( VE(F:AFloatValue, E) ) => (F,E)
@@ -75,9 +75,9 @@ module LATTICE
 	   
 	   
 	   rule lub(V1:DomainValue, V2:DomainValue) => specify(lub_Domain(V1, V2))
-	   when V1 =/=K Bot andBool V2 =/=K Bot
 	   
 	   //TODO : lub (Array(), NULL)
+           //SM yes, we need this, see examples
 	   //rule lub(A:Array, B:K) => Top
 	  // when A =/=K B
 	   
@@ -184,7 +184,8 @@ module LATTICE
 	   
 	   syntax List ::= "ErrsOfErr" "(" ErrFlag ")" [function]
 	   
-	   rule ErrsOfErr(MayBeNull) => ListItem(NullTypeConversion)
+	   rule ErrsOfErr(MayBeNull) => ListItem(NullTypeConversion) 
+	   //SM this is called once we use the NULL information and the resulting value we know is not NULL
 	   
 	   rule ErrsOfErr(VisibilityErr) => ListItem(VisibilityErr)
 	   

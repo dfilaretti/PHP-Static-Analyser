@@ -289,9 +289,6 @@ module OPS
 	rule *valueToString(NULL) => ""
 	
 	syntax AString ::= "*toString" "(" LanguageValue ")" [function]
-
-	//TODO : change this when numeric strings get added
-	//TODO : find a way to add traces ?
 	
 	rule  *toString(I:AInt) => (*valueToString(AIntOfTuple(I)), addErrFlag(ImplicitTypeConversion, FilterErrFlags(getErrFlags(I)))) [internal]
 
