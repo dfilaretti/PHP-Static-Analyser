@@ -42,9 +42,25 @@ syntax ABool ::= "lub_ABool" "(" ABool "," ABool ")" [function]
 syntax AString ::= "lub_AString" "(" AString "," AString ")" [function]
 syntax ARefCount ::= "lub_ARefCount" "(" ARefCount "," ARefCount ")" [function]
 
-rule AisString(X) => isString(X)
-rule AisNull(X) => isNull(X)
-rule AisBoolean(X) => isBool(X)	   
+rule AisString(X) => isStringType(X)
+
+rule AisBoolean(X) => isBoolType(X)	   
+
+rule AisNull( Array(_,_)) =>false
+rule AisNull(OID(_,_,_)) =>false
+rule AisNull(X:AInt) =>false
+rule AisNull(X:AFloat) =>false
+rule AisNull(X:ABool) =>false
+rule AisNull(X:AString) =>false
+rule AisNull(NULL) =>true
+
+rule AisNumber( Array(_,_)) =>false
+rule AisNumber(OID(_,_,_)) =>false
+rule AisNumber(X:AInt) =>true
+rule AisNumber(X:AFloat) =>true
+rule AisNumber(X:ABool) =>false
+rule AisNumber(X:AString) =>false
+rule AisNumber(NULL) =>false
 
 rule AisObject( Array(_,_)) =>false
 rule AisObject(OID(_,_,_)) =>true
@@ -63,5 +79,7 @@ rule AisArray(X:AString) =>false
 rule AisArray(NULL) =>false
 
 rule AisNumericString(X) => isNumericString(X)
+
+rule intersects(X,H) => X ==K H
 
 endmodule

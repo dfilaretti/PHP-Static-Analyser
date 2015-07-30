@@ -276,6 +276,7 @@ rule [string2Number-float-minus-dot]:
 
 */
 
+/*
 // TODO: move to domains
 syntax K ::= "extractIntSubstring" "(" String "," String "," Int "," Type ")"
 
@@ -343,7 +344,7 @@ rule [extract-int-substring-4]:
 			(Index <Int lengthString(Origin)))
 	[internal]
 
-/* the entire string represent a number  */
+// the entire string represent a number  
 
 rule [extract-int-substring-5]: 	
 	<k> extractIntSubstring(
@@ -366,7 +367,8 @@ rule [extract-int-substring-6]:
 	<trace> Trace:List => Trace ListItem("extract-int-substring-6") </trace>				
 	when Index ==Int lengthString(Origin)
 	[internal]
-		
+	*/	
+	
 /*@ to string */
 
 

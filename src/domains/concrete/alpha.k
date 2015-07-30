@@ -9,6 +9,7 @@ module ALPHA
 	rule    alpha(X:Float) => X
 	rule    alpha(X:String) => X
 	rule    alpha(X:Bool) => X
+	rule	alpha(NULL) => NULL
 
 	syntax K ::= "alphaRC" "(" K ")" [function]
 
