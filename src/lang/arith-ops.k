@@ -399,6 +399,7 @@ when notBool ((valid(AisObject(L)) andBool valid(AisObject(R))) orBool (unsatisf
 //if both args are string or numbers, compare as numbers (the case where they are both strings is handled in step 0)
 //"resource" types should be handled here and converted to numbers as well
 
+//RR : should this really be *toFloat ?
 rule comparisonTypeJuggling3(Op, L, R) => comparison(Op, *toFloat(L), *toFloat(R)) 	
 when ((valid(AisString(L)) orBool valid(AisNumber(L))) andBool (valid(AisString(R)) orBool valid(AisNumber(R))))
 
@@ -441,10 +442,10 @@ rule comparisonTypeJuggling5(Op, L, R) => comparisonTypeJuggling6(Op, L, R)
 when (unsatisfiable(AisObject(L)) andBool unsatisfiable(AisObject(R)))
 
 rule comparisonTypeJuggling5(Op, L, R) => lub(comparisonTypeJuggling6(Op, L, R), comparisonRIsGreater(Op)) 
-when (unsatisfiable(AisObject(L)) andBool notBool(unsatisfiable(AisObject(R))))
+when (unsatisfiable(AisObject(L)) andBool (notBool(unsatisfiable(AisObject(R)) orBool valid(AisObject(R)))))
 
 rule comparisonTypeJuggling5(Op, L, R) => lub(comparisonTypeJuggling6(Op, L, R), comparisonLIsGreater(Op)) 
-when (unsatisfiable(AisObject(R)) andBool notBool(unsatisfiable(AisObject(L))))
+when (unsatisfiable(AisObject(R)) andBool (notBool(unsatisfiable(AisObject(L)) orBool valid(AisObject(L)))))
 
 rule comparisonTypeJuggling5(Op, L, R) => *toBoolean(Top) 		//this should be a lub of many things, but by construction it always evaluates to the top Boolean
 when (notBool(unsatisfiable(AisObject(R))) andBool notBool(unsatisfiable(AisObject(L))) andBool notBool(valid(AisObject(L))) andBool notBool(valid(AisObject(R))))
