@@ -353,9 +353,8 @@ module OPS
 	
 	syntax AString ::= "*toString" "(" LanguageValue ")" [function]
 
-	//TODO : change this when numeric strings get added
-	//TODO : find a way to add traces ?
-	
+
+
 	rule  *toString(I:AInt) => (*valueToString(lub_Value(*valueToString(AInt), Bot)), addErrFlag(ImplicitTypeConversion, FilterErrFlags(getErrFlags(I)))) [internal]
 
 	rule *toString(B:ABool) => (AStringOfTuple(B), addErrFlag(ImplicitTypeConversion, FilterErrFlags(getErrFlags(B))))	[internal]

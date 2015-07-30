@@ -122,9 +122,9 @@ rule peek1(L,'ListWrap(.KList)) => 'Literal("peek") // peek2(L)
 rule peek1(L,'ListWrap('Param(V:Value),, Args:KList)) => peek1(L ListItem(V),'ListWrap(Args:KList)) 
 context peek1(L:List,'ListWrap('Param(HOLE),, Args:KList))
 //syntax K ::= "peek2(" List ")"
-// rule peek2(0,V1,V2) => compare matrix addresses 
-// rule peek2(1,V1,V2) => compare heap addresses
-// rule peek2(2,V1,V2) => compare values
+// rule peek2(0,V1,V2) => peek2(0,convertToLoc(V1),,convertToLoc(V2)) compare matrix addresses 
+// rule peek2(1,V1,V2) => convertToLoc(V1) then manually of via some existing function compare heap addresses
+// rule peek2(2,V1,V2) => convertToLanguageValue(V1) compare values
 
 // ---------------------------------------------------------------------------------------------
 /*@ \subsection{Print} 

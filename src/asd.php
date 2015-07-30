@@ -1,11 +1,25 @@
-<?= x($y="y",$z="z") ?>
+
 <? // README: feel free to add examples to this file, but:
    // don't delete existing ones unless they are superseded by new ones;
    // write comments to explain examples;
    // ensure examples are commented out individually when commiting file to repo.
 
-$x=$y.$z;
+// ERROR!!!!!!!!
+//if (1){$x[0]=1;} // weird, array is in memory but not reachable from matrix
+//if (1){$x[0]=1;} else {$x=1;} // would work with lub array-int = top
 
+//SM aliasing non-existing element
+/*
+$x["a"] = 1;
+$x["a"] =& $y; // works fine, does strong is key is precise, weak if not precise, and creates y with null
+*/
+
+//WTF???
+/*
+$y=NULL;
+$x["a"] = "a1";
+if (1){$x["a"] =& $y;} else {$x["a"] = "a2";} 
+*/
 
 //SM testing simple while
 /*
@@ -24,13 +38,13 @@ if (1){$x["b"] =& $x["a"];} else {$x["b"] = 1;}
 */
 
 /*
-$y = "y1";
-$x["a"] = "a1";
 //$y = "y1";
+$x["a"] = "a1";
+$y = "y1";
 
 //if (1){$y =& $x["a"];} else {$y = "y2";} // OK
 //if (1){$x["a"] =& $y;} // BROKEN! alias to y1 instead of stringtop 
-if (1){$y =& $x["a"];} // NOT BROKEN
+if (1){$y =& $x["a"];} else {$y=1;} // NOT BROKEN
 */
 
 
