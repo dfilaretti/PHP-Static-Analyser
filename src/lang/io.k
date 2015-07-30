@@ -106,9 +106,25 @@ rule [echo-more-args]:
 // ---------------------------------------------------------------------------------------------
 
 rule [inline-echo]: 
-	<k> 'InlineEcho('EchoOpenTag(.KList),,K:K,,_,,'CloseTag(.KList)) => 'Echo('ListWrap(K)) ... </k>
+	<k> 'InlineEcho('EchoOpenTag(.KList),,K:K,,_,,'CloseTag(.KList)) => 
+               // 'Echo('ListWrap(K)) 
+               //SM debugging trick
+	       peek(K)
+	       ... 
+	</k>
 	<trace> Trace:List => Trace ListItem("inline-echo") </trace>
 	[structural] 
+
+syntax K ::= "peek(" K ")" //NOT strict
+rule peek('FunctionCall('FunctionName(_),,Params,,_)) => peek1(.List,Params)
+syntax K ::= "peek1(" List "," K ")"
+rule peek1(L,'ListWrap(.KList)) => 'Literal("peek") // peek2(L)
+rule peek1(L,'ListWrap('Param(V:Value),, Args:KList)) => peek1(L ListItem(V),'ListWrap(Args:KList)) 
+context peek1(L:List,'ListWrap('Param(HOLE),, Args:KList))
+//syntax K ::= "peek2(" List ")"
+// rule peek2(0,V1,V2) => compare matrix addresses 
+// rule peek2(1,V1,V2) => compare heap addresses
+// rule peek2(2,V1,V2) => compare values
 
 // ---------------------------------------------------------------------------------------------
 /*@ \subsection{Print} 

@@ -1,7 +1,10 @@
+<?= x($y="y",$z="z") ?>
 <? // README: feel free to add examples to this file, but:
    // don't delete existing ones unless they are superseded by new ones;
    // write comments to explain examples;
    // ensure examples are commented out individually when commiting file to repo.
+
+$x=$y.$z;
 
 
 //SM testing simple while
@@ -20,7 +23,7 @@ $x["b"] = "b1";
 if (1){$x["b"] =& $x["a"];} else {$x["b"] = 1;} 
 */
 
-
+/*
 $y = "y1";
 $x["a"] = "a1";
 //$y = "y1";
@@ -28,7 +31,7 @@ $x["a"] = "a1";
 //if (1){$y =& $x["a"];} else {$y = "y2";} // OK
 //if (1){$x["a"] =& $y;} // BROKEN! alias to y1 instead of stringtop 
 if (1){$y =& $x["a"];} // NOT BROKEN
-
+*/
 
 
 
