@@ -312,17 +312,16 @@ rule [comparisonPreprocess-RHS2Loc]:
 rule [comparisonPreprocess-LHS2LangValue]:
 	<k> comparisonPreprocess(_,(L':Loc => V),_) ... </k>
 	<thematrix> ... L' |-> L ... </thematrix>	
-	<heap> ... L |-> zval(V:Value,_,_,_) ... </heap>
+	<heap> ... L |-> zval(V:PlainLanguageValue,_,_,_) ... </heap>
 	<trace> Trace:List => Trace ListItem("comparisonPreprocess-LHS2LangValue") </trace>
-	//when notBool(V isCompoundValue)
+
 	[intermediate]
 			
 rule [comparisonPreprocess-RHS2LangValue]: 	
 	<k> comparisonPreprocess(_,_,(L':Loc => V)) ... </k>
 	<thematrix> ... L' |-> L ... </thematrix>	
-	<heap> ... L |-> zval(V:Value,_,_,_) ... </heap>
+	<heap> ... L |-> zval(V:PlainLanguageValue,_,_,_) ... </heap>
 	<trace> Trace:List => Trace ListItem("comparisonPreprocess-RHS2LangValue") </trace>
-	//when notBool(V isCompoundValue)
 	[intermediate]
 
 // Type juggling (see table "Comparison with Various Types" at http://php.net/manual/en/language.operators.comparison.php)

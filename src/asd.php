@@ -1,7 +1,10 @@
+<?= x($y="y",$z="z") ?>
 <? // README: feel free to add examples to this file, but:
    // don't delete existing ones unless they are superseded by new ones;
    // write comments to explain examples;
    // ensure examples are commented out individually when commiting file to repo.
+
+$x=$y.$z;
 
 
 //SM testing simple while
@@ -10,13 +13,33 @@ $x=1;
 while(true){$x = $x+1;} //loop detected, all good
 */
 
+//SM simple may aliasing
+// both work like a charm
+/*
+//$y = "y1";
+//if (1){$x = 1;} else {$x =& $y;} 
+$x["a"] = "a1";
+$x["b"] = "b1";
+if (1){$x["b"] =& $x["a"];} else {$x["b"] = 1;} 
+*/
+
+/*
+$y = "y1";
+$x["a"] = "a1";
+//$y = "y1";
+
+//if (1){$y =& $x["a"];} else {$y = "y2";} // OK
+//if (1){$x["a"] =& $y;} // BROKEN! alias to y1 instead of stringtop 
+if (1){$y =& $x["a"];} // NOT BROKEN
+*/
+
+
 
 //SM testing array read/write
-
+/*
 $y = "y1";
 
 $x[1] = 1;
-$x[2] = 2;
 $x["c"] = "c1";
 $x["d"] = "d1";
 $x["e"] =& $x["d"]; //strong aliasing
@@ -29,14 +52,18 @@ $x["e"] =& $x["d"]; //strong aliasing
 //(B) perfect, including maybenull
 if (1){$w="h";}else{$w="a";}
 
+//(E) WRONG (both ARC2, but not aliased, y gets y1, f gets stringtop
+// once this is fixed, check that (C) will probably break aliasing with y (erroneously)
+if (1){$x["f"] =& $y;} else {$x["f"] = "f1";} // may aliasing
+
 //(C) weird, without (A) or (B) gives "w1"-maybenull, but null shouldn't be here.
 // is it propagated by mystake by key that has nulltypeconversion?
-$x[$w] = "w1";
+//$x[$w] = "w1";
 
 // with (A) ok: $y gets ARC2 Top and all other keys weakly aliased to it 
 // with (B)
 //$x[$w] =& $y;
-/**/
+*/
 
 
 //SM testing globals/superglobals resolution

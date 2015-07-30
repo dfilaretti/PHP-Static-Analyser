@@ -293,15 +293,18 @@ rule isLiteral(V) => false
 	when (getKLabel(V) =/=KLabel 'lit)
 
 syntax Bool ::= "locHoldsArray" "(" Map "," Loc ")" [function]
-rule locHoldsArray(Mem:Map(L |-> zval(V:Value,_,_,_)), L) => isArrayType(V)
+rule locHoldsArray(Mem:Map(L |-> zval(V:PlainLanguageValue,_,_,_)), L) => isArrayType(V)
 
 syntax Bool ::= "locHoldsObject" "(" Map "," Loc ")" [function]
-rule locHoldsObject(Mem:Map(L |-> zval(V:Value,_,_,_)), L) => isObjectType(V)
+rule locHoldsObject(Mem:Map(L |-> zval(V:PlainLanguageValue,_,_,_)), L) => isObjectType(V)
 
 syntax Bool ::= "locsHoldSameCompound" "(" Map "," Loc "," Loc ")" [function]
 rule locsHoldSameCompound(M, V1, V2) => 
 	(locHoldsArray(M,V1) andBool (locHoldsArray(M,V2))) orBool 
 	(locHoldsObject(M,V1) andBool (locHoldsObject(M,V2)))
+
+
+
 
 // ---------------------------------------------------------------------------------------------
 /*@ \subsection{Zvalues} 
@@ -310,7 +313,7 @@ rule locsHoldSameCompound(M, V1, V2) =>
 		which is called ZValue, which we define as follows:	 */
 // ---------------------------------------------------------------------------------------------
 
-syntax Zval ::= "zval" "(" Value "," Type "," ARefCount "," Bool ")"
+syntax Zval ::= "zval" "(" PlainLanguageValue "," Type "," ARefCount "," Bool ")"
 	                               
 /*@ We also define a number of low-level rules for reading and writing a given field of a 
 	ZValue, as well as for creating or destroying them. Those operations will be used as 
@@ -372,7 +375,7 @@ rule [zval-write-bot]:
 	[internal]
  
 rule [zval-write-value]:
-	<k> zvalWrite(L',@Value,V:LanguageValue) => . ... </k>	
+	<k> zvalWrite(L',@Value,V:PlainLanguageValue) => . ... </k>	
 	<thematrix> ... L' |-> L ... </thematrix> 
 	<heap> ... L |-> zval(_=> V,_,_,_) ... </heap>
 	<trace> Trace:List => Trace ListItem("zval-write-value") </trace>
@@ -584,6 +587,24 @@ rule [dec-refCount-array-elems-nil]:
 	<k> decRefCountArrayElems(L:Loc,.List) => .K ... </k>
 	<trace> Trace:List => Trace ListItem("dec-refCount-array-elems-nil") </trace>
 	[internal]
+
+
+// ---------------------------------------------------------------------------------------------
+/*@ \subsection{sref} */
+// ---------------------------------------------------------------------------------------------
+
+// sref is used to remember the key X once the reference has been resolved to L
+// this may we can convert a missing key to the last+1 integer key
+syntax Loc ::= "sref" "(" Loc "," Key ")"
+
+// in genereal there may be other places that need a L:Loc and get instead a sref(L,X):Loc
+// and we need to force the conversion with sref2loc below 
+syntax K ::= "sref2loc" "(" LocB ")" [strict]
+rule sref2loc(sref(L,X)) => L 
+rule sref2loc(locNull) => locNull 
+rule sref2loc(Bot) => Bot 
+rule ref(sref(L,X) => L,Y)
+
 
 // ---------------------------------------------------------------------------------------------
 /*@ \subsection{Operations on Arrays} */
@@ -930,17 +951,6 @@ rule [write-loc-exists]:
 	<trace> Trace:List => Trace ListItem("write-loc-exists======================>") ListItem(K2String(V1)) </trace>
 	[internal]
 
-
-
-/* OLD
-rule [write-loc-undef]:    
-	<k> write(V:KResult, L:Loc) => zvalCreate(L, V, typeOf(V), 0, false) ...  </k>
-	<heap> Mem:Map </heap>
-	<trace> Trace:List => Trace ListItem("write-loc-undef") </trace>
-	when (notBool (L in keys(Mem))) andBool (L =/=K locNull)                                                                                                         	
-	[internal]
-*/
-
 rule [write-loc-undef]:    
 	<k> write(V:KResult,L':Loc,_) => 
 		zvalCreate(L', V, typeOf(V), alphaRC(0), false) 
@@ -1046,7 +1056,7 @@ rule [copyArrayMembers-cons-no-aliasing]:
 		ArrayCreateElem(L1,Key,Visib,allocValue(V)) ~> 
 		copyArrayMembers(L1, Elems) ... </k>
 	<thematrix> ... L' |-> L ... </thematrix>	
-	<heap> ...  L |-> zval(V:Value,_,_,false) ... </heap>
+	<heap> ...  L |-> zval(V:PlainLanguageValue,_,_,false) ... </heap>
 	<trace> Trace:List => Trace ListItem("copyArrayMembers-cons-no-aliasing") </trace>
 	[intermediate]
 
@@ -1055,7 +1065,7 @@ rule [copyArrayMembers-cons-aliasing]:
 		ArrayCreateElem(L1,Key,Visib,L') ~> 
 		copyArrayMembers(L1, Elems) ... </k>
 	<thematrix> ... L' |-> L ... </thematrix>
-	<heap> ...  L |-> zval(V:Value,_,_,true) ... </heap>
+	<heap> ...  L |-> zval(V:PlainLanguageValue,_,_,true) ... </heap>
 	<trace> Trace:List => Trace ListItem("copyArrayMembers-cons-aliasing") </trace>
 	[intermediate]
     
@@ -1165,6 +1175,7 @@ rule [insert-key]:
 		insertKey(L',K,KEYS:Set,InitValue) =>
 		ArrayCreateElem(L', K, public, 
 			allocValue(mergeValuesAtLocs(InitValue,KeySet2LocSet(KEYS,ArrayElems)))) ~>
+//SM probably fully fragmented should be done here by changing initvalue to bot from nul on weak updates
 		insertKey1(L',K,KEYS,InitValue) ...
 	</k>
 	<thematrix> ... L' |-> L ... </thematrix>
@@ -1184,19 +1195,10 @@ rule [insert-key-1]:
 					H',
 					array_read_v(
 						arrayZval2ArrayProps(heap_read(H',H,L')),K)))) ~>		 
-		/*
-                //SM note that in principle in a fully-fragmented case we don't need to add null
-                // but in a partially-fragmented case we do need
-		#if (K partiallyFragmentedIn KGEQ) #then
-			'Assign(ref(L',K),,NULL) // new semantics 'Assign semantics required
-		#else .K ~>	
-		*/
 		Rget(ref(L',K)) ...
 	</k>
 	<thematrix> H' </thematrix>
 	<heap> H </heap> 
-
-
 
 
 // Given a zval containing an array, returns its property list
@@ -1324,11 +1326,10 @@ rule [rget1-array-prop-undefined]:
 		sref(locNull,X) ... 
 	</k>
 
-//SM what is going on with the rule below??
-/* TODO: decomment later!
+
 rule [rget1-obj-prop-undefined]:    
 	<k> 
-		RgetRef(ref(L':Loc, X:String), _) => 
+		RgetRef(ref(L', X), _) => 
 		NOTICE("Undefined property: %s in %s on line %d\n") ~> 
 		locNull ... </k>
 	<thematrix> 
@@ -1346,14 +1347,10 @@ rule [rget1-obj-prop-undefined]:
 	<trace> Trace:List => Trace ListItem("rget-obj-prop-undefined") </trace>
 	when notBool (E hasProperty X)
 	[internal]
-*/
 
 
 // Case 2: the key X is actually present in the array. 
 // This case resembles the original "key found" case. 
-
-// NOTE: we add here the cases for objects as well! 
-//SM why?
 
 // arrays
 rule [rget1-array-prop-literally-found]:
@@ -1363,7 +1360,6 @@ rule [rget1-array-prop-literally-found]:
 	[internal]
 
 // objects
-
 // public (i.e. no restrictions)
 rule [rget-obj-prop-public]:
 	<k> RgetRef1(L':Loc,X:AString,_,_) => sref(L2,X) ... </k>
@@ -1428,21 +1424,6 @@ rule [rget-obj-prop-private]:
 // 	 the wrong context.
 
 
-
-
-
-// SM sref is used to remember the key X once the reference has been resolved to L
-syntax Loc ::= "sref" "(" Loc "," Key ")"
-// in genereal there will be places that need a L:Loc and get instead a sref(L,X):Loc
-// and we need to force the conversion with sref2loc below 
-
-syntax K ::= "sref2loc" "(" LocB ")" [strict]
-rule sref2loc(sref(L,X)) => L 
-rule sref2loc(locNull) => locNull 
-rule sref2loc(Bot) => Bot 
-rule ref(sref(L,X) => L,Y)
-
-
 // Case 3: the key X is not present, but at least one intersecting key is present
 // In this case we insert the key using the insertKey internal operation. 
 
@@ -1463,7 +1444,7 @@ rule [rget1-array-prop-bigger]:
 rule [rget-obj-scalar]:
 	<k> RgetRef(ref(L':Loc,_),_) =>  locNull ... </k>
 	<thematrix> ... L' |-> L ... </thematrix>	
-	<heap> ... L |-> zval(V:Value,_,_,_) ... </heap>
+	<heap> ... L |-> zval(V:PlainLanguageValue,_,_,_) ... </heap>
 	<trace> Trace:List => Trace ListItem("rget-obj-scalar") </trace>
 	when (notBool (isArrayType(V))) andBool (notBool (isStringType(V))) andBool (notBool (isObjectType(V)))
 	[internal]
@@ -1573,7 +1554,7 @@ rule [lget-error-1]:
 		locNull ... 
 	</k>
 	<thematrix> ... L' |-> L ... </thematrix>  
-	<heap>... L |-> zval(V:Value,_,_,_)  ...</heap>
+	<heap>... L |-> zval(V:PlainLanguageValue,_,_,_)  ...</heap>
 	<trace> Trace:List => Trace ListItem("lget-error-1") </trace>
 	when (notBool (isArrayType(V))) andBool (notBool (isObjectType(V)))
 	[internal, error]

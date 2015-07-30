@@ -1020,12 +1020,14 @@ rule	<k> runInMem(none, _) => .  ... </k>
     rule    makeH1(H,J,ZV) => (J |-> ZV) H 
     when notBool(J in keys(H))
 
-    rule makeH1((J |-> ZV') H,J,ZV) => (J |-> ZV) H 
+//SM it looked like we were doing strong updates during merge (rule below) so i introduced mergezval 
+ //  rule makeH1((J |-> ZV') H,J,ZV) => (J |-> ZV) H 
+    rule makeH1((J |-> ZV') H,J,ZV) => (J |-> mergeZval(ZV',ZV)) H 
 
 
 
-
-
+//SM delete if we're happy with merge and aliasing
+/*
    // similar to map union, but if an element is present in both maps, 
    // the element on the RHS "wins"... 
    syntax Map ::= Map "<-" Map [function]
@@ -1035,7 +1037,7 @@ rule	<k> runInMem(none, _) => .  ... </k>
    rule H <- .Map => H
 
    // item in both maps
-   rule (H1 (J |-> V1)) <- (H2 (J |-> V2)) => (J |-> V1) (H1 <- H2)
+   rule (H1 (J |-> V1)) <- (H2 (J |-> V2)) => (J |-> V2) (H1 <- H2) //SM was V1, what would be right here anyway?
 
    // item only in left map
    rule (H1 (J |-> V1)) <- H2  => (J |-> V1) (H1 <- H2) 
@@ -1044,6 +1046,8 @@ rule	<k> runInMem(none, _) => .  ... </k>
    // item only in right map
    rule H1 <- (H2 (J |-> V2))  => (J |-> V2) (H1 <- H2) 
 	when notBool (J in keys(H1))
+*/
+
 
     // increment reference counter
     syntax Map ::= "incRCf" "(" Map "," Loc ")" [function]
@@ -1413,23 +1417,6 @@ rule	<k> runInMem(none, _) => .  ... </k>
 
 
 
-// TODO: move 
-syntax Set ::= "makeSet" "(" Set ")" [function]
-
-rule makeSet(.Set) => .Set
-rule makeSet(SetItem(I) S:Set) => SetItem(I) makeSet(S) 
-	when notBool (I in S) 
-rule makeSet(SetItem(I) S:Set) => makeSet(S) 
-	when I in S
-
-
-
-
-
-
-
-
-
     // ----- step 3: 
 
     syntax  Pair ::= "mergeArray4" "(" 
@@ -1447,8 +1434,6 @@ rule makeSet(SetItem(I) S:Set) => makeSet(S)
 	Set ","
 	Loc ")"
 	[function]
-
-    // TODO: all the following should incfement ref counter of J 
 
     // variable only in left branch - scalar - noError
     rule    mergeArray4(
@@ -1673,26 +1658,8 @@ rule makeSet(SetItem(I) S:Set) => makeSet(S)
 		H' makeH'(H',C,J),
 		H, 
 		Alpha,
-		//bagUnwrap(leftElem(mergeArray(none,needErrorMerge(Vis1,Vis2),true,none,J,ZV1,H1',H1,emptyArrayZval,.Map,.Map,.List,.Map,.Map,Alpha))))
-		mergeArray(none,none,needErrorMerge(Vis1,Vis2),true,none,J,ZV1,H1',H1,emptyArrayZval,.Map,.Map,.List,.Map,.Map,Alpha))
+mergeArray(none,none,needErrorMerge(Vis1,Vis2),true,none,J,ZV1,H1',H1,emptyArrayZval,.Map,.Map,.List,.Map,.Map,Alpha))
     when isArray_zval(ZV1) 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1724,7 +1691,7 @@ rule makeSet(SetItem(I) S:Set) => makeSet(S)
 		H' makeH'(H',C,J),
 		H, 
 		Alpha,
-		//bagUnwrap(leftElem(mergeArray(none,needErrorMerge(Vis1,Vis2),true,none,J,emptyArrayZval,.Map,.Map,ZV2,H2',H2,.List,.Map,.Map,Alpha))))
+		
 		mergeArray(none,none,needErrorMerge(Vis1,Vis2),true,none,J,emptyArrayZval,.Map,.Map,ZV2,H2',H2,.List,.Map,.Map,Alpha))
     when isArray_zval(ZV2)
 
@@ -1737,14 +1704,14 @@ rule makeSet(SetItem(I) S:Set) => makeSet(S)
 		pair(Vis1,Vis2),
 		L',L,Rc,
 		E1,H1',
-		(J1 |-> ZV1) H1,
+		(J1 |-> ZV1) H1:Map,
                 E2,H2',
-		(J2 |-> ZV2) H2,                
+		(J2 |-> ZV2) H2:Map,                
                 E,H',H,
 		Alpha,
 		pair(J1,J2),
 		C,
-		J) =>
+		J) => 
 	    mergeArray5(
 		ClassName,
 		ObjRC,
@@ -1756,18 +1723,13 @@ rule makeSet(SetItem(I) S:Set) => makeSet(S)
 		E,
 		H' makeH'(H',C,J),
 		H, 
-		Alpha,
-		//bagUnwrap(leftElem(mergeArray(none,needErrorMerge(Vis1,Vis2),false,none,J,ZV1,H1',H1,ZV2,H2',H2,.List,.Map,.Map,Alpha))))
-		mergeArray(none,none,needErrorMerge(Vis1,Vis2),false,none,J,ZV1,H1',H1,ZV2,H2',H2,.List,.Map,.Map,Alpha))
+		Alpha,	
+		mergeArray(none,none,needErrorMerge(Vis1,Vis2),false,none,J,ZV1,H1',H1,ZV2,H2',H2,.List,H' makeH'(H',C,J),H,Alpha)) 
     when isArray_zval(ZV1) andBool isArray_zval(ZV2)
 
 
 
-
-
-// OBJECT CASES HERE! :)
-
-
+// OBJECT CASES
 
     // variable only in left branch - object
     rule    mergeArray4(
@@ -1798,8 +1760,7 @@ rule makeSet(SetItem(I) S:Set) => makeSet(S)
 		H' makeH'(H',C,J),
 		H, 
 		Alpha,
-		//bagUnwrap(leftElem(mergeArray(Cl,needErrorMerge(Vis1,Vis2),true,none,J,ZV1,H1',H1,emptyArrayZval,.Map,.Map,.List,.Map,.Map,Alpha))))
-		mergeArray(Cl,Rc1,needErrorMerge(Vis1,Vis2),true,none,J,ZV1,H1',H1,emptyArrayZval,.Map,.Map,.List,.Map,.Map,Alpha))
+mergeArray(Cl,Rc1,needErrorMerge(Vis1,Vis2),true,none,J,ZV1,H1',H1,emptyArrayZval,.Map,.Map,.List,.Map,.Map,Alpha))
 
 
 
@@ -1833,8 +1794,7 @@ rule makeSet(SetItem(I) S:Set) => makeSet(S)
 		H' makeH'(H',C,J),
 		H, 
 		Alpha,
-		//bagUnwrap(leftElem(mergeArray(Cl,needErrorMerge(Vis1,Vis2),true,none,J,emptyArrayZval,.Map,.Map,ZV2,H2',H2,.List,.Map,.Map,Alpha))))
-		mergeArray(Cl,Rc2,needErrorMerge(Vis1,Vis2),true,none,J,emptyArrayZval,.Map,.Map,ZV2,H2',H2,.List,.Map,.Map,Alpha))
+	mergeArray(Cl,Rc2,needErrorMerge(Vis1,Vis2),true,none,J,emptyArrayZval,.Map,.Map,ZV2,H2',H2,.List,.Map,.Map,Alpha))
 
 
 
@@ -1869,21 +1829,7 @@ rule makeSet(SetItem(I) S:Set) => makeSet(S)
 		H' makeH'(H',C,J),
 		H, 
 		Alpha,
-		//bagUnwrap(leftElem(mergeArray(Cl,needErrorMerge(Vis1,Vis2),false,none,J,ZV1,H1',H1,ZV2,H2',H2,.List,.Map,.Map,Alpha))))
 		mergeArray(Cl,maxRC(Rc1,Rc2),needErrorMerge(Vis1,Vis2),false,none,J,ZV1,H1',H1,ZV2,H2',H2,.List,.Map,.Map,Alpha))
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1893,9 +1839,6 @@ rule makeSet(SetItem(I) S:Set) => makeSet(S)
     // ----- step 3: 
 
 
-
-
-    // TODO: should increment ref count of J 
     syntax  Pair ::= "mergeArray5" "(" 
 	OptionId  ","
 	OptionARefCount ","
@@ -1906,7 +1849,6 @@ rule makeSet(SetItem(I) S:Set) => makeSet(S)
 	List "," Map "," Map "," 
 	List "," Map "," Map ","
 	Map ","
-	//Bag ")"
 	Pair ")"
 	[function]
     
@@ -1920,10 +1862,9 @@ rule makeSet(SetItem(I) S:Set) => makeSet(S)
                 E2,H2',H2,                
                 E,H',H,
 		Alpha,
-		//<heap> H3 </heap> <thematrix> H3' </thematrix>) =>
 		pair(
 			bagWrap(<heap> H3 </heap> <thematrix> H3' </thematrix>),
-			mapWrap(Alpha1))) =>
+			mapWrap(Alpha1))) => //stopDebug(H3',Alpha1) /*
 	    mergeArray1(
 		ClassName,
 		ObjRC,
@@ -1932,12 +1873,8 @@ rule makeSet(SetItem(I) S:Set) => makeSet(S)
 		L',L,Rc,
 		E1,H1',H1,
 		E2,H2',H2,
-		E, (H' H3'), (H <- H3),  
-		//Alpha)
-		Alpha1) // FIXME FIXME FIXME
-
-
-
+		E,H3',H3,
+		Alpha1)
 
 
 /*
