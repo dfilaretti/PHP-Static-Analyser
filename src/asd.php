@@ -5,8 +5,11 @@
    // ensure examples are commented out individually when commiting file to repo.
 
 // ERROR!!!!!!!!
-//if (1){$x[0]=1;} // weird, array is in memory but not reachable from matrix
-//if (1){$x[0]=1;} else {$x=1;} // would work with lub array-int = top
+//$y="b"; // problem with or without this
+//if (1){$y="a";$x[0]="k";} else {$y=1; } // y not there, array not reachable, globals gone
+
+if (1){$x[0]=1;}  // weird, array is in memory but not reachable from matrix
+//if (1){$x[0]=1;} else {$x=1;} // (A1) lub array-int = top
 
 //SM aliasing non-existing element
 /*

@@ -120,6 +120,15 @@ when X ==K Y
 rule lub(X,Bot) => X 
 rule lub(Bot,X) => X 
 
+//SM-FIXME needs to go to domain, and needs to be generalized
+// array values should carry flag "maybenull" as well?
+
+rule lub(A:Array, B:PlainLanguageValue) => Top 
+      when notBool isArrayType(B)  
+rule lub(B:PlainLanguageValue,A:Array) => Top 
+      when notBool isArrayType(B)  
+	    
+
 syntax PlainLanguageValue ::= "glb" "(" K "," K ")" [function]
 
 rule glb(Bot,_) => Bot
@@ -200,7 +209,6 @@ rule    isArrayType(V:Array) => true
 rule    isArrayType(V:ScalarValue) => false            
 rule    isArrayType(V:Object) => false                 
 rule    isArrayType(V:SpecialValue) => false           
-
 rule    isArrayType(Top) => false      
 rule    isArrayType(Bot) => false      
 

@@ -112,7 +112,7 @@ rule    [literal-float]:
 	    [structural]
 
 rule    [literal-string]:
-	    <k> 'Literal(Str:String) => alpha(Str)	... </k>
+	    <k> 'Literal(Str:String) => alpha(Str) ... </k>
 	    <trace> Trace:List => Trace ListItem("literal-string") </trace>
 	    [structural]
 
@@ -430,6 +430,11 @@ syntax K ::= "assign0" "(" K "," K ")" [strict(1)]
 
 rule [assign-RHS2Loc-NonLiteral]:    
 	<k>  assign0(sref(L,X),V:KResult) => assign1(L,V,isGammaSingleton(X)) ... </k>
+	[intermediate]
+
+//SM this is motivated by example <? $x=1; $x[0]=2; ?>
+rule [assign-error]:    
+	<k>  assign0(locNull,_) => NULL ... </k>
 	[intermediate]
 
 

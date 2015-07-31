@@ -29,8 +29,7 @@ module LATTICE
 	
 	   syntax Scalar ::= "getValue" "(" DomainValue ")" [function]
 	   
-
-	   syntax DomainValue ::= ANum | AString | ABool | Null //| Top | Bot //SM PlainLanguageValue
+	   syntax DomainValue ::= ANum | AString | ABool | Null 
 	   
 	   syntax VEPair ::= "VE" "(" Scalar "," List ")"
 	   
@@ -59,8 +58,7 @@ module LATTICE
 	   rule specify(VE(V:AStringValue, E)) => specify_AString(VE(V,E))
 	   rule specify(VE(V:ABoolValue, E)) => specify_ABool(VE(V,E))
 	   rule specify(VE(NULL, _) ) => NULL
-//SM missing case?
-//	   rule specify(VE(Top, _) ) => Top
+	   rule specify(VE(Top, _) ) => Top
 	  
 	   rule specify_AInt ( VE(I:AIntValue, E) ) => (I,E)
 	   rule specify_AFloat ( VE(F:AFloatValue, E) ) => (F,E)

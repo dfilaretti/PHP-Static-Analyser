@@ -1658,7 +1658,7 @@ rule	<k> runInMem(none, _) => .  ... </k>
 		H' makeH'(H',C,J),
 		H, 
 		Alpha,
-mergeArray(none,none,needErrorMerge(Vis1,Vis2),true,none,J,ZV1,H1',H1,emptyArrayZval,.Map,.Map,.List,.Map,.Map,Alpha))
+mergeArray(none,none,needErrorMerge(Vis1,Vis2),true,none,J,ZV1,H1',H1,emptyArrayZval,.Map,.Map,.List,H' makeH'(H',C,J),H,Alpha))
     when isArray_zval(ZV1) 
 
 
@@ -1692,7 +1692,7 @@ mergeArray(none,none,needErrorMerge(Vis1,Vis2),true,none,J,ZV1,H1',H1,emptyArray
 		H, 
 		Alpha,
 		
-		mergeArray(none,none,needErrorMerge(Vis1,Vis2),true,none,J,emptyArrayZval,.Map,.Map,ZV2,H2',H2,.List,.Map,.Map,Alpha))
+		mergeArray(none,none,needErrorMerge(Vis1,Vis2),true,none,J,emptyArrayZval,.Map,.Map,ZV2,H2',H2,.List,H' makeH'(H',C,J),H,Alpha))
     when isArray_zval(ZV2)
 
     // variable in both branches - array 
