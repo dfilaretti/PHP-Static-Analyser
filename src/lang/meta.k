@@ -325,25 +325,59 @@ rule	<k> runInMem(none, _) => .  ... </k>
 
     	syntax  Bool ::= "(" Map "," Map "," Map "," Map ")"   
 			"|-" "isomorph"  "(" Zval "," Zval ")" [predicate]
-	
+
 	// scalar
-        rule    (_,_,_,_) |- isomorph(zval(V1:ScalarValue,_,_,_),zval(V2:ScalarValue,_,_,_)) => 
+
+//SM does not work
+
+        rule    (_,_,_,_) |- isomorph(zval(V1:NonCompoundValue,_,_,_),zval(V2:NonCompoundValue,_,_,_)) => 
 			V1 ==K V2
+
+        rule    (_,_,_,_) |- isomorph(zval(V1:CompoundValue,_,_,_),zval(V2:NonCompoundValue,_,_,_)) => false
+
+        rule    (_,_,_,_) |- isomorph(zval(V1:NonCompoundValue,_,_,_),zval(V2:CompoundValue,_,_,_)) => false
 	
 	// array 
     	rule    (H1',H1,H2',H2) |- isomorph(
 			zval(Array(_,L1:List),_,_,_),
 			zval(Array(_,L2:List),_,_,_)) => 
-				(H1',H1,H2',H2) |- isomorph1(L1,L2)
+		(H1',H1,H2',H2) |- isomorph1(L1,L2)
 		
 	// object
    	 rule    (H1',H1,H2',H2) |- isomorph(
 			zval(OID(Loc1,_,_),_,_,_),
-			zval(OID(Loc2,_,_),_,_,_)) =>
-				(H1',H1,H2',H2) |- isomorph(
+			zval(OID(Loc2,_,_),_,_,_)) => 
+		 (H1',H1,H2',H2) |- isomorph(
 					heap_read(H1',H1,Loc1),
 					heap_read(H2',H2,Loc2))
 	
+
+// doesnt work
+/*
+        rule    (_,_,_,_) |- isomorph(zval(V1:ScalarValue,_,_,_),zval(V2:ScalarValue,_,_,_)) =>  true
+		when	V1 ==K V2
+	
+        rule    (_,_,_,_) |- isomorph(zval(NULL,_,_,_),zval(NULL,_,_,_)) => true
+	
+        rule    (_,_,_,_) |- isomorph(zval(Top,_,_,_),zval(Top,_,_,_)) => true
+				
+        rule    (_,_,_,_) |- isomorph(zval(Bot,_,_,_),zval(Bot,_,_,_)) => true
+	
+	// array 
+    	rule    (H1',H1,H2',H2) |- isomorph(
+			zval(Array(_,L1:List),_,_,_),
+			zval(Array(_,L2:List),_,_,_)) => true
+when				(H1',H1,H2',H2) |- isomorph1(L1,L2)
+		
+	// object
+   	 rule    (H1',H1,H2',H2) |- isomorph(
+			zval(OID(Loc1,_,_),_,_,_),
+			zval(OID(Loc2,_,_),_,_,_)) => true
+when				(H1',H1,H2',H2) |- isomorph(
+					heap_read(H1',H1,Loc1),
+					heap_read(H2',H2,Loc2))
+*/	
+
     	syntax  Bool ::= "(" Map "," Map "," Map "," Map ")"   
 			"|-" "isomorph1" "(" List "," List ")" [predicate]
 

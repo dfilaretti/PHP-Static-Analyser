@@ -4,11 +4,17 @@
    // write comments to explain examples;
    // ensure examples are commented out individually when commiting file to repo.
 
+
+//SM add case for comparison NULL, ABool
+$x=1;
+while($x==true){if(42){$z="z1";}else{$w="w1"; break;}$y="y1";}
+
+
 // ERROR!!!!!!!!
 //$y="b"; // problem with or without this
 //if (1){$y="a";$x[0]="k";} else {$y=1; } // y not there, array not reachable, globals gone
 
-if (1){$x[0]=1;}  // weird, array is in memory but not reachable from matrix
+//if (1){$x[0]=1;}  // weird, array is in memory but not reachable from matrix
 //if (1){$x[0]=1;} else {$x=1;} // (A1) lub array-int = top
 
 //SM aliasing non-existing element

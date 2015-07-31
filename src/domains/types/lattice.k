@@ -23,7 +23,7 @@ module LATTICE
 	   
 	   syntax ANum ::= AInt| AFloat| "(" "ANum" "," List ")"
 	   
-	   syntax PlainLanguageValue ::= ANum | DomainValue
+	   syntax PlainLanguageValue ::= DomainValue //SM this is a big issue: what values should the lang folder see? clash with memory.k
 	   
 	   syntax Scalar ::= ANumValue | AStringValue | ABoolValue | Null | Bot | Top
 	

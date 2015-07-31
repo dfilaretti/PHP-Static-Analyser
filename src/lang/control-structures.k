@@ -286,8 +286,8 @@ rule
 		<script>
 		<k> #whileStep(B,S) => 
  		mergeConfigs(
-			runAndGetConfig(runInConf(AbexpConf(B, config(Cfg)), 'ListWrap(S ~> decreaseContinue))),
-            runAndGetConfig(runInConf(AbexpConf('Not(B), config(Cfg)), 'Break(1)))) ... 
+	runAndGetConfig(runInConf(AbexpConf(B, config(Cfg)), 'ListWrap(S ~> decreaseContinue))),
+        runAndGetConfig(runInConf(AbexpConf('Not(B), config(Cfg)), 'Break(1) ))) ... 
 		</k>
 		_
 		</script>

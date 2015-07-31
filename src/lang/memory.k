@@ -18,18 +18,17 @@ module MEMORY
 // Language values are partitioned into Scalar, compound and special values. 
 syntax LanguageValue ::= PlainLanguageValue | LiteralValue
 
-syntax PlainLanguageValue ::= ScalarValue 
+syntax PlainLanguageValue ::= NonCompoundValue 
 			    | CompoundValue 
-			    | SpecialValue
-			    | Top | Bot
-
-syntax Top::= "Top"
-syntax Bot ::= "Bot"
 
 syntax ScalarValue ::= AInt | AFloat | ABool | AString     
+syntax NonCompoundValue ::= ScalarValue | SpecialValue | Top | Bot
 syntax CompoundValue ::= Object | Array
-syntax Null ::= "NULL"
 syntax SpecialValue ::= Null 
+syntax Top::= "Top"
+syntax Bot ::= "Bot"
+syntax Null ::= "NULL"
+
 
 syntax LocB ::= Bot | Loc
 
@@ -790,10 +789,10 @@ syntax  Zval ::= "heap_read" "(" Map "," Map "," Loc ")" [function]
 rule	heap_read(H',H,L') => heap_read1(H',H,L')
 	when (L' in keys(H'))
 
-/*
-rule	heap_read(H,L) => zval(Array(none,.List),array,1,false)	
-	when notBool(L in keys(H))
-*/
+rule	heap_read(H',H,locNull) => zval(Bot,unknown,alphaRC(1),false) 
+//SM really not clear what should be returned here, if the rule is ever fired...	
+//zval(Array(none,.List),array,alphaRC(1),false)	
+	
 
 syntax  Zval ::= "heap_read1" "(" Map "," Map "," Loc ")" [function]
 
@@ -820,6 +819,7 @@ rule   getVisibility([_,V,_]) => V
 
 syntax  Loc ::= "optionLoc2Loc" "(" OptionLoc ")" [function]
 rule optionLoc2Loc(L:Loc) => L
+rule optionLoc2Loc(none) => locNull //SM arbitrary choice, just to respect types and avoid clashes
 
 syntax  List ::= "arrayRemove" "(" List "," Key ")" [function]
 rule    arrayRemove(.List,_) => .List
@@ -956,7 +956,7 @@ rule [write-loc-exists]:
 		zvalWrite(L', @Type, typeOf(lub(V,V1))) ... </k>
 	<thematrix> ... L' |-> L ... </thematrix>	
 	<heap> ... L |-> zval(V1,_,_,_) ... </heap>
-	<trace> Trace:List => Trace ListItem("write-loc-exists======================>") ListItem(K2String(V1)) </trace>
+	<trace> Trace:List => Trace ListItem("write-loc-exists") </trace>
 	[internal]
 
 rule [write-loc-undef]:    
@@ -1510,7 +1510,7 @@ rule [lget-array-prop]:
 		LgetRef1(L',X,intersectClose(X,elems2keys(ArrayValues)),InitValue) ... 
 	</k>
 	<thematrix> ... L' |-> L ... </thematrix>
-	<heap>... L |-> zval(Array(_,ArrayValues),_,_,_)  ...</heap> //bmk
+	<heap>... L |-> zval(Array(_,ArrayValues),_,_,_)  ...</heap> 
         when X =/=K NoKey
 	[internal]
 
