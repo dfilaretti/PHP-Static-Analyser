@@ -32,7 +32,7 @@ syntax  Internal ::= "buildInitState"
 
 rule [built-init-state]:	
 	<k> buildInitState =>
-		initDomain ~>
+		initDomain ~> 
         initStatus ~> 
 		initScopes ~>
 		initRoot ~>

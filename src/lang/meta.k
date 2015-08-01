@@ -323,63 +323,30 @@ rule	<k> runInMem(none, _) => .  ... </k>
     // Memory equality (modulo isomorphism)
     ///////////////////////////////////////////////////////////////////////////
 
-    	syntax  Bool ::= "(" Map "," Map "," Map "," Map ")"   
-			"|-" "isomorph"  "(" Zval "," Zval ")" [predicate]
+syntax  Bool ::= "(" Map "," Map "," Map "," Map ")" "|-" "isomorph"  "(" Zval "," Zval ")" [predicate]
 
-	// scalar
+// scalar
 
-//SM does not work
-
-        rule    (_,_,_,_) |- isomorph(zval(V1:NonCompoundValue,_,_,_),zval(V2:NonCompoundValue,_,_,_)) => 
-			V1 ==K V2
-
-        rule    (_,_,_,_) |- isomorph(zval(V1:CompoundValue,_,_,_),zval(V2:NonCompoundValue,_,_,_)) => false
-
-        rule    (_,_,_,_) |- isomorph(zval(V1:NonCompoundValue,_,_,_),zval(V2:CompoundValue,_,_,_)) => false
+rule    (_,_,_,_) |- isomorph(zval(V1:NonCompoundValue,_,_,_),zval(V2:NonCompoundValue,_,_,_)) => V1 ==K V2
+rule    (_,_,_,_) |- isomorph(zval(V1:CompoundValue,_,_,_),zval(V2:NonCompoundValue,_,_,_)) => false
+rule    (_,_,_,_) |- isomorph(zval(V1:NonCompoundValue,_,_,_),zval(V2:CompoundValue,_,_,_)) => false
 	
-	// array 
-    	rule    (H1',H1,H2',H2) |- isomorph(
-			zval(Array(_,L1:List),_,_,_),
-			zval(Array(_,L2:List),_,_,_)) => 
-		(H1',H1,H2',H2) |- isomorph1(L1,L2)
+// array 
+rule    (H1',H1,H2',H2) |- isomorph(
+		zval(Array(_,E1:List),_,_,_),
+		zval(Array(_,E2:List),_,_,_)) => 
+	(H1',H1,H2',H2) |- isomorph1(E1,E2)
 		
-	// object
-   	 rule    (H1',H1,H2',H2) |- isomorph(
-			zval(OID(Loc1,_,_),_,_,_),
-			zval(OID(Loc2,_,_),_,_,_)) => 
-		 (H1',H1,H2',H2) |- isomorph(
-					heap_read(H1',H1,Loc1),
-					heap_read(H2',H2,Loc2))
-	
+// object
+rule    (H1',H1,H2',H2) |- isomorph(
+		zval(OID(L1',_,_),_,_,_),
+		zval(OID(L2',_,_),_,_,_)) => 
+	 (H1',H1,H2',H2) |- isomorph(
+		heap_read(H1',H1,L1'),
+		heap_read(H2',H2,L2'))
 
-// doesnt work
-/*
-        rule    (_,_,_,_) |- isomorph(zval(V1:ScalarValue,_,_,_),zval(V2:ScalarValue,_,_,_)) =>  true
-		when	V1 ==K V2
-	
-        rule    (_,_,_,_) |- isomorph(zval(NULL,_,_,_),zval(NULL,_,_,_)) => true
-	
-        rule    (_,_,_,_) |- isomorph(zval(Top,_,_,_),zval(Top,_,_,_)) => true
-				
-        rule    (_,_,_,_) |- isomorph(zval(Bot,_,_,_),zval(Bot,_,_,_)) => true
-	
-	// array 
-    	rule    (H1',H1,H2',H2) |- isomorph(
-			zval(Array(_,L1:List),_,_,_),
-			zval(Array(_,L2:List),_,_,_)) => true
-when				(H1',H1,H2',H2) |- isomorph1(L1,L2)
-		
-	// object
-   	 rule    (H1',H1,H2',H2) |- isomorph(
-			zval(OID(Loc1,_,_),_,_,_),
-			zval(OID(Loc2,_,_),_,_,_)) => true
-when				(H1',H1,H2',H2) |- isomorph(
-					heap_read(H1',H1,Loc1),
-					heap_read(H2',H2,Loc2))
-*/	
 
-    	syntax  Bool ::= "(" Map "," Map "," Map "," Map ")"   
-			"|-" "isomorph1" "(" List "," List ")" [predicate]
+syntax  Bool ::= "(" Map "," Map "," Map "," Map ")" "|-" "isomorph1" "(" List "," List ")" [predicate]
 
 	//@ base cases
 	rule    (_,_,_,_) |- isomorph1(.List,.List) => true
@@ -469,6 +436,13 @@ when				(H1',H1,H2',H2) |- isomorph(
     ///////////////////////////////////////////////////////////////////////////
 
     syntax K ::= "LFP" "(" OptionBag "," K ")"
+
+//SMT delete
+/*
+    rule    <k> LFP(some(E1), _) => stopDebug(.Map,(locNull |-> ==Mem(E,E1))) ... </k>
+	    <mem> E:Bag </mem>
+*/
+
     
     //@ fixpoint has been reached
     rule    <k> LFP(some(E1), _) => . ... </k>
@@ -479,6 +453,7 @@ when				(H1',H1,H2',H2) |- isomorph(
     rule    <k> LFP(some(E1:Bag), K) => K ~> LFP(some(E), K) ... </k>
             <mem> E:Bag </mem>
             when notBool (==Mem(E,E1))     
+
 
     //@ start the computation
     rule    <k> LFP(none, K) => K ~> LFP(some(E), K) ... </k>
@@ -817,53 +792,6 @@ when				(H1',H1,H2',H2) |- isomorph(
     syntax  Bag ::= "mergeMem" "(" Int "," Bag "," List "," Map ","  Bag "," List "," Map ")"
 	    [function]
 
-    // TODO: factorise those two by using side-conditions & conditional
-
-
-
-    rule    mergeMem(_,
-                <scopes> 
-                    <currentScope> L1 </currentScope>
-                    <globalScope> L2 </globalScope>
-                    <globalStaticScope> L3 </globalStaticScope>
-                    <superGlobalScope> L4 </superGlobalScope> 
-                    <rootScope> L5 </rootScope> 
-                </scopes> 
-                <heap> H1 </heap>
-		<thematrix> H1' </thematrix>,St1,F1,
-                <scopes> 
-                    <currentScope> L1' </currentScope>
-                    <globalScope> L2' </globalScope>
-                    <globalStaticScope> L3' </globalStaticScope>
-                    <superGlobalScope> L4' </superGlobalScope>   
-                    <rootScope> L5' </rootScope> 
-                </scopes> 
-                <heap> H2 </heap>
-		<thematrix> H2' </thematrix>,St2,F2) => 
-                <scopes>
-                    <currentScope> L1 </currentScope>
-                    <globalScope> L2 </globalScope>
-                    <globalStaticScope> L3 </globalStaticScope>
-                    <superGlobalScope> L4 </superGlobalScope>  
-                    <rootScope> L5 </rootScope> 
-                </scopes>
-		bagUnwrap(
-		    leftElem(
-			mergeArrayInCtx(
-			    pair(
-				bagWrap(<thematrix> .Map </thematrix> <heap> .Map </heap>), 
-				mapWrap(.Map)),
-			    ListItem(
-				mergeArgs(
-				    L5,optionLoc2Loc(vheap_read(H1',L5)),
-				    heap_read(H1',H1,L5 ),H1',H1,
-				    heap_read(H2',H2,L5'),H2',H2))
-			    /*mergeFunStaticScopes(F1,H1',H1,F2,H2',H2)*/))) // TODO: uncomment	
-		when L1 ==K L2
-
-
-
-
     rule    mergeMem(_,
                 <scopes> 
                     <currentScope> L1 </currentScope>
@@ -873,8 +801,7 @@ when				(H1',H1,H2',H2) |- isomorph(
                    <rootScope> L5 </rootScope> 
                 </scopes> 
                 <heap> H1 </heap>
-		<thematrix> H1' </thematrix>
-		,St1,F1,
+		<thematrix> H1' </thematrix>,St1,F1,
                 <scopes> 
                     <currentScope> L1' </currentScope>
                     <globalScope> L2' </globalScope>
@@ -904,22 +831,66 @@ when				(H1',H1,H2',H2) |- isomorph(
 				    heap_read(H2',H2,L5'),H2',H2))
 			    ListItem(
 				mergeArgs(
+				    L3,optionLoc2Loc(vheap_read(H1',L3)),
+				    heap_read(H1',H1,L3 ),H1',H1,
+				    heap_read(H2',H2,L3'),H2',H2))
+			    /*mergeFunStaticScopes(F1,H1',H1,F2,H2',H2)*/))) // TODO: uncomment	
+when L1 ==K L2
+
+
+  rule    mergeMem(_,
+                <scopes> 
+                    <currentScope> L1 </currentScope>
+                    <globalScope> L2 </globalScope>
+                    <globalStaticScope> L3 </globalStaticScope>
+                    <superGlobalScope> L4 </superGlobalScope> 
+                   <rootScope> L5 </rootScope> 
+                </scopes> 
+                <heap> H1 </heap>
+		<thematrix> H1' </thematrix>,St1,F1,
+                <scopes> 
+                    <currentScope> L1' </currentScope>
+                    <globalScope> L2' </globalScope>
+                    <globalStaticScope> L3' </globalStaticScope>
+                    <superGlobalScope> L4' </superGlobalScope>   
+                   <rootScope> L5' </rootScope> 
+                </scopes> 
+                <heap> H2 </heap>
+		<thematrix> H2' </thematrix>,St2,F2) => 
+                <scopes>
+                    <currentScope> L1 </currentScope>
+                    <globalScope> L2 </globalScope>
+                    <globalStaticScope> L3 </globalStaticScope>
+                    <superGlobalScope> L4 </superGlobalScope> 
+                   <rootScope> L5 </rootScope>  
+                </scopes>
+		bagUnwrap(
+		    leftElem(
+			mergeArrayInCtx(
+			    pair(
+				bagWrap(<thematrix> .Map </thematrix> <heap> .Map </heap>), 
+				mapWrap(.Map)),
+			    ListItem(
+				mergeArgs(
+				    L5,optionLoc2Loc(vheap_read(H1',L5)),
+				    heap_read(H1',H1,L5 ),H1',H1,
+				    heap_read(H2',H2,L5'),H2',H2))
+			    ListItem(
+				mergeArgs(
+				    L3,optionLoc2Loc(vheap_read(H1',L3)),
+				    heap_read(H1',H1,L3 ),H1',H1,
+				    heap_read(H2',H2,L3'),H2',H2))
+			    
+			   
+			    ListItem(
+				mergeArgs(
 				    L1,optionLoc2Loc(vheap_read(H1',L1)),
 				    heap_read(H1',H1,L1 ),H1',H1,
 				    heap_read(H2',H2,L1'),H2',H2))   
-			    mergeStackedScopes(St1,H1',H1,St2,H2',H2)   
+			    mergeStackedScopes(St1,H1',H1,St2,H2',H2)
+			      
 			    /*mergeFunStaticScopes(F1,H1',H1,F2,H2',H2)*/))) // TODO: uncomment	
-		when L1 =/=K L2
-	
-
-
-
-
-
-
-
-
-
+when L1 =/=K L2 
 
     ///////////////////////////////////////////////////////////////////////////
     // Merge array
@@ -1898,7 +1869,7 @@ mergeArray(Cl,Rc1,needErrorMerge(Vis1,Vis2),true,none,J,ZV1,H1',H1,emptyArrayZva
 		Alpha,
 		pair(
 			bagWrap(<heap> H3 </heap> <thematrix> H3' </thematrix>),
-			mapWrap(Alpha1))) => //stopDebug(H3',Alpha1) /*
+			mapWrap(Alpha1))) => 
 	    mergeArray1(
 		ClassName,
 		ObjRC,

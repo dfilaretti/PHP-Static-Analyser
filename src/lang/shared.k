@@ -15,6 +15,7 @@ module SHARED
 
 //syntax K ::= "stopDebug(" List ")" 
 syntax K ::= "stopDebug(" Map "," Map ")"
+//syntax K ::= "showFun(" K ")"
 
 syntax K ::= "*Cond" "(" K "," K "," K ")"			[strict(1)]
 

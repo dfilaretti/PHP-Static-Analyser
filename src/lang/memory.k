@@ -786,10 +786,15 @@ rule [array-write-current-some]:
 
 syntax  Zval ::= "heap_read" "(" Map "," Map "," Loc ")" [function]
 
+
+//SM TODO typeOf(Bot) missing case
+
+
 rule	heap_read(H',H,L') => heap_read1(H',H,L')
 	when (L' in keys(H'))
 
-rule	heap_read(H',H,locNull) => zval(Bot,unknown,alphaRC(1),false) 
+//rule	heap_read(H',H,L') => zval(Bot,unknown,alphaRC(1),false) when notBool (L' in keys(H'))
+//rule	heap_read(H',H,locNull) => zval(Bot,unknown,alphaRC(1),false) 
 //SM really not clear what should be returned here, if the rule is ever fired...	
 //zval(Array(none,.List),array,alphaRC(1),false)	
 	
