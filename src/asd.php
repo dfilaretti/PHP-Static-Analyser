@@ -5,17 +5,22 @@
    // ensure examples are commented out individually when commiting file to repo.
 
 
-//SM add case for comparison NULL, ABool
+//SM check cases for comparisons
+//$x==true;
+
+//SM check reachabilitiy of branches in loop with nested while
+/*
 $x=1;
-while($x==true){if(42){$z="z1";}else{$w="w1"; break;}$y="y1";}
+while($x==true){if(42){$z="z1";}else{$w="w1"; break;}$y="y1";
+*/
+
+//SM check some merge cases
+//if (1){$y="a";$x[0]="k";} else {$y=1; }
 
 
-// ERROR!!!!!!!!
-//$y="b"; // problem with or without this
-//if (1){$y="a";$x[0]="k";} else {$y=1; } // y not there, array not reachable, globals gone
-
-//if (1){$x[0]=1;}  // weird, array is in memory but not reachable from matrix
-//if (1){$x[0]=1;} else {$x=1;} // (A1) lub array-int = top
+//SM merging arrays
+//if (1){$x[0]=1;}  //think about this: array is in memeory, element maybenull. seems sound?
+//if (1){$x[0]=1;} else {$x=1;} // ok: lub array-int = top
 
 //SM aliasing non-existing element
 /*
@@ -23,11 +28,14 @@ $x["a"] = 1;
 $x["a"] =& $y; // works fine, does strong is key is precise, weak if not precise, and creates y with null
 */
 
-//WTF???
+//SM beware if one gets a mergearray stuck with a bagwrap in the heap, it could b edone to scalarvalue missing some case (we have top, null, may need bot)
+//if (1) {$x = NULL;} else {$x = NULL;} 
+
+
+//SM this works
 /*
-$y=NULL;
 $x["a"] = "a1";
-if (1){$x["a"] =& $y;} else {$x["a"] = "a2";} 
+if (1){$x["a"] = "a1";} else {$x["a"] = "a2";} 
 */
 
 //SM testing simple while

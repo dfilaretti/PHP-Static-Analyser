@@ -2,6 +2,7 @@
 s/\(.*\)'`(_,_`)\(.*\)/\1\2/g
 
 # hiding some cells
+#/<trace>/,/<\/trace>/d
 /<tables>/,/<\/tables>/d
 /<instrumentation>/,/<\/instrumentation>/d
 /<gc>/,/<\/gc>/d

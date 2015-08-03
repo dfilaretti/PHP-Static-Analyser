@@ -119,13 +119,32 @@ rule [inline-echo]:
 syntax K ::= "peek(" K ")" //NOT strict
 rule peek('FunctionCall('FunctionName(_),,Params,,_)) => peek1(.List,Params)
 syntax K ::= "peek1(" List "," K ")"
-rule peek1(L,'ListWrap(.KList)) => 'Literal("peek") // peek2(L)
+rule peek1(L,'ListWrap(.KList)) => peek2(L)
 rule peek1(L,'ListWrap('Param(V:Value),, Args:KList)) => peek1(L ListItem(V),'ListWrap(Args:KList)) 
 context peek1(L:List,'ListWrap('Param(HOLE),, Args:KList))
-//syntax K ::= "peek2(" List ")"
-// rule peek2(0,V1,V2) => peek2(0,convertToLoc(V1),,convertToLoc(V2)) compare matrix addresses 
-// rule peek2(1,V1,V2) => convertToLoc(V1) then manually of via some existing function compare heap addresses
-// rule peek2(2,V1,V2) => convertToLanguageValue(V1) compare values
+syntax K ::= "peek2(" List ")"
+rule peek2(ListItem(P1) ListItem(P2) ListItem(P3) ListItem(P4)) => peek3(P1,P2,P3,P4)
+syntax K ::= "peek3(" K "," K "," K "," K ")"
+rule peek3(M,C,V1:ConvertibleToLoc,V2:ConvertibleToLoc) => peek3(M,C,convertToLoc(V1,r),convertToLoc(V2,r))
+rule <k> peek3(M,1,L1':Loc,L2':Loc) => peek3(M,1,L1,L2) ... </k>
+     <thematrix> ... L1' |-> L1 L2' |-> L2 ... </thematrix> 	 
+rule peek3(M,2,V1:ConvertibleToLanguageValue,V2:ConvertibleToLanguageValue)  
+     => peek3(M,2,convertToLanguageValue(V1),convertToLanguageValue(V2))
+rule peek3(M,0,L1':Loc,L2':Loc) => 'Literal("0 ==> " +String M +String ": OK" ) // compare matrix addresses
+     when L1' ==K L2'
+rule peek3(M,0,L1':Loc,L2':Loc) => 'Literal("0 ==> " +String M +String ": KO" ) // compare matrix addresses
+     when L1' =/=K L2'
+rule peek3(M,1,L1:Loc,L2:Loc) => 'Literal("1 ==> " +String M +String ": OK" ) // compare matrix addresses
+     when L1 ==K L2
+rule peek3(M,1,L1:Loc,L2:Loc) => 'Literal("1 ==> " +String M +String ": KO" ) // compare matrix addresses
+     when L1 =/=K L2
+rule peek3(M,2,V1:PlainLanguageValue,V2:PlainLanguageValue) => 'Literal("2 ==> " +String M +String ": OK" ) 
+     when V1 ==K V2
+rule peek3(M,2,V1:PlainLanguageValue,V2::PlainLanguageValue) => 'Literal("2 ==> " +String M +String ": KO" )
+     when V1 =/=K V2
+
+
+//base case:  
 
 // ---------------------------------------------------------------------------------------------
 /*@ \subsection{Print} 

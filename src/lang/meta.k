@@ -133,15 +133,17 @@ rule <k> AbexpConf1(V:KResult) => none    ... </k>
 ///////////////////////////////////////////////////////////////////////////////
 
     // TODO: move to memory?
-    syntax ReturnCode ::= SkippingCode | RunningCode | BreakingCode | NonBreakingCode
+        syntax ReturnCode ::= SkippingCode | RunningCode | BreakingCode | NonBreakingCode
 	
 	syntax SkippingCode ::= SkippingNonBreakingCode | BreakingCode
-	syntax SkippingNonBreakingCode ::= "RET" | "LOOP" | "ERR" | "DONE"
-	syntax BreakingCode ::= BreakCode | ContinueCode
-	syntax ContinueCode ::= "CONTINUE" "(" Int ")"
-	syntax BreakCode ::= "BREAK" "(" Int ")"
+
 	syntax NonBreakingCode ::= RunningCode | SkippingNonBreakingCode
 	syntax RunningCode ::= "NEXT"
+	syntax SkippingNonBreakingCode ::= "RET" | "LOOP" | "ERR" | "DONE"
+
+	syntax BreakingCode ::= BreakCode | ContinueCode
+	syntax BreakCode ::= "BREAK" "(" Int ")"
+	syntax ContinueCode ::= "CONTINUE" "(" Int ")"
 
     //@ get status of a configuration
     syntax  ReturnCode ::= "configGetStatus" "(" Bag ")"    [function]
@@ -887,8 +889,7 @@ when L1 ==K L2
 				    L1,optionLoc2Loc(vheap_read(H1',L1)),
 				    heap_read(H1',H1,L1 ),H1',H1,
 				    heap_read(H2',H2,L1'),H2',H2))   
-			    mergeStackedScopes(St1,H1',H1,St2,H2',H2)
-			      
+			    mergeStackedScopes(St1,H1',H1,St2,H2',H2)			      
 			    /*mergeFunStaticScopes(F1,H1',H1,F2,H2',H2)*/))) // TODO: uncomment	
 when L1 =/=K L2 
 
@@ -916,6 +917,8 @@ when L1 =/=K L2
 
     // NOTE: this is just a shortcut. Sure we want this?
     rule isScalarValue(Top) => true
+    rule isScalarValue(NULL) => true //mergearray4 was getting stuck on NULL,NULL. 
+// this predicate probably should be changed to non-compound plainlanguagevalue isntead
 
     // isScalarZVal
     syntax Bool ::= "isScalar_zval" "(" Zval ")" [predicate]
@@ -1589,7 +1592,7 @@ when L1 =/=K L2
 		H' makeH'(H',C,J),	    
 		makeH(H,J,SetItem(ZV1) SetItem(ZV2)),  
 		//makeH(H,J,ZV1,ZV2), 	
-		Alpha)
+		Alpha)//SMT check here
 	when (isScalar_zval(ZV1) orBool isScalar_zval(ZV2)) andBool
 		(notBool (needErrorMerge(Vis1,Vis2)))
 
@@ -1895,13 +1898,24 @@ mergeArray(Cl,Rc1,needErrorMerge(Vis1,Vis2),true,none,J,ZV1,H1',H1,emptyArrayZva
 
     syntax  Zval ::= "mergeZval" "(" Zval "," Zval ")" [function]
    
-    
+//SMT delete    
+    rule    mergeZval(zval(V,T,R,I),zval(V',T',R',I')) => zval(alpha("D'OH!"),T,R,I)
+/*
+	    zval(
+	        lub(V,V'),
+	        typeOf(lub(V,V')),			//allows the domain to give more info than just taking lub_Type(T, T')
+	        maxRC(R,R'),
+	        makeIsRef(R,R'))  
+*/
+when V ==K NULL
+
     rule    mergeZval(zval(V,T,R,I),zval(V',T',R',I')) => 
 	    zval(
 	        lub(V,V'),
 	        typeOf(lub(V,V')),			//allows the domain to give more info than just taking lub_Type(T, T')
 	        maxRC(R,R'),
 	        makeIsRef(R,R'))  
+when V =/=K NULL
     
     // make isRef flag
     syntax Bool ::= "makeIsRef" "(" ARefCount "," ARefCount ")" [function]

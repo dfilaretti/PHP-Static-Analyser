@@ -308,6 +308,7 @@ rule [comparisonPreprocess-RHS2Loc]:
 	
 // ... and locations to values
 //RR:  arrays should be compared by number of keys, then value by value, not by equality of loc ?
+//SM looks like the case for locNull=>NULL is missing. adding it to keep debugging, probably rules below need to use read(L) instead.
 
 rule [comparisonPreprocess-LHS2LangValue]:
 	<k> comparisonPreprocess(_,(L':Loc => V),_) ... </k>
@@ -315,6 +316,16 @@ rule [comparisonPreprocess-LHS2LangValue]:
 	<heap> ... L |-> zval(V:PlainLanguageValue,_,_,_) ... </heap>
 	<trace> Trace:List => Trace ListItem("comparisonPreprocess-LHS2LangValue") </trace>
 
+	[intermediate]
+
+rule [comparisonPreprocess-LHS2LangValue-null]:
+	<k> comparisonPreprocess(_,(locNull => NULL),_) ... </k>
+	<trace> Trace:List => Trace ListItem("comparisonPreprocess-LHS2LangValue-null") </trace>
+	[intermediate]
+
+rule [comparisonPreprocess-RHS2LangValue-null]:
+	<k> comparisonPreprocess(_,_,(locNull => NULL)) ... </k>
+	<trace> Trace:List => Trace ListItem("comparisonPreprocess-RHS2LangValue-null") </trace>
 	[intermediate]
 			
 rule [comparisonPreprocess-RHS2LangValue]: 	

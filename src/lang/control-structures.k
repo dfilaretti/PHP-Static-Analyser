@@ -281,13 +281,14 @@ rule
 //@ compute a "single step" of while loop
 syntax K ::= "#whileStep" "(" K "," K ")" 
 
+//SM listwrapped Break(1) to make it skippable
 rule    
 		<kphp>
 		<script>
 		<k> #whileStep(B,S) => 
  		mergeConfigs(
 	runAndGetConfig(runInConf(AbexpConf(B, config(Cfg)), 'ListWrap(S ~> decreaseContinue))),
-        runAndGetConfig(runInConf(AbexpConf('Not(B), config(Cfg)), 'Break(1) ))) ... 
+        runAndGetConfig(runInConf(AbexpConf('Not(B), config(Cfg)), 'ListWrap('Break(1)) ))) ... 
 		</k>
 		_
 		</script>

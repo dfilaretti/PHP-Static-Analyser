@@ -127,6 +127,8 @@ rule lub(A:Array, B:PlainLanguageValue) => Top
 rule lub(B:PlainLanguageValue,A:Array) => Top 
       when notBool isArrayType(B)  
 	    
+//SM @#$!@$!#!!@!
+rule lub(NULL,NULL) => NULL
 
 syntax PlainLanguageValue ::= "glb" "(" K "," K ")" [function]
 
@@ -971,7 +973,7 @@ rule [write-loc-undef]:
 	</k>
 	<thematrix> Mem:Map </thematrix>
 	<trace> Trace:List => Trace ListItem("write-loc-undef") </trace>
-	when (notBool (L' in keys(Mem))) andBool (L' =/=K locNull)                                                                                                         	
+	when (notBool (L' in keys(Mem))) andBool (L' =/=K locNull)
 	[internal]
 
 // This is needed for cases like $c[$c=1] = 0; (when $c is not initialised)
