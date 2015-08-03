@@ -605,6 +605,7 @@ rule [dec-refCount-array-elems-nil]:
 // sref is used to remember the key X once the reference has been resolved to L
 // this may we can convert a missing key to the last+1 integer key
 syntax Loc ::= "sref" "(" Loc "," Key ")"
+rule ref(sref(L,X) => L,Y)
 
 // in genereal there may be other places that need a L:Loc and get instead a sref(L,X):Loc
 // and we need to force the conversion with sref2loc below 
@@ -612,10 +613,10 @@ syntax K ::= "sref2loc" "(" LocB ")" [strict]
 rule sref2loc(sref(L,X)) => L 
 rule sref2loc(locNull) => locNull 
 rule sref2loc(Bot) => Bot 
-rule ref(sref(L,X) => L,Y)
 
 
-// ---------------------------------------------------------------------------------------------
+
+ ---------------------------------------------------------------------------------------------
 /*@ \subsection{Operations on Arrays} */
 // ---------------------------------------------------------------------------------------------
 

@@ -5,6 +5,11 @@
    // ensure examples are commented out individually when commiting file to repo.
 
 
+$x = 1;
+$y = 2;
+$z =& $x;
+if (1){$w = $y;} else {$w =& $y; }
+
 //SM check cases for comparisons
 //$x==true;
 
@@ -211,3 +216,8 @@ else
 //$y[][][$x[4]]=$f[6];
 
 ?>
+
+<?= x("strong aliasing",0,$x,$z) ?>
+<?= x("weak aliasing",1,$y,$w) ?>
+<?= x("values",2,$x,$x) ?>
+<?= x("different values",2,$x,$y) ?>
