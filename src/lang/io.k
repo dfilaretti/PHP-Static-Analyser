@@ -1,7 +1,8 @@
 require "type-conversions.k"
 
 module IO 
-	imports TYPE-CONVERSIONS
+       imports TYPE-CONVERSIONS
+
 
 // =/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
 // =/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
@@ -32,6 +33,7 @@ rule [exit]:
 	<exitStatus> _ => V </exitStatus>
 	<trace> Trace:List => Trace ListItem("exit") </trace>
 	[step]
+
 	
 // ---------------------------------------------------------------------------------------------
 /*@ \subsection{Auxiliary stuff} */
@@ -40,8 +42,8 @@ rule [exit]:
 
 syntax  K ::= "print" "(" K ")"     [strict]
 
-/* SM: see end of typeconversion.k before uncommenting
-
+//SM: before uncommenting resolve issue with hasNoDecimalPart on abstract values
+/*
 rule [internal-print]:    
 	<k> print (V:Float => Float2Int(V))  ... </k>
 	<trace> Trace:List => Trace ListItem("internal-print") </trace>
@@ -55,23 +57,34 @@ rule [internal-print]:
 	[internal, output]
 */
 
-//RR : had to change Bool to ABool ?
 rule [internal-print]:    
-	<k> print (B:ABool  => *toString(B)) ... </k>
+	<k> print(B:ABool  => *toString(B)) ... </k>
 	<trace> Trace:List => Trace ListItem("internal-print") </trace>
 	[internal, output]
 
 rule [internal-print]:    
-	<k> print (V:String)  => . ... </k>
+	<k> print (I:AInt  => *toString(I)) ... </k>
+	<trace> Trace:List => Trace ListItem("internal-print") </trace>
+	[internal, output]
+
+rule [internal-print]:    
+	<k> print(S:AString => gamma(S)) ... </k> // pretty-print abstract strings
+	<trace> Trace:List => Trace ListItem("internal-print") </trace>
+        when notBool(isAStringConcrete) // to avoid loop when String = AString
+	[internal, output]
+
+rule [internal-print]:    
+	<k> print(V:String)  => . ... </k>
 	<out> ... . => ListItem(V) </out>  
 	<trace> Trace:List => Trace ListItem("internal-print") </trace>
 	[internal, output]
 
 rule [internal-print]:    
-	<k> print (V:Int)  => . ... </k>
+	<k> print(V:Int)  => . ... </k>
 	<out> ... . => ListItem(Int2String(V)) </out>  
 	<trace> Trace:List => Trace ListItem("internal-print") </trace>
 	[internal, output]
+	
 
 
 // ---------------------------------------------------------------------------------------------
@@ -115,7 +128,7 @@ rule [inline-echo]:
 	<trace> Trace:List => Trace ListItem("inline-echo") </trace>
 	[structural] 
 
-
+rule 'Expr(peek(K),,_) => 'Echo('ListWrap(peek(K))) //SM unblock 'Expr
 syntax K ::= "peek(" K ")" // intentionally NOT strict
 rule peek('FunctionCall('FunctionName(C:String),,Params,,_)) => peek1(ListItem(C),Params)
 
@@ -127,7 +140,7 @@ context peek1(L:List,'ListWrap('Param(HOLE),, Args:KList))
 
 
 syntax K ::= "peek2(" List ")"
-rule peek2(ListItem(P1) ListItem(P2) ListItem(P3) ListItem(P4)) => peek3(P1,getValue(P2),P3,P4)
+rule peek2(ListItem(P1) ListItem(P2) ListItem(P3) ListItem(P4)) => peek3(P1,gamma(P2),P3,P4)
 
 
 syntax K ::= "peek3(" K "," K "," K "," K ")" 
@@ -143,21 +156,21 @@ rule peek3("v",M,V1:ConvertibleToLanguageValue,V2:ConvertibleToLanguageValue)
      => peek3("v",M,convertToLanguageValue(V1),convertToLanguageValue(V2))
 
 // compare matrix addresses
-rule peek3("m",M,L1':Loc,L2':Loc) => 'Literal("m ==> " +String M +String ": OK" ) 
+rule peek3("m",M,L1':Loc,L2':Loc) => 'Literal("m ==> " +String M +String ": OK\n" ) 
      when L1' ==K L2'
-rule peek3("m",M,L1':Loc,L2':Loc) => 'Literal("m ==> " +String M +String ": KO" )
+rule peek3("m",M,L1':Loc,L2':Loc) => 'Literal("m ==> " +String M +String ": KO\n" )
      when L1' =/=K L2'
 
 // compare heap addresses
-rule peek3("h1",M,L1,L2) => 'Literal("h ==> " +String M +String ": OK" )
+rule peek3("h1",M,L1,L2) => 'Literal("h ==> " +String M +String ": OK\n" )
      when L1 ==K L2
-rule peek3("h1",M,L1:Loc,L2:Loc) => 'Literal("h ==> " +String M +String ": KO" )
+rule peek3("h1",M,L1:Loc,L2:Loc) => 'Literal("h ==> " +String M +String ": KO\n" )
      when L1 =/=K L2
 
  // compare values
-rule peek3("v",M,V1:PlainLanguageValue,V2:PlainLanguageValue) => 'Literal("v ==> " +String M +String ": OK" ) 
+rule peek3("v",M,V1:PlainLanguageValue,V2:PlainLanguageValue) => 'Literal("v ==> " +String M +String ": OK\n" ) 
      when V1 ==K V2
-rule peek3("v",M,V1:PlainLanguageValue,V2::PlainLanguageValue) => 'Literal("v ==> " +String M +String ": KO" )
+rule peek3("v",M,V1:PlainLanguageValue,V2::PlainLanguageValue) => 'Literal("v ==> " +String M +String ": KO\n" )
      when V1 =/=K V2
 
 

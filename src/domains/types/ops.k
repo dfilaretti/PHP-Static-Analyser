@@ -385,22 +385,6 @@ module OPS
 	rule S1:String ==AStringValue S2:String => ABoolFalse
 	when notBool(S1 ==String S2)
 	
-    rule    [internal-print]:
-            <k> print (V:AString)  => . ... </k>
-            <out> ... . => ListItem(V) </out>
-            [internal, output]   
-	rule print(S:String) => print(specify(VE(S, .List)))		
-	
-	rule [internal-print]:    
-	<k> print (I:AInt  => *toString(I)) ... </k>
-	<trace> Trace:List => Trace ListItem("internal-print") </trace>
-	[internal, output]
-
-
-	rule [internal-print]:    
-	<k> print (B:ABool  => *toString(B)) ... </k>
-	<trace> Trace:List => Trace ListItem("internal-print") </trace>
-	[internal, output]
 
 	
     // input

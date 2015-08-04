@@ -1,7 +1,8 @@
 require "core.k"
 
 module TYPE-CONVERSIONS 
-    imports CORE
+       imports CORE
+
 
 // =/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
 // =/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
@@ -89,13 +90,12 @@ rule [array-cast]:
 /*@ \subsection{To Boolean} */
 // ---------------------------------------------------------------------------------------------
 
-
 //syntax K ::= "*toBoolean" "(" LanguageValue ")" [strict, domain]
+
 
 // ---------------------------------------------------------------------------------------------
 /*@ \subsection{To Float} */
 // ---------------------------------------------------------------------------------------------
-
 
 //syntax K ::= "*toFloat" "(" LanguageValue ")"  [strict, domain]
 
@@ -475,6 +475,7 @@ rule arrayCurrentOverflow(Array(none, Elems)) => true when Elems =/=List .List
 rule arrayCurrentOverflow(Array(none, .List)) => false 
 rule arrayCurrentOverflow(Array(ArrayItem, _)) => false 
 
+
 // ---------------------------------------------------------------------------------------------
 /*@ \subsection{To Array} */
 // ---------------------------------------------------------------------------------------------
@@ -487,7 +488,6 @@ rule [toArray-scalar]:
 	<k> *toArray(S:ScalarValue) =>  makeArrayFromScalar(S, alpha(0)) ... </k>
 	<trace> Trace:List => Trace ListItem("toArray-scalar") </trace>
 	[internal]
-
 
 // cast to object for compound values. 
 
@@ -507,6 +507,7 @@ rule [toArray-object]:
 	<trace> Trace:List => Trace ListItem("toArray-object") </trace>
 	when fresh(L1:Loc)
 	[internal]
+
 
 // ---------------------------------------------------------------------------------------------
 /*@ \subsection{Some auxiliary constructs} */

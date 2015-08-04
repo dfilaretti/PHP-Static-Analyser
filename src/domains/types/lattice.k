@@ -6,6 +6,8 @@ module LATTICE
        syntax AStringValue ::= "AStringTop" | String | "AStringBot"
        
        syntax AString ::= "(" AStringValue "," List ")"
+
+       rule isAStringConcrete => false // avoid confusion String = AString
 	   
        syntax AIntValue ::= "AInt" | "AIntBot"
 	   
@@ -391,7 +393,11 @@ rule intersects(X,H) => Bot =/=Lattice glb(X,H)
 
 
 //SM we should consider defining some gammas for values such that isGammaSingleton returns 1, e.g.
-//syntax PHPValue ::= "gamma("PlainLanguageValue")"
-//rule gamma((S:String,L:List))=>S
+syntax K ::= "gamma(" PlainLanguageValue ")" [function]  //SM should not be K really
+
+// AString: throwing away error flags information
+rule gamma((S:String,L:List)) => S
+rule gamma((AStringTop,L:List)) => "AStringTop"
+rule gamma((AStringBot,L:List)) => "AStringBot"
 
 endmodule

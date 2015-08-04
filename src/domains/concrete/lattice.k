@@ -5,7 +5,9 @@ module LATTICE
     syntax  AFloat ::= Float
     syntax  ABool ::= Bool
     syntax  AString ::= String
-    syntax  ARefCount ::= Int
+    rule isAStringConcrete => true // avoid confusion String = AString
+   
+     syntax  ARefCount ::= Int
 
 
 	// valid 
@@ -81,5 +83,9 @@ rule AisArray(NULL) =>false
 rule AisNumericString(X) => isNumericString(X)
 
 rule intersects(X,H) => X ==K H
+
+
+syntax K ::= "gamma(" PlainLanguageValue ")" [function] //SM should not be K really
+rule gamma(X) = X
 
 endmodule

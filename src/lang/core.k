@@ -196,9 +196,9 @@ rule    <k> runStmt(S) ~> K => . ... </k>
 
 context 'Expr(HOLE)
 
-rule [expr]:	
+rule [expr-convert]:	
 	<k> 'Expr(V:ConvertibleToLanguageValue => convertToLanguageValue(V)) ... </k>
-	<trace> Trace:List => Trace ListItem("expr") </trace>
+	<trace> Trace:List => Trace ListItem("expr-convert") </trace>
 	[step]
 
 rule [expr]:	

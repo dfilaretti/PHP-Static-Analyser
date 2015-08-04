@@ -4,11 +4,18 @@
    // write comments to explain examples;
    // ensure examples are commented out individually when commiting file to repo.
 
+//SM debug debugging functionality
 
 $x = 1;
 $y = "a";
 $z =& $x;
 if (1){$w = $y;} else {$w =& $y; }
+
+_debug(m("strong aliasing",$x,$z)); 
+_debug(h("weak aliasing",$y,$w)); 
+_debug(v("values",$x,$x)); 
+_debug(v("different values",$x,$y)); 
+
 
 //SM check cases for comparisons
 //$x==true;
@@ -217,7 +224,4 @@ else
 
 ?>
 
-<?= m("strong aliasing",$x,$z) ?>
-<?= h("weak aliasing",$y,$w) ?>
-<?= v("values",$x,$x) ?>
-<?= v("different values",$x,$y) ?>
+

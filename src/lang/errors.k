@@ -2,7 +2,7 @@ require "io.k"
 require "shared.k"
 module ERRORS
 	imports IO
-	imports SHARED //SM because of mapConcat
+	imports SHARED 
 
 // =/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
 // =/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
@@ -39,30 +39,30 @@ rule [notice]:
 // A fatal error is displayed, and then propagated to abort the current execution branch
 syntax K ::= "ERROR" "(" String ")"
 rule [error]:	
-	<k> (ERROR(ErrorMsg:String) => 
-            print("\nFatal error: ") ~> print(ErrorMsg) ~> Bot) ~> K:K </k>
+	<k> ERROR(Msg:String) => print("\nFatal error: ") ~> print(Msg) ~> Bot ... </k>
 	<errorManagement> _ => 2 </errorManagement>
-	<trace> Trace:List => Trace ListItem("error") </trace>
-        <errorDump> ... . => mapConcat((ListItem("<error-trace>") Trace ListItem("</error-trace>")),"\n")</errorDump> 
-        //SM we should dump the whole confing here ideally
+        <errorDump> ... . => mapConcat((ListItem("<error-trace>") Trace ListItem("</error-trace>")),"\n")</errorDump> //SM or dump whole confing
 	<status> X => ERR </status>
+	<trace> Trace:List => Trace ListItem("error") </trace>
         when X =/=K ERR
 	[internal]
 
-// already in ERR state: just propagate Bot
-rule [error]: 
-	<k> ERROR(ErrorMsg:String) => Bot ... </k> 
+// Already in ERR state: just propagate Bot
+rule [error-propagate]: 
+	<k> ERROR(_) => Bot ... </k> 
 	<status> ERR </status>
+	<trace> Trace:List => Trace ListItem("error-propagate") </trace>
 	[internal]
 
 // This also aborts the program, but it's meant to be an internal thing (not in PHP).
-// The error code says out test running script that the feature is unsupported
+// The error code says outer test running script that the feature is unsupported
 syntax K ::= "NOT-SUPPORTED" "(" String ")"
 rule [not-supported]:	
-	<k> NOT-SUPPORTED(ErrorMsg:String) ~> K:K => print("Unsupported feature: ") ~> print(ErrorMsg) </k>
+	<k> NOT-SUPPORTED(Msg:String) ~> K:K => print("Unsupported feature: ") ~> print(Msg) </k>
 	<errorManagement> _ => 3 </errorManagement>
 	<trace> Trace:List => Trace ListItem("not-supported") </trace>
 	[internal]
+
 endmodule
 
 

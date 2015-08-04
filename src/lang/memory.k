@@ -30,6 +30,8 @@ syntax Bot ::= "Bot"
 syntax Null ::= "NULL"
 
 
+syntax Bool ::= "isAStringConcrete" [predicate] // avoid confusion and potential loops when AString ::= String  | ...
+
 syntax LocB ::= Bot | Loc
 
 // We represent objects as triples consisting of the name of the class, the instance no.

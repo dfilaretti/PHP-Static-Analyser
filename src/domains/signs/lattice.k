@@ -18,6 +18,7 @@ module LATTICE
 		    | "ABoolBot"
  
     syntax  AString ::= "AStringTop" | String | "AStringBot"
+    rule isAStringConcrete => true // avoid confusion String = AString
 
     // backward compatibility
     //syntax  ARefCount ::= Int
@@ -301,5 +302,10 @@ rule hasInfinitelyManyChildren(Bot) => false
 
 rule intersects(X,H) => notBool((Bot ==Lattice glb(X,H)) orBool (AStringBot ==Lattice glb(X,H)))
 //SM perhaps ==K is enough/better/more appropriate
+
+// AString: throwing away error flags information
+rule gamma(S:String) => S
+rule gamma(AStringTop) => "AStringTop"
+rule gamma(AStringBot) => "AStringBot"
 
 endmodule

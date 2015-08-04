@@ -220,9 +220,23 @@ rule    functionCallFound(K) => false
 syntax  K ::= "addLabel" "(" K ")"          [klabel('addLabel)]
 
 // TODO: extend so that it adds a label to everything! (not only functions!) 
+
+//SM use this to debug with peek function
+rule    addLabel('FunctionCall('FunctionName(S:String),,Args)) => 
+            visitedK('FunctionCall('FunctionName(S),,Args,,Lab))
+        when fresh(Lab:Int) andBool S =/=String "_debug"
+
+rule    addLabel('FunctionCall('FunctionName(S:String),,'ListWrap('Param(K),, Args:KList))) => 
+            visitedK(peek(K))
+        when S ==String "_debug"
+
+//SM use this to disable debugging hack
+/*
 rule    addLabel('FunctionCall(Name,,Args)) => 
             visitedK('FunctionCall(Name,,Args,,Lab))
         when fresh(Lab:Int) 
+*/
+
 
 // shouldn't need this :/
 syntax K ::= "removeVisitedK" "(" K ")" [strict]
