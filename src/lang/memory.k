@@ -616,7 +616,7 @@ rule sref2loc(Bot) => Bot
 
 
 
- ---------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------
 /*@ \subsection{Operations on Arrays} */
 // ---------------------------------------------------------------------------------------------
 
@@ -792,15 +792,12 @@ syntax  Zval ::= "heap_read" "(" Map "," Map "," Loc ")" [function]
 
 //SM TODO typeOf(Bot) missing case
 
-
 rule	heap_read(H',H,L') => heap_read1(H',H,L')
 	when (L' in keys(H'))
 
 //rule	heap_read(H',H,L') => zval(Bot,unknown,alphaRC(1),false) when notBool (L' in keys(H'))
-//rule	heap_read(H',H,locNull) => zval(Bot,unknown,alphaRC(1),false) 
 //SM really not clear what should be returned here, if the rule is ever fired...	
-//zval(Array(none,.List),array,alphaRC(1),false)	
-	
+
 
 syntax  Zval ::= "heap_read1" "(" Map "," Map "," Loc ")" [function]
 
@@ -1005,27 +1002,14 @@ rule [alloc-value]:
 
 syntax K ::= "copyValueToLoc" "(" Value "," Loc "," Bool ")" [strict]
 
-/*
-rule [copy-value-to-loc-scalar]:
-	<k> copyValueToLoc(V:LanguageValue,L:Loc,_) => 
-	write(V, L) ... </k>
-	<trace> Trace:List => Trace ListItem("copy-value-to-loc-scalar") </trace>
-	when notBool (isArrayType(V) orBool isObjectType(V))
-	[internal]
-*/
-
 rule [copy-value-to-loc-scalar]:
 	<k> 
-		copyValueToLoc(V:LanguageValue,L:Loc,UpdateType) => 
-		write(V,L,UpdateType) 
+	copyValueToLoc(V:LanguageValue,L:Loc,UpdateType) => 
+	write(V,L,UpdateType) 
 	... </k>
 	<trace> Trace:List => Trace ListItem("copy-value-to-loc-scalar") </trace>
 	when notBool (isArrayType(V) orBool isObjectType(V))
 	[internal]
-
-//SMT
-
-
 
 rule [copy-value-to-loc-array]:    
 	<k> copyValueToLoc(Array(Crnt,Elems),L:Loc,_) => 
@@ -1058,13 +1042,6 @@ rule [copy-value-to-loc-object-literal]:
 
 
 
-
-
-
-
-
-
-
 syntax K ::= "copyArrayMembers" "(" Loc "," List ")"    
 
 rule [copyArrayMembers-cons-no-aliasing]: 
@@ -1090,6 +1067,9 @@ rule [copyArrayMembers-nil]:
 	<trace> Trace:List => Trace ListItem("copyArrayMembers-nil") </trace>
 	[internal]
 
+
+
+
 // ---------------------------------------------------------------------------------------------
 /*@ \subsection{Basic Operations on references} 
 		We define here a number of internal oparations on references, that will be used 
@@ -1097,17 +1077,9 @@ rule [copyArrayMembers-nil]:
 // ---------------------------------------------------------------------------------------------
 
 
-
-
-
-
-
-
 // ---------------------------------------------------------------------------------------------
 // Auxiliary operations for static analysis
 // ---------------------------------------------------------------------------------------------
-
-
 
 //SM these implement what was previously known as fully and partially fragmented predicates. 
 
@@ -1133,10 +1105,12 @@ rule children(_) => SetItem(Bot) //trivially sound approximation
 //K is a lattice element, this is lattice-dependent
 syntax 	Bool ::= "hasInfinitelyManyChildren(" K ")"		[function]
 
+
 // LUBs a set of values 
 syntax 	PlainLanguageValue ::= "lubAllSetElements" "(" Set ")" [function]
 rule	lubAllSetElements(.Set) => Bot
 rule	lubAllSetElements(SetItem(V:PlainLanguageValue) S) => lub(V,lubAllSetElements(S))
+
 
 // Takes a bunch of locations and merge the contained values
 syntax K ::= "mergeValuesAtLocs" "(" RefType "," Set ")"

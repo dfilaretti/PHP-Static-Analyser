@@ -389,4 +389,9 @@ rule hasInfinitelyManyChildren(Bot) => false
 rule intersects(X,H) => Bot =/=Lattice glb(X,H) 
 //SM perhaps ==K is enough/better/more appropriate
 
+
+//SM we should consider defining some gammas for values such that isGammaSingleton returns 1, e.g.
+//syntax PHPValue ::= "gamma("PlainLanguageValue")"
+//rule gamma((S:String,L:List))=>S
+
 endmodule

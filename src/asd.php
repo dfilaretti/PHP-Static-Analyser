@@ -6,7 +6,7 @@
 
 
 $x = 1;
-$y = 2;
+$y = "a";
 $z =& $x;
 if (1){$w = $y;} else {$w =& $y; }
 
@@ -217,7 +217,7 @@ else
 
 ?>
 
-<?= x("strong aliasing",0,$x,$z) ?>
-<?= x("weak aliasing",1,$y,$w) ?>
-<?= x("values",2,$x,$x) ?>
-<?= x("different values",2,$x,$y) ?>
+<?= m("strong aliasing",$x,$z) ?>
+<?= h("weak aliasing",$y,$w) ?>
+<?= v("values",$x,$x) ?>
+<?= v("different values",$x,$y) ?>

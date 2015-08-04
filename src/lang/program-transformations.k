@@ -35,7 +35,7 @@ rule staticDeclFound('FunctionCall('FunctionName("define"),,'ListWrap(Args:KList
 
 syntax K ::= "MakeStaticDecl" "(" K ")" [klabel('MakeStaticDecl)]
 
-/* base case  */
+/* base case */
 		
 rule [make-static-decl-1]:
 	<k> MakeStaticDecl(

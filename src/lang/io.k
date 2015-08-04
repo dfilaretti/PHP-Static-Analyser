@@ -108,43 +108,59 @@ rule [echo-more-args]:
 
 rule [inline-echo]: 
 	<k> 'InlineEcho('EchoOpenTag(.KList),,K:K,,_,,'CloseTag(.KList)) => 
-               // 'Echo('ListWrap(K)) 
-               //SM debugging trick
-	       peek(K)
+               // 'Echo('ListWrap(K)) // use this for conventional semantics of inline echo  
+	       peek(K)                // use this to enable debugging by peeking at memory locations
 	       ... 
 	</k>
 	<trace> Trace:List => Trace ListItem("inline-echo") </trace>
 	[structural] 
 
-syntax K ::= "peek(" K ")" //NOT strict
-rule peek('FunctionCall('FunctionName(_),,Params,,_)) => peek1(.List,Params)
+
+syntax K ::= "peek(" K ")" // intentionally NOT strict
+rule peek('FunctionCall('FunctionName(C:String),,Params,,_)) => peek1(ListItem(C),Params)
+
+
 syntax K ::= "peek1(" List "," K ")"
 rule peek1(L,'ListWrap(.KList)) => peek2(L)
 rule peek1(L,'ListWrap('Param(V:Value),, Args:KList)) => peek1(L ListItem(V),'ListWrap(Args:KList)) 
 context peek1(L:List,'ListWrap('Param(HOLE),, Args:KList))
+
+
 syntax K ::= "peek2(" List ")"
-rule peek2(ListItem(P1) ListItem(P2) ListItem(P3) ListItem(P4)) => peek3(P1,P2,P3,P4)
-syntax K ::= "peek3(" K "," K "," K "," K ")"
-rule peek3(M,C,V1:ConvertibleToLoc,V2:ConvertibleToLoc) => peek3(M,C,convertToLoc(V1,r),convertToLoc(V2,r))
-rule <k> peek3(M,1,L1':Loc,L2':Loc) => peek3(M,1,L1,L2) ... </k>
+rule peek2(ListItem(P1) ListItem(P2) ListItem(P3) ListItem(P4)) => peek3(P1,getValue(P2),P3,P4)
+
+
+syntax K ::= "peek3(" K "," K "," K "," K ")" 
+context peek3(C:String,M:String,HOLE,V:K) //SM allowing resolution of srefs here
+context peek3(C:String,M:String,V:K,HOLE) 
+
+rule peek3(C,M,V1:ConvertibleToLoc,V2:ConvertibleToLoc) => peek3(C,M,convertToLoc(V1,r),convertToLoc(V2,r))
+
+rule <k> peek3("h",M,L1':Loc,L2':Loc) => peek3("h1",M,L1,L2) ... </k>
      <thematrix> ... L1' |-> L1 L2' |-> L2 ... </thematrix> 	 
-rule peek3(M,2,V1:ConvertibleToLanguageValue,V2:ConvertibleToLanguageValue)  
-     => peek3(M,2,convertToLanguageValue(V1),convertToLanguageValue(V2))
-rule peek3(M,0,L1':Loc,L2':Loc) => 'Literal("0 ==> " +String M +String ": OK" ) // compare matrix addresses
+
+rule peek3("v",M,V1:ConvertibleToLanguageValue,V2:ConvertibleToLanguageValue)  
+     => peek3("v",M,convertToLanguageValue(V1),convertToLanguageValue(V2))
+
+// compare matrix addresses
+rule peek3("m",M,L1':Loc,L2':Loc) => 'Literal("m ==> " +String M +String ": OK" ) 
      when L1' ==K L2'
-rule peek3(M,0,L1':Loc,L2':Loc) => 'Literal("0 ==> " +String M +String ": KO" ) // compare matrix addresses
+rule peek3("m",M,L1':Loc,L2':Loc) => 'Literal("m ==> " +String M +String ": KO" )
      when L1' =/=K L2'
-rule peek3(M,1,L1:Loc,L2:Loc) => 'Literal("1 ==> " +String M +String ": OK" ) // compare matrix addresses
+
+// compare heap addresses
+rule peek3("h1",M,L1,L2) => 'Literal("h ==> " +String M +String ": OK" )
      when L1 ==K L2
-rule peek3(M,1,L1:Loc,L2:Loc) => 'Literal("1 ==> " +String M +String ": KO" ) // compare matrix addresses
+rule peek3("h1",M,L1:Loc,L2:Loc) => 'Literal("h ==> " +String M +String ": KO" )
      when L1 =/=K L2
-rule peek3(M,2,V1:PlainLanguageValue,V2:PlainLanguageValue) => 'Literal("2 ==> " +String M +String ": OK" ) 
+
+ // compare values
+rule peek3("v",M,V1:PlainLanguageValue,V2:PlainLanguageValue) => 'Literal("v ==> " +String M +String ": OK" ) 
      when V1 ==K V2
-rule peek3(M,2,V1:PlainLanguageValue,V2::PlainLanguageValue) => 'Literal("2 ==> " +String M +String ": KO" )
+rule peek3("v",M,V1:PlainLanguageValue,V2::PlainLanguageValue) => 'Literal("v ==> " +String M +String ": KO" )
      when V1 =/=K V2
 
 
-//base case:  
 
 // ---------------------------------------------------------------------------------------------
 /*@ \subsection{Print} 
