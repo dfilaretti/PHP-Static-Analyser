@@ -81,14 +81,6 @@ rule [function-decl-error-already-defined]:
 
 syntax K ::= "makeFunction" "(" String "," K "," K "," K "," Loc ")" [strict(3)]
 
-/* TODO: remove when added support for conditional declaration
-rule [make-function]:	
-	<k> makeFunction(Name, 'ListWrap(Parameters:KList), visitedK(Body:K), ValueOrRef:K, L:Loc) => . ... </k>	
-	<functions> Rho:Map => Rho[f('ListWrap(Parameters), Body, ValueOrRef, L) / Name] </functions> 
-	<trace> Trace:List => Trace ListItem("make-function") </trace>
-	[internal]
-*/
-
 rule [make-function]:	
 	<k> makeFunction(Name, 'ListWrap(Parameters:KList), visitedK(Body:K), ValueOrRef:K, L:Loc) => . ... </k>	
 	<functions> ... . => Name |-> setWrap(SetItem(f('ListWrap(Parameters), Body, ValueOrRef, L))) ... </functions> 
@@ -129,15 +121,14 @@ rule <k> returnToCaller(K) => V ~> K ... </k>
 
 // Given an abstract string (fun neme), returns all existing functions that match
 syntax Set ::= "getFunSet" "(" AString "," Map ")" [function]
-// TODO
 
 rule getFunSet(_,.Map) => .Set 
 
 rule getFunSet(FunName,(F |-> _) Fs) => SetItem(F) getFunSet(FunName,Fs)
-	when (F <Lattice FunName) orBool (F ==K FunName)
+	when alpha(F) <=Lattice FunName
 
 rule getFunSet(FunName,(F |-> _) Fs) => getFunSet(FunName,Fs)
-	when notBool ((F <Lattice FunName) orBool F ==K FunName)
+	when notBool (alpha(F) <=Lattice FunName)
 
 
 // Given a set of functions, an argument list and a lable, 
@@ -172,7 +163,7 @@ rule [run-functions-undef]:
 //rule runFunctions(FName,.Set,_,_) => NOT-SUPPORTED("'" +String FName +String "' not defined!") 
 
 rule [function-name]:
-	<k> 'FunctionName(FName:String) => FName ... </k>
+	<k> 'FunctionName(FName:String) => alpha(FName) ... </k>
 	[step]
 
 context [func-call-fname-strict]: 
@@ -366,11 +357,6 @@ context [return-strict]:
 	'Return(HOLE)
 	[structural]
 	
-// TODO: (re)move
-context [some-strict]:
-	'Some(HOLE)
-	[structural]
-	
 syntax Returnable ::= LanguageValue | Loc
 
 syntax Bool ::= "isRetValueLoc" "(" Returnable ")" [function]
@@ -504,7 +490,10 @@ rule makeReturnValue(Bot,VL,@byRef) => mergeLocSet(VL)
     
 syntax K ::= "mergeLocSet" "(" Set ")"
 
+/* SM: notice returns-loc cell below. this is for functions that return by reference. this is a real todo.
+the cell should contain matrix locs, so one returns a new matrix loc with the merge of the heap locs of the other matrix locs, and then redirects the other matrix locs to the new heap cell (Weak aliasing)
 
+*/ 
 /* TODO
 rule mergeLocSet(SetItem(L)) => L
 rule <k> mergeLocSet(SetItem(L1) SetItem(L2) S) => 

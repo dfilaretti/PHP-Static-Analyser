@@ -1126,7 +1126,9 @@ rule [merge-values-at-locs-null]:
 rule [merge-values-ar-locs-array]:
 	<k> mergeValuesAtLocs(arr,.Set) => emptyArray ... </k>
 
-// TODO: object case
+// TODO: object case 'emptyObject' along lines of case above
+
+//SM-FIXME: in the case of array-array we need a recursive merge instead of lubbing
 
 rule [merge-values-at-locs-cons]:
 	<k> 

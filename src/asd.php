@@ -5,7 +5,13 @@
    // ensure examples are commented out individually when commiting file to repo.
 
 //SM debug debugging functionality
+/*
+function x(){return 1;}
+function x(){return "a";}
+$y= x();
+*/
 
+/*
 $x = 1;
 $y = "a";
 $z =& $x;
@@ -15,7 +21,7 @@ _debug(m("strong aliasing",$x,$z));
 _debug(h("weak aliasing",$y,$w)); 
 _debug(v("values",$x,$x)); 
 _debug(v("different values",$x,$y)); 
-
+*/
 
 //SM check cases for comparisons
 //$x==true;

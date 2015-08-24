@@ -485,58 +485,6 @@ rule [assign-error]:
 	[step, error]
 
 
-
-
-
-/* 
-// OLD
-rule [assign-LHS2Loc]:
-	<k> 'Asign((R:Ref => convertToLoc(R,l)),,_:KResult) ... </k>
-	<trace> Trace:List => Trace ListItem("assign-LHS2Loc") </trace>
-	[intermediate]
-
-rule [assign-RHS2Loc-NonLiteral]:    
-	<k> 'Assign(_:KResult,, (V:ConvertibleToLoc => convertToLoc(V,r))) ... </k>
-	<trace> Trace:List => Trace ListItem("assign-RHS2Loc-NonLiteral") </trace>
-	when notBool (isLiteral(V))
-	[intermediate]
-
-rule [assign-RHS2LangValue-overflow]:    
-	<k> 'Assign(L:Loc,, L1':Loc) =>  
-			'Expr('Assign(L,, convertToLanguageValue(L1'))) ~>
-			'Expr(reset(L)) ~>
-			convertToLanguageValue(L) ...
-	</k>
-	<thematrix> ... L1' |-> L1 ... </thematrix>
-	<heap> M:Map </heap>
-	<trace> Trace:List => Trace ListItem("assign-RHS2LangValue-overflow") </trace>
-	when currentOverflow(M,L1) // TODO: check side conditions!
-	[intermediate]
-
-rule [assign-RHS2LangValue-no-overflow]:    
-	<k> 'Assign(L:Loc,, (L1':Loc => convertToLanguageValue(L1'))) ... </k>  
-	<thematrix> ... L1' |-> L1 ... </thematrix>	
-	<heap> M:Map </heap>
-	<trace> Trace:List => Trace ListItem("assign-RHS2LangValue-no-overflow") </trace>
-	when notBool (currentOverflow(M,L1))
-	[intermediate]
-
-rule [assign-RHS2LangValue-locNull]:    
-	<k> 'Assign(L:Loc,, (locNull => NULL)) ... </k>
-	<trace> Trace:List => Trace ListItem("assign-RHS2LangValue-locNull") </trace>
-	[intermediate]
-
-rule [assign]:
-	<k> 'Assign(L:Loc,, V:LanguageValue) => copyValueToLoc(V, L) ~> V ... </k>
-	<trace> Trace:List => Trace ListItem("assign") </trace>
-	[step]
-
-rule [assign-error]:
-	<k> 'Assign(thisTag(L:K),, _) =>  ERROR("Cannot re-assign $this in %s on line %d") ... </k>
-	<trace> Trace:List => Trace ListItem("assign-error") </trace>
-	[step, error]
-*/
-
 // ---------------------------------------------------------------------------------------------
 /*@ \subsection{Shortcuts} */
 // ---------------------------------------------------------------------------------------------
