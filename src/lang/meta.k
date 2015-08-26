@@ -439,13 +439,6 @@ syntax  Bool ::= "(" Map "," Map "," Map "," Map ")" "|-" "isomorph1" "(" List "
 
     syntax K ::= "LFP" "(" OptionBag "," K ")"
 
-//SMT delete
-/*
-    rule    <k> LFP(some(E1), _) => stopDebug(.Map,(locNull |-> ==Mem(E,E1))) ... </k>
-	    <mem> E:Bag </mem>
-*/
-
-    
     //@ fixpoint has been reached
     rule    <k> LFP(some(E1), _) => . ... </k>
 	    <mem> E:Bag </mem>
@@ -1891,23 +1884,23 @@ mergeArray(Cl,Rc1,needErrorMerge(Vis1,Vis2),true,none,J,ZV1,H1',H1,emptyArrayZva
     rule    merge_ArrayItem(L,[X,V1,_],[X,V2,_]) => [X,V1,L]
 */
     ///////////////////////////////////////////////////////////////////////////
-    /*@ \subsection{merge two zvals. */
+    /*@ \subsection{Merge two zvals} */
     ///////////////////////////////////////////////////////////////////////////
                        
     // notice that only zvals containing scalars arrive here...
 
     syntax  Zval ::= "mergeZval" "(" Zval "," Zval ")" [function]
    
-//SMT delete    
-    rule    mergeZval(zval(V,T,R,I),zval(V',T',R',I')) => zval(alpha("D'OH!"),T,R,I)
-/*
+//SMT delete?    
+/*    rule    mergeZval(zval(V,T,R,I),zval(V',T',R',I')) => zval(alpha("D'OH!"),T,R,I)
+
 	    zval(
 	        lub(V,V'),
 	        typeOf(lub(V,V')),			//allows the domain to give more info than just taking lub_Type(T, T')
 	        maxRC(R,R'),
 	        makeIsRef(R,R'))  
-*/
 when V ==K NULL
+*/
 
     rule    mergeZval(zval(V,T,R,I),zval(V',T',R',I')) => 
 	    zval(
@@ -1915,7 +1908,9 @@ when V ==K NULL
 	        typeOf(lub(V,V')),			//allows the domain to give more info than just taking lub_Type(T, T')
 	        maxRC(R,R'),
 	        makeIsRef(R,R'))  
-when V =/=K NULL
+/* SMT delete if deleting above 
+   when V =/=K NULL
+*/
     
     // make isRef flag
     syntax Bool ::= "makeIsRef" "(" ARefCount "," ARefCount ")" [function]

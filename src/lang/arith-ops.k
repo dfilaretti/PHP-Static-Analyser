@@ -173,6 +173,13 @@ rule    [binop-plus-float]:
 	    <k> BinOp(plus,F1:AFloat,F2:AFloat) => F1 +AFloat F2 ... </k>
 	    [step]
 
+//SM-FIXME nasty hack to unblock one example
+rule    [binop-plus-null-int]:    
+	    <k> BinOp(plus,NULL => *toInteger(NULL),I2:AInt) ... </k>
+	    [intermediate]
+
+
+
 
 // min
 rule    [binop-min-int]:    

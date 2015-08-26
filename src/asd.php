@@ -4,6 +4,26 @@
    // write comments to explain examples;
    // ensure examples are commented out individually when commiting file to repo.
 
+//SM debug booleans
+// if (1==2) {$y="a";} else {$z="b";}
+
+//SM this is RR's example
+$y=array("foo" => "bar");
+if (1==2)                //ABoolTop
+    {$y['ind'] = "test";}
+    else
+    {$y['ind2']="test2";}
+
+$x= $y['ind'];
+echo $x;                    // "test", MayBeNull
+$z = $x+1;
+echo $z;                // AInt, ImplicitTypeConversion (there should also be a NullTypeConversion, maybe a bug on my end ?)
+$w = $x."baz";
+echo $w;        // AStringTop, NullTypeConversion
+
+
+
+
 //SM debug debugging functionality
 /*
 function x(){return 1;}

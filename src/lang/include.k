@@ -16,6 +16,8 @@ rule
 	<trace> Trace:List => Trace ListItem("eval") </trace>
 	[step, error]
 
+//SM is this much fidderent from include? could we just do the same?
+
 /*
 rule
 	<k> 'InternalFunction('Include(M:String)) => #parse(#readFile(M)); 
@@ -36,14 +38,10 @@ syntax String ::= closeFile(K) [function]
 rule closeFile(.K) => ""
 */
 
-
 context 'InternalFunction('Include(HOLE))
-
 
 rule 
 	<k> 'InternalFunction('Include(M:String)) => #parse(M, "K") ... </k>
-
-
 
 /*
 rule
@@ -56,4 +54,5 @@ rule
 	<trace> Trace:List => Trace ListItem("require") </trace>
 	[step, error]
 */
+
 endmodule

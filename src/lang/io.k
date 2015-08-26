@@ -57,6 +57,11 @@ rule [internal-print]:
 	[internal, output]
 */
 
+rule [internal-null]:    
+	<k> print(N:SpecialValue  => *toString(N)) ... </k>
+	<trace> Trace:List => Trace ListItem("internal-null") </trace>
+	[internal, output]
+
 rule [internal-print]:    
 	<k> print(B:ABool  => *toString(B)) ... </k>
 	<trace> Trace:List => Trace ListItem("internal-print") </trace>
