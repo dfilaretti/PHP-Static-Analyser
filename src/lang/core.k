@@ -150,45 +150,29 @@ rule [block]:
         normally, but if the status is e.g. RET or ERR, statements are not 
         executed. */
 ///////////////////////////////////////////////////////////////////////////////
-rule [seq-cons-continue]:
+
+rule [seq-empty]:
+	<k> 'ListWrap(.KList) => . ... </k>
+        <trace> Trace:List => Trace ListItem("seq-empty") </trace>
+	[transition]
+
+rule [empty]:	
+	<k> 'Empty(.KList) => . ... </k>
+        <trace> Trace:List => Trace ListItem("empty") </trace>
+	[transition]
+
+rule [seq-cons]:
 	<k> 'ListWrap(S:K,, Ss:KList) => S ~> 'ListWrap(Ss) ... </k>	
 	<status> C:RunningCode </status>
+        <trace> Trace:List => Trace ListItem("seq-cons") </trace>
 	[transition]
 	
 rule [seq-cons-skip]:
 	<k> 'ListWrap(S:K,, Ss:KList) => . ... </k>	
 	<status> C:SkippingCode </status>
+        <trace> Trace:List => Trace ListItem("seq-cons-skip") </trace>
 	[transition]
 
-rule [seq-empty]:
-	<k> 'ListWrap(.KList) => . ... </k>
-	[transition]
-
-rule [empty]:	
-	<k> 'Empty(.KList) => . ... </k>
-	[transition]
-	/*
-
-//@ statements might or might not be executed, depending on the status 
-syntax K ::= "runStmt" "(" K ")"
-
-rule    <k> runStmt(S) => S ... </k>
-        <status> NEXT </status> 
-        [transition]
-
-rule    <k> runStmt(S) => . ... </k>
-        <status> RET </status> 
-        [transition]
-
-rule    <k> runStmt(S) => . ... </k>
-        <status> ERR </status> 
-        [transition]
-
-rule    <k> runStmt(S) ~> K => . ... </k>
-        <status> LOOP </status> 
-        [transition]
-
-*/
 
 // ---------------------------------------------------------------------------------------------
 /*@ \subsection{Expression as a statement} */
@@ -299,7 +283,7 @@ rule [variable-variable-global]:
 	[step]
 
 rule [variable-variable-function]:	
-	<k> 'IndirectReference(X:AString) => ref(Lg,X) ... </k>
+	<k> 'IndirectReference(X:AString) => ref(Lg,X) ... </k> //SM suspicious: should this be Lc? in php var-var can be local to function scope
         <currentScope> Lc </currentScope>
         <globalScope> Lg </globalScope>
 	when (isNotSpecialVar(X) orBool maybeSpecialVar(X)) andBool Lc =/=K Lg

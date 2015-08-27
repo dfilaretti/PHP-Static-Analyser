@@ -214,11 +214,11 @@ rule <k> AbexpConf1(V:KResult) => none    ... </k>
 
 	rule	<kphp>
                 <script> 
-                    <k> updateConfig(config(C)) => . ... </k>
+                    <k> updateConfig(config(Cfg:Bag)) => . ... </k>
                     _
                 </script>
-		<errorDump> ... . => . </errorDump>
-                (_ => C)
+//		<errorDump> ... . => . </errorDump>
+                (_ => Cfg)
             </kphp>
             [transition]
 
@@ -266,7 +266,7 @@ rule	<k> runInMem(none, _) => .  ... </k>
                     <k> getCurrentConfig => config(Cfg) ... </k>
                     _
                 </script>
-		<errorDump> ... . => . </errorDump>
+//		<errorDump> ... . => . </errorDump>
 	        Cfg:Bag
             </kphp> 
 
@@ -531,6 +531,14 @@ syntax  Bool ::= "(" Map "," Map "," Map "," Map ")" "|-" "isomorph1" "(" List "
 
 
 
+    ///////////////////////////////////////////////////////////////////////////
+    // Merging error configurations.
+    ///////////////////////////////////////////////////////////////////////////
+
+    syntax  BoxedConfig ::= "mergeErrors" "(" BoxedConfig "," BoxedConfig ")"         [function] 
+
+    rule mergeErrors(config(A <errorDump>E1</errorDump>),config(B <errorDump>E2</errorDump>)) =>
+    config(B <errorDump>E1 E2</errorDump>)
 
 
     ///////////////////////////////////////////////////////////////////////////
@@ -542,15 +550,15 @@ syntax  Bool ::= "(" Map "," Map "," Map "," Map ")" "|-" "isomorph1" "(" List "
     /*@ Adaptive-merge case. This happens when one branch returned 
     but the other didn't. See notes. */
 
-    rule    <k> (mergeConfigs(config(A), config(B)) ~> K) => . </k>
+    rule    <k> (mergeConfigs(config(A), config(B)) ~> K) => updateConfig(mergeErrors(config(A),config(B))) </k>
             when (configGetStatus(A) ==K ERR) andBool (configGetStatus(B) ==K ERR)
             [transition]
 
-    rule    <k> mergeConfigs(config(A), config(B)) => updateConfig(config(B)) ... </k>
+    rule    <k> mergeConfigs(config(A), config(B)) => updateConfig(mergeErrors(config(A),config(B))) ... </k>
             when (configGetStatus(A) ==K ERR) andBool (configGetStatus(B) =/=K ERR)
             [transition]
 
-    rule    <k> mergeConfigs(config(A), config(B)) => updateConfig(config(A)) ... </k>
+    rule    <k> mergeConfigs(config(A), config(B)) => updateConfig(mergeErrors(config(B),config(A))) ... </k>
             when (configGetStatus(A) =/=K ERR) andBool (configGetStatus(B) ==K ERR)
             [transition]
 
@@ -631,6 +639,7 @@ syntax  Bool ::= "(" Map "," Map "," Map "," Map ")" "|-" "isomorph1" "(" List "
                 config( 
                         C1:Bag
 			<trace> T1 </trace>
+  			<errorDump> E1 </errorDump>
 			<returns> R1 </returns>  
 			<returns-loc> RL1 </returns-loc>
 			<status> S1 </status> 	                 
@@ -651,6 +660,7 @@ syntax  Bool ::= "(" Map "," Map "," Map "," Map ")" "|-" "isomorph1" "(" List "
                 config(
                         C2:Bag
 			<trace> T2 </trace>
+  			<errorDump> E2 </errorDump>
 			<returns> R2 </returns> 
 			<returns-loc> RL2 </returns-loc>
 			<status> S2 </status> 	
@@ -676,6 +686,7 @@ syntax  Bool ::= "(" Map "," Map "," Map "," Map ")" "|-" "isomorph1" "(" List "
 			//mergeOutputs(T1,T2) 
 			T2 //TODO
 			</trace>
+  			<errorDump> E1 E2 </errorDump>
 			<returns-loc> RL1 RL2 </returns-loc>
 			<returns> mergeReturns(R1,R2) </returns> 
 			<status> mergeStatus(S1,S2) </status>
@@ -1887,30 +1898,16 @@ mergeArray(Cl,Rc1,needErrorMerge(Vis1,Vis2),true,none,J,ZV1,H1',H1,emptyArrayZva
     /*@ \subsection{Merge two zvals} */
     ///////////////////////////////////////////////////////////////////////////
                        
-    // notice that only zvals containing scalars arrive here...
+    // notice that only zvals containing scalars or NULL arrive here...
 
     syntax  Zval ::= "mergeZval" "(" Zval "," Zval ")" [function]
    
-//SMT delete?    
-/*    rule    mergeZval(zval(V,T,R,I),zval(V',T',R',I')) => zval(alpha("D'OH!"),T,R,I)
-
-	    zval(
-	        lub(V,V'),
-	        typeOf(lub(V,V')),			//allows the domain to give more info than just taking lub_Type(T, T')
-	        maxRC(R,R'),
-	        makeIsRef(R,R'))  
-when V ==K NULL
-*/
-
     rule    mergeZval(zval(V,T,R,I),zval(V',T',R',I')) => 
 	    zval(
 	        lub(V,V'),
 	        typeOf(lub(V,V')),			//allows the domain to give more info than just taking lub_Type(T, T')
 	        maxRC(R,R'),
 	        makeIsRef(R,R'))  
-/* SMT delete if deleting above 
-   when V =/=K NULL
-*/
     
     // make isRef flag
     syntax Bool ::= "makeIsRef" "(" ARefCount "," ARefCount ")" [function]

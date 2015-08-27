@@ -63,6 +63,12 @@ rule [not-supported]:
 	<trace> Trace:List => Trace ListItem("not-supported") </trace>
 	[internal]
 
+// When Bot appears as a statement the status is already error, and Bot should be removed
+rule [reduce-bot]:
+     <k> Bot => . ... </k>
+     <trace> Trace:List => Trace ListItem("reduce-bot") </trace>
+     [internal]
+
 endmodule
 
 

@@ -7,7 +7,30 @@
 //SM debug booleans
 // if (1==2) {$y="a";} else {$z="b";}
 
-//SM this is RR's example
+
+//SM debug functions
+
+$z = "a";
+function name($x){$y="c"; return $x.$y;}
+$z= name("b");
+
+
+//SM debug function merging
+/*
+if(1){function x($y){return $y.$y;};function w($u){return $u.$u;}} else {function x($y){return 1;}}
+$z = x("ah");
+$d = w("b");
+*/
+
+//SM double function definition (illegal)
+/*
+function x(){};
+function x(){}
+$y="d'oh!"; //should not happen
+*/
+
+//SM this is RR's modified example
+/*
 $y=array("foo" => "bar");
 if (1==2)                //ABoolTop
     {$y['ind'] = "test";}
@@ -20,7 +43,7 @@ $z = $x+1;
 echo $z;                // AInt, ImplicitTypeConversion (there should also be a NullTypeConversion, maybe a bug on my end ?)
 $w = $x."baz";
 echo $w;        // AStringTop, NullTypeConversion
-
+*/
 
 
 
@@ -236,8 +259,6 @@ var_dump($GLOBALS);
 echo $_GET;
 */
 
-//function name($x){return $x;}
-//echo name(4);
 
 /*
 if($t."hello")

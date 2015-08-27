@@ -1,6 +1,8 @@
+require "memory.k"
 
 module FUNCTIONS 
-
+	imports MEMORY
+	
 // =/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
 // =/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=/=
 /*@ \section{Functions} */
@@ -44,9 +46,9 @@ rule	labelOf(sf(_:String,L:Loc,_,_,_,_,_:Int)) => L
     the function in memory.  */
 
 rule [function-decl-ret-value]:	
-	<k> 'FunctionDecl(Name:String,, 'ListWrap(Parameters:KList),, Body:K) =>  
+	<k> 'FunctionDecl(Name:String,, 'ListWrap(Parameters:KList),, Body:K) => 
 		ArrayCreateEmpty(L) ~> incRefCount(L) ~>
-		makeFunction(Name, 'ListWrap(Parameters:KList), makeStaticDecls(Body, L), @byValue, L)
+		makeFunction(Name, 'ListWrap(Parameters:KList), makeStaticDecls(Body, L), @byValue, L) 
 	... </k>
 	<functions> Rho:Map </functions> 
 	<trace> Trace:List => Trace ListItem("function-decl-ret-value") </trace>
@@ -151,7 +153,6 @@ rule [run-functions]:
 				mergeConfigsSet(makeFunCalls(FunctionSet,Args,Label,Conf)) ... </k>
 			_
 		</script>
-		<errorDump> ... . => . </errorDump>
 		Conf:Bag
 	</kphp>
 	when FunctionSet =/=Set .Set
@@ -200,7 +201,7 @@ rule [func-call]:
 
 syntax K ::= "functionCall1" "(" String "," K "," Int ")"
 
-/* TODO: remove when nev version (using sets of function defs) is done
+/* TODO: remove when new version (using sets of function defs) is done
 rule [func-call]:
 	<k> functionCall1(FName:String,'ListWrap(Args:KList),Lab) => 
 		runFunction(FName,FunDef,'ListWrap(Args),none,none,true,Lab,sf(FName,L,CurrentClass,CurrentObj,retTypeOfFunDef(FunDef),D,Lab)) ... </k>
@@ -930,7 +931,7 @@ rule [run-function]:
 			setCrntScope(L1) ~>
 			incRefCount(L1) ~> 
 			setCrntClass(Class) ~> 
-			*Cond(Obj =/=K none, allocCrntObj(Obj), .K) ~>
+			*Cond(Obj =/=K none, allocCrntObj(Obj), .K) ~> 
 			CopyFunctionArgs ~> 
 			'ListWrap(Body,, 'Return(NULL)) ~> POP ... </k>
 	<functionArgumentsDeclaration> D:K => . </functionArgumentsDeclaration>
@@ -940,8 +941,12 @@ rule [run-function]:
 	<class> CurrentClass:K </class>
 	<functionStack> S:List </functionStack>
 	<object> CurrentObj:K </object>
+	<trace> Trace:List => Trace ListItem("run-function") </trace>
 	when (fresh(L1:Loc)) andBool (notBool((H',H) |- Sf isIn S)) 
 	[internal]
+
+//SM bmk
+// x() in php shell code on line 1
 
 /*
 rule [run-function]:	
@@ -954,15 +959,21 @@ rule [run-function]:
 	[internal]
 */
 
-rule [run-function]:	
-	<k> (runFunction(FName:String, f(Parameters:K, Body:K, RetType:K, LStatic:Loc), Args:K, Class:OptionId,Obj:OptionLoc,Static:Bool,Lab,Sf)) => . ... </k>
+rule [run-function-loop]:	
+	<k> runFunction(FName:String, f(Parameters:K, Body:K, RetType:K, LStatic:Loc), Args:K, Class:OptionId,Obj:OptionLoc,Static:Bool,Lab,Sf) => . ... </k>
 	<returns> R </returns>
 	<heap> H:Map </heap>
 	<thematrix> H' </thematrix>
 	<functionStack> S:List </functionStack>
+	<trace> Trace:List => Trace ListItem("run-function-loop") </trace>
 	when (H',H) |- Sf isIn S
 	[internal]
 
+rule [run-function-error]:	
+	<k> runFunction(FName:String,X,_,_,_,_,_,_) => ERROR("Call to undefined function " +String FName +String "() %s on line %d") ... </k>
+	<trace> Trace:List => Trace ListItem("run-function-error") </trace>
+	when X ==K none //SM the misteries of K: does not work to use none instead of X above
+	[internal, error]
 
 /* Old IMP's stuff
     //@ stack frame already present, function is not called
@@ -995,7 +1006,7 @@ syntax K ::= "CopyFunctionArgs"
 
 rule [get-fun-decls]:
 	<k> CopyFunctionArgs => Declarations ... </k>
-	<functionArgumentsDeclaration> Declarations:K => . </functionArgumentsDeclaration>
+	<functionArgumentsDeclaration> Declarations:K => . </functionArgumentsDeclaration> //SM should they be listwrapped like top level decls?
 	<trace> Trace:List => Trace ListItem("get-fun-decls") </trace>
 	[internal]
 

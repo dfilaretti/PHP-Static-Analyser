@@ -75,7 +75,6 @@ rule [if]:
 		runAndGetConfig(runInConf(AbexpConf('Not(C), config(Conf)), B2))) ... </k>
         _
 	</script>
-	<errorDump> ... . => . </errorDump>
 	Conf:Bag
 	</kphp>
 
@@ -292,7 +291,6 @@ rule
 		</k>
 		_
 		</script>
-		<errorDump> ... . => . </errorDump>
 	        Cfg:Bag
 		</kphp>
 		//<mem> E </mem>         

@@ -127,17 +127,16 @@ rule [refactor-previous-processed]:
 	<k> (visitedK(X) ~> refactor) => refactor(X) ... </k>
 	[intermediate]
 
-
 rule [refactor-cons-fun]:
 	<k> refactor('ListWrap(K:KList,, D:K)) => refactor('ListWrap(K)) ... </k>
-	<declarations> . => D ...  </declarations>
+	<declarations> 'ListWrap(L) => 'ListWrap(D,,L) </declarations>
 	<trace> Trace:List => Trace ListItem("refactor-cons-fun") </trace>
 	when (getKLabel(D) ==KLabel 'FunctionDecl)
 	[intermediate]
 
 rule [refactor-cons-no-fun]: 
 	<k> refactor('ListWrap(K:KList,, C:K)) => refactor('ListWrap(K)) ... </k>
-	<commands> . => C ...  </commands>
+	<commands>  'ListWrap(L) => 'ListWrap(C,,L)  </commands>
 	<trace> Trace:List => Trace ListItem("refactor-cons-no-fun") </trace>
 	when (getKLabel(C) =/=KLabel 'FunctionDecl)
 	[intermediate]
@@ -166,9 +165,9 @@ rule //[refactor-nil-no-fun]:
 syntax K ::= "run" |  "quotedCode" "(" K ")"
 
 rule [run]:    
-	<k> (run ~> K:K) => quotedCode(D ~> C) ~> K </k>
-	<declarations> D:K => . </declarations>
- 	<commands> C:K => . </commands>
+	<k> (run ~> K:K) => quotedCode('ListWrap(D,,C)) ~> K </k>
+	<declarations> 'ListWrap(D => .KList) </declarations>
+ 	<commands> 'ListWrap(C => .KList) </commands>
 	<trace> Trace:List => Trace ListItem("run") </trace>
 	[internal]
 
